@@ -4,7 +4,7 @@ Privacy-first PDF & file tools that run **entirely in your browser**. Files
 are never uploaded — every conversion happens locally via Go compiled to
 WebAssembly.
 
-**Live:** https://paper-tools-4iq.pages.dev
+**Live:** https://papertools.dev
 
 > "Paper Tools" (종이도구) is the product name. `file-utils` is just the Go
 > module / repository name used internally by imports (`file-utils/pdf`).

@@ -9,7 +9,7 @@ const repoRoot = path.join(__dirname, "..");
 const webDir = path.join(repoRoot, "web");
 const toolsDir = __dirname;
 
-const BASE = "https://paper-tools-4iq.pages.dev";
+const BASE = "https://papertools.dev";
 const LANGS_TO_GEN = ["ko", "ja", "zh", "es", "fr", "de"];
 const TOOL_SLUGS = [
   "merge", "interleave", "split", "remove", "reorder", "blank", "rotate",

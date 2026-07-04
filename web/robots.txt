@@ -31,4 +31,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://paper-tools-4iq.pages.dev/sitemap.xml
+Sitemap: https://papertools.dev/sitemap.xml
