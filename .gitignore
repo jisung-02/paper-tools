@@ -1,0 +1,12 @@
+# Built WebAssembly — produced by build.sh, rebuilt in CI on deploy
+web/*/*.wasm
+web/wasm_exec.js
+
+# Stray local build output (go build without -o drops binaries in the repo root)
+/hwp2pdf
+/pdfimages
+/pdftext
+
+# OS / editor cruft
+.DS_Store
+*.log
