@@ -21,3 +21,7 @@ echo "=== per-tool wasm sizes ==="
 for t in $TOOLS; do
   ls -lh "web/$t/$t.wasm"
 done
+
+echo
+echo "=== generating i18n pages ==="
+node tools/gen-i18n.mjs

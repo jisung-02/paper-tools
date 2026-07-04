@@ -222,6 +222,23 @@ const I18N = {
     "Loading tool…": "ツールを読み込み中…",
     "Working…": "処理中…",
     "Failed to load tool: ": "ツールの読み込みに失敗しました: ",
+    "FAQ": "よくある質問",
+    "Is Paper Tools free?": "Paper Toolsは無料ですか?",
+    "Yes. All 27 tools are free, with no account and no signup.": "はい。27種類のツールはすべて無料で、アカウント登録も不要です。",
+    "Do my files get uploaded to a server?": "ファイルはサーバーにアップロードされますか?",
+    "No. Every tool runs inside your browser via WebAssembly; your files never leave your device.": "いいえ。すべてのツールはWebAssemblyを使ってブラウザ内で動作するため、ファイルがお使いの端末から外に出ることはありません。",
+    "Do I need to install anything?": "何かインストールする必要はありますか?",
+    "No. It works in any modern browser, on desktop or mobile.": "いいえ。最新のブラウザであれば、パソコンでもスマートフォンでも動作します。",
+    "What can it do?": "何ができますか?",
+    "Merge, split, rotate, crop, compress, protect and unlock PDFs; convert images (PNG/JPG/GIF); convert Word/Hangul documents to PDF; extract text and images; and more.": "PDFの結合、分割、回転、切り抜き、圧縮、パスワード保護・解除、画像(PNG/JPG/GIF)の変換、Word/HangulファイルのPDF変換、テキストや画像の抽出など、さまざまな処理に対応しています。",
+    "Is it open source?": "オープンソースですか?",
+    "Yes. It's built with the Go standard library (no third-party dependencies) and compiled to WebAssembly.": "はい。Goの標準ライブラリのみで作られており(サードパーティ製の依存関係はありません)、WebAssemblyにコンパイルされています。",
+    "Privacy": "プライバシー",
+    "Privacy Policy": "プライバシーポリシー",
+    "Your files are processed entirely in your browser. They are never uploaded to any server.": "ファイルはすべてブラウザ内で処理されます。サーバーにアップロードされることは一切ありません。",
+    "We don't use accounts, logins, or our own tracking cookies.": "アカウントやログイン、独自のトラッキングクッキーは使用していません。",
+    "The site is served as static files by Cloudflare Pages, which may log standard request metadata (like IP and user agent) for security and performance.": "このサイトはCloudflare Pagesによって静的ファイルとして配信されており、セキュリティとパフォーマンスのためにIPアドレスやユーザーエージェントなどの標準的なリクエスト情報が記録される場合があります。",
+    "If ads are shown, they are provided by EthicalAds, a privacy-focused network that serves contextual ads without tracking cookies or collecting personal data.": "広告が表示される場合、それはプライバシーに配慮した広告ネットワークEthicalAdsによるもので、トラッキングクッキーの使用や個人データの収集を行わずに文脈に応じた広告を配信します。",
   },
   zh: {
     "180°": "180°",
@@ -414,6 +431,23 @@ const I18N = {
     "Loading tool…": "正在加载工具…",
     "Working…": "处理中…",
     "Failed to load tool: ": "工具加载失败: ",
+    "FAQ": "常见问题",
+    "Is Paper Tools free?": "Paper Tools 免费吗?",
+    "Yes. All 27 tools are free, with no account and no signup.": "是的。全部 27 款工具均可免费使用，无需账号，也无需注册。",
+    "Do my files get uploaded to a server?": "我的文件会上传到服务器吗?",
+    "No. Every tool runs inside your browser via WebAssembly; your files never leave your device.": "不会。所有工具都通过 WebAssembly 在您的浏览器中运行，您的文件永远不会离开您的设备。",
+    "Do I need to install anything?": "需要安装什么吗?",
+    "No. It works in any modern browser, on desktop or mobile.": "不需要。它可以在任何现代浏览器中运行，无论是电脑还是手机。",
+    "What can it do?": "它能做什么?",
+    "Merge, split, rotate, crop, compress, protect and unlock PDFs; convert images (PNG/JPG/GIF); convert Word/Hangul documents to PDF; extract text and images; and more.": "合并、拆分、旋转、裁剪、压缩、加密和解锁 PDF；转换图片(PNG/JPG/GIF)；将 Word/Hangul 文档转换为 PDF；提取文字和图片等等。",
+    "Is it open source?": "它是开源的吗?",
+    "Yes. It's built with the Go standard library (no third-party dependencies) and compiled to WebAssembly.": "是的。它完全基于 Go 标准库构建(不依赖任何第三方库)，并编译为 WebAssembly。",
+    "Privacy": "隐私",
+    "Privacy Policy": "隐私政策",
+    "Your files are processed entirely in your browser. They are never uploaded to any server.": "您的文件完全在浏览器中处理，绝不会上传到任何服务器。",
+    "We don't use accounts, logins, or our own tracking cookies.": "我们不使用账号、登录，也不使用自己的跟踪 Cookie。",
+    "The site is served as static files by Cloudflare Pages, which may log standard request metadata (like IP and user agent) for security and performance.": "本站由 Cloudflare Pages 以静态文件形式提供服务，出于安全和性能考虑，Cloudflare Pages 可能会记录标准的请求元数据(如 IP 地址和用户代理)。",
+    "If ads are shown, they are provided by EthicalAds, a privacy-focused network that serves contextual ads without tracking cookies or collecting personal data.": "如果显示广告，广告由注重隐私的广告网络 EthicalAds 提供，该网络在不使用跟踪 Cookie、不收集个人数据的情况下展示与内容相关的广告。",
   },
   es: {
     "180°": "180°",
@@ -606,6 +640,23 @@ const I18N = {
     "Loading tool…": "Cargando herramienta…",
     "Working…": "Procesando…",
     "Failed to load tool: ": "Error al cargar la herramienta: ",
+    "FAQ": "Preguntas frecuentes",
+    "Is Paper Tools free?": "¿Paper Tools es gratis?",
+    "Yes. All 27 tools are free, with no account and no signup.": "Sí. Las 27 herramientas son gratuitas, sin necesidad de cuenta ni registro.",
+    "Do my files get uploaded to a server?": "¿Mis archivos se suben a un servidor?",
+    "No. Every tool runs inside your browser via WebAssembly; your files never leave your device.": "No. Cada herramienta se ejecuta dentro de tu navegador mediante WebAssembly; tus archivos nunca salen de tu dispositivo.",
+    "Do I need to install anything?": "¿Necesito instalar algo?",
+    "No. It works in any modern browser, on desktop or mobile.": "No. Funciona en cualquier navegador moderno, tanto en ordenador como en móvil.",
+    "What can it do?": "¿Qué puede hacer?",
+    "Merge, split, rotate, crop, compress, protect and unlock PDFs; convert images (PNG/JPG/GIF); convert Word/Hangul documents to PDF; extract text and images; and more.": "Combina, divide, gira, recorta, comprime, protege y desbloquea PDFs; convierte imágenes (PNG/JPG/GIF); convierte documentos Word/Hangul a PDF; extrae texto e imágenes; y mucho más.",
+    "Is it open source?": "¿Es de código abierto?",
+    "Yes. It's built with the Go standard library (no third-party dependencies) and compiled to WebAssembly.": "Sí. Está construido con la biblioteca estándar de Go (sin dependencias de terceros) y compilado a WebAssembly.",
+    "Privacy": "Privacidad",
+    "Privacy Policy": "Política de privacidad",
+    "Your files are processed entirely in your browser. They are never uploaded to any server.": "Tus archivos se procesan por completo en tu navegador. Nunca se suben a ningún servidor.",
+    "We don't use accounts, logins, or our own tracking cookies.": "No usamos cuentas, inicios de sesión ni cookies de seguimiento propias.",
+    "The site is served as static files by Cloudflare Pages, which may log standard request metadata (like IP and user agent) for security and performance.": "El sitio se sirve como archivos estáticos a través de Cloudflare Pages, que puede registrar metadatos estándar de las solicitudes (como la IP y el user agent) por motivos de seguridad y rendimiento.",
+    "If ads are shown, they are provided by EthicalAds, a privacy-focused network that serves contextual ads without tracking cookies or collecting personal data.": "Si se muestran anuncios, estos son proporcionados por EthicalAds, una red centrada en la privacidad que sirve anuncios contextuales sin cookies de seguimiento ni recopilación de datos personales.",
   },
   fr: {
     "180°": "180°",
@@ -798,6 +849,23 @@ const I18N = {
     "Loading tool…": "Chargement de l'outil…",
     "Working…": "Traitement en cours…",
     "Failed to load tool: ": "Échec du chargement de l'outil : ",
+    "FAQ": "Foire aux questions",
+    "Is Paper Tools free?": "Paper Tools est-il gratuit ?",
+    "Yes. All 27 tools are free, with no account and no signup.": "Oui. Les 27 outils sont tous gratuits, sans compte ni inscription.",
+    "Do my files get uploaded to a server?": "Mes fichiers sont-ils envoyés sur un serveur ?",
+    "No. Every tool runs inside your browser via WebAssembly; your files never leave your device.": "Non. Chaque outil s'exécute directement dans votre navigateur grâce à WebAssembly ; vos fichiers ne quittent jamais votre appareil.",
+    "Do I need to install anything?": "Dois-je installer quelque chose ?",
+    "No. It works in any modern browser, on desktop or mobile.": "Non. Cela fonctionne dans n'importe quel navigateur moderne, sur ordinateur comme sur mobile.",
+    "What can it do?": "Que peut-il faire ?",
+    "Merge, split, rotate, crop, compress, protect and unlock PDFs; convert images (PNG/JPG/GIF); convert Word/Hangul documents to PDF; extract text and images; and more.": "Fusionner, diviser, faire pivoter, recadrer, compresser, protéger et déverrouiller des PDF ; convertir des images (PNG/JPG/GIF) ; convertir des documents Word/Hangul en PDF ; extraire du texte et des images ; et bien plus encore.",
+    "Is it open source?": "Est-ce open source ?",
+    "Yes. It's built with the Go standard library (no third-party dependencies) and compiled to WebAssembly.": "Oui. Il est développé avec la bibliothèque standard de Go (sans dépendance tierce) et compilé en WebAssembly.",
+    "Privacy": "Confidentialité",
+    "Privacy Policy": "Politique de confidentialité",
+    "Your files are processed entirely in your browser. They are never uploaded to any server.": "Vos fichiers sont traités entièrement dans votre navigateur. Ils ne sont jamais envoyés vers un serveur.",
+    "We don't use accounts, logins, or our own tracking cookies.": "Nous n'utilisons ni comptes, ni identifiants, ni cookies de suivi qui nous seraient propres.",
+    "The site is served as static files by Cloudflare Pages, which may log standard request metadata (like IP and user agent) for security and performance.": "Le site est servi sous forme de fichiers statiques par Cloudflare Pages, qui peut enregistrer des métadonnées de requête standard (comme l'adresse IP et le user agent) à des fins de sécurité et de performance.",
+    "If ads are shown, they are provided by EthicalAds, a privacy-focused network that serves contextual ads without tracking cookies or collecting personal data.": "Si des publicités sont affichées, elles proviennent d'EthicalAds, un réseau axé sur la confidentialité qui diffuse des publicités contextuelles sans cookies de suivi ni collecte de données personnelles.",
   },
   de: {
     "180°": "180°",
@@ -990,6 +1058,23 @@ const I18N = {
     "Loading tool…": "Tool wird geladen …",
     "Working…": "Wird verarbeitet …",
     "Failed to load tool: ": "Tool konnte nicht geladen werden: ",
+    "FAQ": "Häufig gestellte Fragen",
+    "Is Paper Tools free?": "Ist Paper Tools kostenlos?",
+    "Yes. All 27 tools are free, with no account and no signup.": "Ja. Alle 27 Tools sind kostenlos, ohne Konto und ohne Anmeldung.",
+    "Do my files get uploaded to a server?": "Werden meine Dateien auf einen Server hochgeladen?",
+    "No. Every tool runs inside your browser via WebAssembly; your files never leave your device.": "Nein. Jedes Tool läuft über WebAssembly direkt in Ihrem Browser; Ihre Dateien verlassen niemals Ihr Gerät.",
+    "Do I need to install anything?": "Muss ich etwas installieren?",
+    "No. It works in any modern browser, on desktop or mobile.": "Nein. Es funktioniert in jedem modernen Browser, am Desktop wie auf dem Smartphone.",
+    "What can it do?": "Was kann es?",
+    "Merge, split, rotate, crop, compress, protect and unlock PDFs; convert images (PNG/JPG/GIF); convert Word/Hangul documents to PDF; extract text and images; and more.": "PDFs zusammenführen, aufteilen, drehen, zuschneiden, komprimieren, schützen und entsperren; Bilder (PNG/JPG/GIF) umwandeln; Word/Hangul-Dokumente in PDF umwandeln; Text und Bilder extrahieren und vieles mehr.",
+    "Is it open source?": "Ist es Open Source?",
+    "Yes. It's built with the Go standard library (no third-party dependencies) and compiled to WebAssembly.": "Ja. Es basiert ausschließlich auf der Go-Standardbibliothek (keine Abhängigkeiten von Drittanbietern) und wird zu WebAssembly kompiliert.",
+    "Privacy": "Datenschutz",
+    "Privacy Policy": "Datenschutzerklärung",
+    "Your files are processed entirely in your browser. They are never uploaded to any server.": "Ihre Dateien werden vollständig in Ihrem Browser verarbeitet. Sie werden niemals auf einen Server hochgeladen.",
+    "We don't use accounts, logins, or our own tracking cookies.": "Wir verwenden keine Konten, keine Logins und keine eigenen Tracking-Cookies.",
+    "The site is served as static files by Cloudflare Pages, which may log standard request metadata (like IP and user agent) for security and performance.": "Die Website wird als statische Dateien über Cloudflare Pages bereitgestellt, das aus Sicherheits- und Leistungsgründen Standard-Anfragedaten (wie IP-Adresse und User-Agent) protokollieren kann.",
+    "If ads are shown, they are provided by EthicalAds, a privacy-focused network that serves contextual ads without tracking cookies or collecting personal data.": "Falls Werbung angezeigt wird, stammt sie von EthicalAds, einem auf Datenschutz ausgerichteten Netzwerk, das kontextbezogene Anzeigen ohne Tracking-Cookies oder das Sammeln personenbezogener Daten ausliefert.",
   },
 };
 
@@ -997,7 +1082,8 @@ function sanitizeLang(lang) {
   return LANG_CODES.indexOf(lang) !== -1 ? lang : "en";
 }
 
-let LANG = sanitizeLang(localStorage.getItem("lang"));
+const FIXED = window.__FIXED_LANG || "";
+let LANG = FIXED || sanitizeLang(localStorage.getItem("lang"));
 
 function t(en, ko) {
   if (LANG === "en") return en;
@@ -1033,8 +1119,26 @@ function applyLang() {
 }
 
 function setLang(lang) {
-  LANG = sanitizeLang(lang);
-  localStorage.setItem("lang", LANG);
+  const sanitized = sanitizeLang(lang);
+  localStorage.setItem("lang", sanitized);
+
+  if (FIXED) {
+    if (sanitized === FIXED) {
+      LANG = sanitized;
+      applyLang();
+      return;
+    }
+    const rest = location.pathname.slice(("/" + FIXED).length) || "/";
+    location.href = sanitized === "en" ? rest : "/" + sanitized + rest;
+    return;
+  }
+
+  if (sanitized !== "en") {
+    location.href = "/" + sanitized + location.pathname;
+    return;
+  }
+
+  LANG = sanitized;
   applyLang();
 }
 
