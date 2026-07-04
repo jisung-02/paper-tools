@@ -1,0 +1,8 @@
+/*.wasm
+  Cache-Control: public, max-age=31536000, immutable
+/NanumGothic-Regular.ttf
+  Cache-Control: public, max-age=31536000, immutable
+/wasm_exec.js
+  Cache-Control: public, max-age=604800
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://paper-tools-4iq.pages.dev/sitemap.xml
