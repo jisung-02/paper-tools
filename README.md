@@ -115,13 +115,12 @@ are thin wrappers.
 ### 개요
 
 브라우저 안에서 완결되는 PDF·이미지·문서 도구 27종. 도구를 열고 파일을
-올리면 결과가 나와 — **아무것도 서버로 나가지 않아**. 서버도, 업로드도,
-계정도 없어.
+올리면 결과가 나옴 — **아무것도 서버로 나가지 않음**. 서버·업로드·계정 없음.
 
-PDF 엔진 전체가 **서드파티 없이 처음부터 짠 Go 패키지**(`pdf/`)야: 직접 만든
-PDF 1.7 리더/라이터, TrueType 폰트 서브세터, 레거시 `.hwp`용 CFB/OLE 파서 —
-C 라이브러리도, 외부 Go 모듈도 안 써. 각 도구는 자기 `.wasm` 하나로 배포돼서
-`/merge/`에 들어가면 병합 코드만 받고 27개 전부는 안 받아.
+PDF 엔진 전체가 **서드파티 없이 처음부터 작성한 Go 패키지**(`pdf/`)임. 직접
+구현한 PDF 1.7 리더/라이터, TrueType 폰트 서브세터, 레거시 `.hwp`용 CFB/OLE
+파서로 구성됨. C 라이브러리·외부 Go 모듈 미사용. 각 도구는 자체 `.wasm`
+하나로 배포되므로 `/merge/` 방문 시 병합 코드만 내려받고 27개 전부는 받지 않음.
 
 ### 도구
 
@@ -138,13 +137,13 @@ C 라이브러리도, 외부 Go 모듈도 안 써. 각 도구는 자기 `.wasm` 
 - **서드파티 의존성 0.** Go 표준 라이브러리만 사용(`go.mod`에 `require` 없음).
   PDF 파서/라이터, 이미지 처리, 암호화, 폰트 서브셋 전부 직접 구현.
 - **한글 출력.** 나눔고딕(OFL) TrueType 서브셋을 생성 PDF에 임베드
-  (CIDFontType2 / Identity-H)해서 `텍스트 → PDF`와 문서 변환에서 한글이 제대로
-  나와.
+  (CIDFontType2 / Identity-H)하여 `텍스트 → PDF`와 문서 변환에서 한글이 제대로
+  출력됨.
 - **레거시 `.hwp` 지원.** 최소 CFB 리더 + HWP 레코드 디코더. 실제 한컴 파일
-  6개(16 KB–2.1 MB)로 직접 검증.
+  6개(16 KB–2.1 MB)로 직접 검증함.
 - **UI 7개 언어**, 영어 기본: English · 한국어 · 日本語 · 中文(简体) · Español ·
   Français · Deutsch. 브랜드와 기술 용어(PDF, Word, `.docx` 등)는 원문 유지.
-- **기본값이 프라이버시.** 옵션을 켜기 전엔 어떤 추적 스크립트도 안 불러
+- **기본값이 프라이버시.** 옵션을 켜기 전엔 어떤 추적 스크립트도 불러오지 않음
   (EthicalAds / Cloudflare Web Analytics는 설정 플래그로 꺼져 있음).
 
 ### 빌드
@@ -154,8 +153,8 @@ C 라이브러리도, 외부 Go 모듈도 안 써. 각 도구는 자기 `.wasm` 
 ```
 
 도구마다 `.wasm` 하나를 `web/<tool>/<tool>.wasm`으로 컴파일하고
-`wasm_exec.js`를 `web/`에 복사해. Go 툴체인(1.26+)만 있으면 돼. `.wasm`은
-git에 안 넣고 CI가 배포할 때마다 새로 빌드해.
+`wasm_exec.js`를 `web/`에 복사함. Go 툴체인(1.26+)만 있으면 됨. `.wasm`은
+git에 포함하지 않으며 CI가 배포 시 새로 빌드함.
 
 ### 로컬 실행
 
@@ -164,23 +163,23 @@ git에 안 넣고 CI가 배포할 때마다 새로 빌드해.
 python3 -m http.server -d web 8000
 ```
 
-http://localhost:8000 열기.
+http://localhost:8000 접속.
 
 ### 배포
 
-`web/`는 완전 정적이야. **Cloudflare Pages**에 올라가 있고, `main`에 push할
-때마다 CI가 자동 배포해(`.github/workflows/deploy.yml`): GitHub Actions가 Go를
-세팅하고 `./build.sh`로 wasm을 빌드한 뒤 `wrangler pages deploy`로 올려.
+`web/`는 완전한 정적 사이트임. **Cloudflare Pages**에 배포되어 있으며, `main`에
+push할 때마다 CI가 자동 배포함(`.github/workflows/deploy.yml`). GitHub Actions가
+Go를 설정하고 `./build.sh`로 wasm을 빌드한 뒤 `wrangler pages deploy`로 업로드함.
 
-CI 배포에는 저장소 시크릿 2개가 필요해 (Settings → Secrets and variables →
+CI 배포에는 저장소 시크릿 2개가 필요함 (Settings → Secrets and variables →
 Actions):
 
 - `CLOUDFLARE_API_TOKEN` — **Cloudflare Pages: Edit** 권한 토큰
   (Cloudflare 대시보드 → My Profile → API Tokens).
 - `CLOUDFLARE_ACCOUNT_ID` — Cloudflare 계정 ID.
 
-다른 정적 호스트도 되는데, `.wasm`을 `application/wasm`으로 주고 brotli/gzip만
-켜면 돼.
+다른 정적 호스트도 가능하며, `.wasm`을 `application/wasm`으로 제공하고
+brotli/gzip을 켜면 됨.
 
 ### 테스트
 
@@ -188,14 +187,14 @@ Actions):
 go test ./pdf ./imgconv
 ```
 
-PDF 로직은 전부 `pdf` 패키지에 있고, wasm·web 계층은 얇은 래퍼야.
+PDF 로직은 전부 `pdf` 패키지에 있으며, wasm·web 계층은 얇은 래퍼임.
 
 ### 한계
 
-- 암호 걸린 PDF는 먼저 **암호 해제**를 거쳐야 해(다른 도구는 암호 입력을 거부).
+- 암호 걸린 PDF는 먼저 **암호 해제**를 거쳐야 함(다른 도구는 암호 입력을 거부).
   AES-128 / RC4-128(revision 3–4)만 지원 — AES-256은 미지원.
-- 문서 → PDF(`.docx` / `.hwpx` / `.hwp`)는 **텍스트 재배치(best-effort)**야:
-  문단 텍스트만, 레이아웃·표·이미지·서식은 유지 안 됨.
-- `Word ↔ 한글`의 `.hwpx` 출력은 구조적으론 유효하지만 **실제 한컴 오피스에서
+- 문서 → PDF(`.docx` / `.hwpx` / `.hwp`)는 **텍스트 재배치(best-effort)**임.
+  문단 텍스트만 유지되며 레이아웃·표·이미지·서식은 유지되지 않음.
+- `Word ↔ 한글`의 `.hwpx` 출력은 구조적으로는 유효하지만 **실제 한컴 오피스에서
   미검증**(테스트할 `.hwpx` 임포트 필터가 없었음).
-- 워터마크 텍스트는 Latin-1만; N-up은 페이지별 `/Rotate`를 무시해.
+- 워터마크 텍스트는 Latin-1만 지원하며, N-up은 페이지별 `/Rotate`를 무시함.
