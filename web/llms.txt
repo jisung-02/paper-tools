@@ -1,0 +1,44 @@
+# Paper Tools
+
+> Privacy-first PDF, image and document tools that run entirely in your browser via Go compiled to WebAssembly. Files never leave your device — free, no signup, no installs.
+
+Paper Tools is a collection of 27 client-side file tools, live at https://paper-tools-4iq.pages.dev . Every tool loads a small WebAssembly module and does all processing locally in the tab; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source and built with the Go standard library only — no third-party dependencies.
+
+## Tools
+
+- [Merge](https://paper-tools-4iq.pages.dev/merge/): Combine several PDFs into one, in order.
+- [Interleave](https://paper-tools-4iq.pages.dev/interleave/): Merge front and back scans into correct page order.
+- [Split & Extract](https://paper-tools-4iq.pages.dev/split/): Pull out just the pages you need into a new PDF.
+- [Remove Pages](https://paper-tools-4iq.pages.dev/remove/): Delete pages you don't need from a PDF.
+- [Reorder](https://paper-tools-4iq.pages.dev/reorder/): Change the order of pages in a PDF.
+- [Blank Page](https://paper-tools-4iq.pages.dev/blank/): Insert a blank page anywhere in a PDF.
+- [Rotate](https://paper-tools-4iq.pages.dev/rotate/): Turn PDF pages 90, 180 or 270 degrees.
+- [Crop](https://paper-tools-4iq.pages.dev/crop/): Trim the margins of PDF pages.
+- [Resize](https://paper-tools-4iq.pages.dev/resize/): Make every PDF page the same size (e.g. A4).
+- [N-up](https://paper-tools-4iq.pages.dev/nup/): Print 2 or 4 PDF pages per sheet.
+- [Images → PDF](https://paper-tools-4iq.pages.dev/img2pdf/): Turn PNG/JPG images into PDF pages, one per page.
+- [Watermark](https://paper-tools-4iq.pages.dev/watermark/): Stamp text diagonally across every page of a PDF.
+- [Page Numbers](https://paper-tools-4iq.pages.dev/pagenum/): Add page numbers to the bottom center of a PDF.
+- [Compress](https://paper-tools-4iq.pages.dev/compress/): Shrink PDF file size by recompressing images.
+- [Metadata](https://paper-tools-4iq.pages.dev/metadata/): Edit or remove a PDF's title, author and other metadata.
+- [PDF Info](https://paper-tools-4iq.pages.dev/info/): See a PDF's page count, size and metadata.
+- [Protect](https://paper-tools-4iq.pages.dev/protect/): Encrypt a PDF with an AES-128 password.
+- [Unlock](https://paper-tools-4iq.pages.dev/unlock/): Remove a known password from a PDF.
+- [Image Convert](https://paper-tools-4iq.pages.dev/imgconv/): Convert images between PNG, JPG and GIF.
+- [PDF → Text](https://paper-tools-4iq.pages.dev/pdftext/): Extract selectable text from a PDF to a .txt file.
+- [Extract Images](https://paper-tools-4iq.pages.dev/pdfimages/): Pull embedded images out of a PDF into a ZIP.
+- [Text → PDF](https://paper-tools-4iq.pages.dev/txt2pdf/): Turn text into a PDF, with Korean font support.
+- [Word → PDF](https://paper-tools-4iq.pages.dev/docx2pdf/): Convert .docx text into a PDF (text-focused).
+- [Hangul → PDF](https://paper-tools-4iq.pages.dev/hwpx2pdf/): Convert .hwpx text into a PDF (text-focused).
+- [Old Hangul → PDF](https://paper-tools-4iq.pages.dev/hwp2pdf/): Convert old .hwp text into a PDF (text-focused).
+- [Word → Hangul](https://paper-tools-4iq.pages.dev/docx2hwpx/): Convert .docx to .hwpx (text and paragraphs only).
+- [Hangul → Word](https://paper-tools-4iq.pages.dev/hwpx2docx/): Convert .hwpx to .docx (text and paragraphs only).
+
+## Key facts
+
+- All processing happens client-side, in the user's browser — no file is ever uploaded to a server.
+- Free to use, for every tool, with no account or signup.
+- Works in any modern browser, on desktop or mobile, with no installation.
+- Open source: https://github.com/jisung-02/paper-tools
+- Password protection uses AES-128 encryption.
+- Document-to-PDF conversions (Word, Hangul/HWPX, old Hangul/HWP) are text-only — layout, tables and images are not preserved.
