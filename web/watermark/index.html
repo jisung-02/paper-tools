@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watermark — Paper Tools</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="preload" href="./watermark.wasm" as="fetch" crossorigin>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="../" data-i18n data-en="Paper Tools" data-ko="종이도구">Paper Tools</a>
+  <nav class="langtoggle">
+    <button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button>
+  </nav>
+</header>
+
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+
+<h1 data-i18n data-en="Watermark" data-ko="워터마크">Watermark</h1>
+<p class="desc" data-i18n data-en="Stamp text diagonally across the page." data-ko="모든 페이지에 반투명 글자 도장을 찍습니다.">Stamp text diagonally across the page.</p>
+<p id="status">Loading tool…</p>
+
+<div class="drop" id="fileDrop">
+  <span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span>
+  <input type="file" accept="application/pdf">
+  <ul class="filelist"></ul>
+</div>
+
+<label for="text" data-i18n data-en="Text" data-ko="문구">Text</label>
+<input type="text" id="text" placeholder="DRAFT">
+<p class="hint" data-i18n data-en="Latin letters, numbers and symbols only" data-ko="영문·숫자·기호만 지원합니다">Latin letters, numbers and symbols only</p>
+
+<label for="fontSize" data-i18n data-en="Size (pt)" data-ko="크기 (pt)">Size (pt)</label>
+<input type="number" id="fontSize" value="48" min="1">
+
+<label for="opacity"><span data-i18n data-en="Opacity" data-ko="불투명도">Opacity</span> (<span id="opacityVal">0.3</span>)</label>
+<input type="range" id="opacity" min="0.05" max="1" step="0.05" value="0.3">
+
+<div class="checkline">
+  <input type="checkbox" id="diagonal" checked>
+  <label for="diagonal" data-i18n data-en="Diagonal" data-ko="대각선">Diagonal</label>
+</div>
+
+<button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Stamp" data-ko="워터마크 찍기">Stamp</button>
+<p class="err" id="err"></p>
+</main>
+
+<footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
+
+<script src="../wasm_exec.js"></script>
+<script src="../app.js"></script>
+<script>
+boot("./watermark.wasm");
+const fileDz = dropzone("fileDrop", { multiple: false });
+const btn = document.getElementById("run");
+const err = document.getElementById("err");
+const text = document.getElementById("text");
+const fontSize = document.getElementById("fontSize");
+const opacity = document.getElementById("opacity");
+const opacityVal = document.getElementById("opacityVal");
+const diagonal = document.getElementById("diagonal");
+
+opacity.addEventListener("input", () => { opacityVal.textContent = opacity.value; });
+
+btn.addEventListener("click", () => run(btn, async () => {
+  if (fileDz.files.length < 1) {
+    showErr(err, t("Select a file.", "파일을 선택하세요."));
+    return;
+  }
+  if (!text.value.trim()) {
+    showErr(err, t("Enter the watermark text.", "워터마크 문구를 입력하세요."));
+    return;
+  }
+  const file = await fileBytes(fileDz.files[0]);
+  const r = pdfRun(file, text.value, parseFloat(fontSize.value) || 48, parseFloat(opacity.value) || 0.3, diagonal.checked);
+  finish(r, "watermarked.pdf", err);
+}));
+</script>
+</body>
+</html>

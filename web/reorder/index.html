@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reorder Pages — Paper Tools</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="preload" href="./reorder.wasm" as="fetch" crossorigin>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="../" data-i18n data-en="Paper Tools" data-ko="종이도구">Paper Tools</a>
+  <nav class="langtoggle">
+    <button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button>
+  </nav>
+</header>
+
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+
+<h1 data-i18n data-en="Reorder Pages" data-ko="순서 변경">Reorder Pages</h1>
+<p class="desc" data-i18n data-en="Change the order of pages." data-ko="페이지 순서를 원하는 대로 다시 배열합니다.">Change the order of pages.</p>
+<p id="status">Loading tool…</p>
+
+<div class="drop" id="fileDrop">
+  <span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span>
+  <input type="file" accept="application/pdf">
+  <ul class="filelist"></ul>
+</div>
+
+<label for="order" data-i18n data-en="New order (e.g. 3,1,2 — list every page number)" data-ko="새 순서 (예: 3,1,2 — 모든 페이지 번호를 나열)">New order (e.g. 3,1,2 — list every page number)</label>
+<input type="text" id="order" placeholder="3,1,2">
+<p class="hint" data-i18n data-en="List every page number once, in the new order" data-ko="모든 페이지 번호를 새 순서대로 한 번씩 나열하세요">List every page number once, in the new order</p>
+
+<button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Reorder" data-ko="순서 바꾸기">Reorder</button>
+<p class="err" id="err"></p>
+</main>
+
+<footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
+
+<script src="../wasm_exec.js"></script>
+<script src="../app.js"></script>
+<script>
+boot("./reorder.wasm");
+const fileDz = dropzone("fileDrop", { multiple: false });
+const btn = document.getElementById("run");
+const err = document.getElementById("err");
+const order = document.getElementById("order");
+
+btn.addEventListener("click", () => run(btn, async () => {
+  if (fileDz.files.length < 1) {
+    showErr(err, t("Select a file.", "파일을 선택하세요."));
+    return;
+  }
+  if (!order.value.trim()) {
+    showErr(err, t("Enter the new order.", "새 순서를 입력하세요."));
+    return;
+  }
+  const file = await fileBytes(fileDz.files[0]);
+  const r = pdfRun(file, order.value.trim());
+  finish(r, "reordered.pdf", err);
+}));
+</script>
+</body>
+</html>

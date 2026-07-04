@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compress — Paper Tools</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="preload" href="./compress.wasm" as="fetch" crossorigin>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="../" data-i18n data-en="Paper Tools" data-ko="종이도구">Paper Tools</a>
+  <nav class="langtoggle">
+    <button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button>
+  </nav>
+</header>
+
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+
+<h1 data-i18n data-en="Compress" data-ko="압축">Compress</h1>
+<p class="desc" data-i18n data-en="Shrink file size by recompressing images." data-ko="이미지를 다시 압축해 파일 용량을 줄입니다.">Shrink file size by recompressing images.</p>
+<p id="status">Loading tool…</p>
+
+<div class="drop" id="fileDrop">
+  <span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span>
+  <input type="file" accept="application/pdf">
+  <ul class="filelist"></ul>
+</div>
+
+<label for="quality"><span data-i18n data-en="Image quality" data-ko="이미지 품질">Image quality</span> (<span id="qualityVal">70</span>)</label>
+<input type="range" id="quality" min="30" max="95" step="1" value="70">
+
+<label for="maxWidth" data-i18n data-en="Max image width" data-ko="최대 이미지 폭">Max image width</label>
+<select id="maxWidth">
+  <option value="1200">1200px</option>
+  <option value="1600" selected>1600px</option>
+  <option value="2400">2400px</option>
+</select>
+
+<button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Compress" data-ko="압축하기">Compress</button>
+<p class="err" id="err"></p>
+<p class="result" id="result"></p>
+</main>
+
+<footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
+
+<script src="../wasm_exec.js"></script>
+<script src="../app.js"></script>
+<script>
+boot("./compress.wasm");
+const fileDz = dropzone("fileDrop", { multiple: false });
+const btn = document.getElementById("run");
+const err = document.getElementById("err");
+const quality = document.getElementById("quality");
+const qualityVal = document.getElementById("qualityVal");
+const maxWidth = document.getElementById("maxWidth");
+const result = document.getElementById("result");
+
+quality.addEventListener("input", () => { qualityVal.textContent = quality.value; });
+
+function prettySize(bytes) {
+  if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  return (bytes / 1024).toFixed(1) + " KB";
+}
+
+btn.addEventListener("click", () => run(btn, async () => {
+  result.textContent = "";
+  if (fileDz.files.length < 1) {
+    showErr(err, t("Select a file.", "파일을 선택하세요."));
+    return;
+  }
+  const inputFile = fileDz.files[0];
+  const file = await fileBytes(inputFile);
+  const r = pdfRun(file, parseInt(quality.value, 10), parseInt(maxWidth.value, 10));
+  if (r.data) {
+    const before = inputFile.size;
+    const after = r.data.byteLength;
+    const pct = before > 0 ? Math.round((1 - after / before) * 100) : 0;
+    result.textContent = prettySize(before) + " → " + prettySize(after) + " (" + (pct >= 0 ? "-" : "+") + Math.abs(pct) + "%)";
+  }
+  finish(r, "compressed.pdf", err);
+}));
+</script>
+</body>
+</html>

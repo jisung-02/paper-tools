@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF Info — Paper Tools</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="preload" href="./info.wasm" as="fetch" crossorigin>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="../" data-i18n data-en="Paper Tools" data-ko="종이도구">Paper Tools</a>
+  <nav class="langtoggle">
+    <button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button>
+  </nav>
+</header>
+
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+
+<h1 data-i18n data-en="PDF Info" data-ko="PDF 정보">PDF Info</h1>
+<p class="desc" data-i18n data-en="See page count, size and metadata." data-ko="페이지 수, 용지 크기, 메타데이터를 확인합니다.">See page count, size and metadata.</p>
+<p id="status">Loading tool…</p>
+
+<div class="drop" id="fileDrop">
+  <span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span>
+  <input type="file" accept="application/pdf">
+  <ul class="filelist"></ul>
+</div>
+
+<button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Show Info" data-ko="정보 보기">Show Info</button>
+<p class="err" id="err"></p>
+
+<dl class="info" id="infoOut"></dl>
+<pre class="pagesizes" id="pageSizes"></pre>
+</main>
+
+<footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
+
+<script src="../wasm_exec.js"></script>
+<script src="../app.js"></script>
+<script>
+boot("./info.wasm");
+const fileDz = dropzone("fileDrop", { multiple: false });
+const btn = document.getElementById("run");
+const err = document.getElementById("err");
+const infoOut = document.getElementById("infoOut");
+const pageSizesEl = document.getElementById("pageSizes");
+
+function addRow(label, value) {
+  const dt = document.createElement("dt");
+  dt.textContent = label;
+  const dd = document.createElement("dd");
+  dd.textContent = value;
+  infoOut.appendChild(dt);
+  infoOut.appendChild(dd);
+}
+
+function prettySize(bytes) {
+  if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  return (bytes / 1024).toFixed(1) + " KB";
+}
+
+function sameSize(a, b) {
+  return Math.round(a.w) === Math.round(b.w) && Math.round(a.h) === Math.round(b.h) && (a.rotate || 0) === (b.rotate || 0);
+}
+
+function mmLabel(s) {
+  const wmm = Math.round((s.w / 72) * 25.4);
+  const hmm = Math.round((s.h / 72) * 25.4);
+  let label = wmm + "×" + hmm + " mm";
+  if (s.rotate) label += " · " + t(s.rotate + "° rotated", s.rotate + "° 회전");
+  return label;
+}
+
+function pageSizeLines(sizes) {
+  const lines = [];
+  let i = 0;
+  while (i < sizes.length) {
+    let j = i;
+    while (j + 1 < sizes.length && sameSize(sizes[j], sizes[j + 1])) j++;
+    const label = mmLabel(sizes[i]);
+    lines.push((j > i ? (i + 1) + "–" + (j + 1) : String(i + 1)) + ": " + label);
+    i = j + 1;
+  }
+  return lines;
+}
+
+btn.addEventListener("click", () => run(btn, async () => {
+  infoOut.innerHTML = "";
+  pageSizesEl.textContent = "";
+  if (fileDz.files.length < 1) {
+    showErr(err, t("Select a file.", "파일을 선택하세요."));
+    return;
+  }
+  const file = await fileBytes(fileDz.files[0]);
+  const r = pdfRun(file);
+  const info = finish(r, "", err);
+  if (!info) return;
+
+  if (info.encrypted) {
+    addRow(t("Encrypted", "암호화 여부"), t("Yes", "예"));
+    addRow(t("PDF version", "PDF 버전"), info.version || "-");
+    addRow(t("File size", "파일 크기"), prettySize(info.fileSize));
+    pageSizesEl.textContent = t("Encrypted — page info can't be read. Use the Unlock tool first.", "암호가 걸려 있어 페이지 정보를 읽을 수 없습니다. 먼저 [암호 해제] 도구를 사용하세요.");
+    return;
+  }
+
+  addRow(t("Page count", "페이지 수"), String(info.pages));
+  addRow(t("PDF version", "PDF 버전"), info.version || "-");
+  addRow(t("File size", "파일 크기"), prettySize(info.fileSize));
+  addRow(t("Encrypted", "암호화 여부"), t("No", "아니오"));
+  if (info.title) addRow(t("Title", "제목"), info.title);
+  if (info.author) addRow(t("Author", "작성자"), info.author);
+  if (info.subject) addRow(t("Subject", "주제"), info.subject);
+  if (info.keywords) addRow(t("Keywords", "키워드"), info.keywords);
+  if (info.creator) addRow(t("Creator", "생성 프로그램"), info.creator);
+  if (info.producer) addRow(t("PDF producer", "PDF 생성기"), info.producer);
+
+  if (Array.isArray(info.pageSizes) && info.pageSizes.length) {
+    pageSizesEl.textContent = pageSizeLines(info.pageSizes).join("\n");
+  }
+}));
+</script>
+</body>
+</html>

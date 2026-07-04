@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merge PDFs — Paper Tools</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="preload" href="./merge.wasm" as="fetch" crossorigin>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="../" data-i18n data-en="Paper Tools" data-ko="종이도구">Paper Tools</a>
+  <nav class="langtoggle">
+    <button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button>
+  </nav>
+</header>
+
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+
+<h1 data-i18n data-en="Merge PDFs" data-ko="병합">Merge PDFs</h1>
+<p class="desc" data-i18n data-en="Combine several PDFs into one, in order." data-ko="여러 PDF를 순서대로 하나로 합칩니다.">Combine several PDFs into one, in order.</p>
+<p id="status">Loading tool…</p>
+
+<div class="drop" id="filesDrop">
+  <span data-i18n data-en="Drag PDFs here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag PDFs here, or click to choose</span>
+  <input type="file" accept="application/pdf" multiple>
+  <ul class="filelist"></ul>
+</div>
+<p class="hint" data-i18n data-en="Files are merged in the order you pick them." data-ko="선택한 순서대로 합쳐집니다.">Files are merged in the order you pick them.</p>
+
+<button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Merge" data-ko="병합하기">Merge</button>
+<p class="err" id="err"></p>
+</main>
+
+<footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
+
+<script src="../wasm_exec.js"></script>
+<script src="../app.js"></script>
+<script>
+boot("./merge.wasm");
+const filesDz = dropzone("filesDrop", { multiple: true });
+const btn = document.getElementById("run");
+const err = document.getElementById("err");
+
+btn.addEventListener("click", () => run(btn, async () => {
+  if (filesDz.files.length < 2) {
+    showErr(err, t("Select at least 2 files.", "파일을 2개 이상 선택하세요."));
+    return;
+  }
+  const files = await allFiles(filesDz.files);
+  const r = pdfRun(files);
+  finish(r, "merged.pdf", err);
+}));
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Images → PDF — Paper Tools</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="preload" href="./img2pdf.wasm" as="fetch" crossorigin>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="../" data-i18n data-en="Paper Tools" data-ko="종이도구">Paper Tools</a>
+  <nav class="langtoggle">
+    <button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button>
+  </nav>
+</header>
+
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+
+<h1 data-i18n data-en="Images → PDF" data-ko="이미지 → PDF">Images → PDF</h1>
+<p class="desc" data-i18n data-en="Turn PNG/JPG images into PDF pages, one per page." data-ko="PNG·JPG 이미지를 한 장씩 PDF 페이지로 만듭니다.">Turn PNG/JPG images into PDF pages, one per page.</p>
+<p id="status">Loading tool…</p>
+
+<div class="drop" id="filesDrop">
+  <span data-i18n data-en="Drag images here, or click to choose" data-ko="이미지를 끌어다 놓거나 클릭해서 선택">Drag images here, or click to choose</span>
+  <input type="file" accept="image/png,image/jpeg" multiple>
+  <ul class="filelist"></ul>
+</div>
+
+<div class="checkline">
+  <input type="checkbox" id="a4">
+  <label for="a4" data-i18n data-en="Fit every page to A4 (off = original image size)" data-ko="모든 페이지를 A4로 (해제 시 이미지 원본 크기)">Fit every page to A4 (off = original image size)</label>
+</div>
+
+<button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Create PDF" data-ko="PDF 만들기">Create PDF</button>
+<p class="err" id="err"></p>
+</main>
+
+<footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
+
+<script src="../wasm_exec.js"></script>
+<script src="../app.js"></script>
+<script>
+boot("./img2pdf.wasm");
+const filesDz = dropzone("filesDrop", { multiple: true });
+const btn = document.getElementById("run");
+const err = document.getElementById("err");
+const a4 = document.getElementById("a4");
+
+btn.addEventListener("click", () => run(btn, async () => {
+  if (filesDz.files.length < 1) {
+    showErr(err, t("Select at least one image.", "이미지를 1개 이상 선택하세요."));
+    return;
+  }
+  const images = await allFiles(filesDz.files);
+  const r = pdfRun(images, a4.checked);
+  finish(r, "images.pdf", err);
+}));
+</script>
+</body>
+</html>

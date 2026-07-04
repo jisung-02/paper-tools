@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text → PDF — Paper Tools</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="preload" href="./txt2pdf.wasm" as="fetch" crossorigin>
+<link rel="preload" href="../NanumGothic-Regular.ttf" as="fetch" crossorigin>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="../" data-i18n data-en="Paper Tools" data-ko="종이도구">Paper Tools</a>
+  <nav class="langtoggle">
+    <button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button>
+  </nav>
+</header>
+
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+
+<h1 data-i18n data-en="Text → PDF" data-ko="텍스트 → PDF">Text → PDF</h1>
+<p class="desc" data-i18n data-en="Paste text or drop a .txt file to make a PDF (Korean supported)." data-ko="글을 붙여넣거나 .txt 파일을 올리면 한글 포함해 PDF로 만듭니다.">Paste text or drop a .txt file to make a PDF (Korean supported).</p>
+<p id="status">Loading tool…</p>
+
+<label for="txt" data-i18n data-en="Text content" data-ko="글 내용">Text content</label>
+<textarea id="txt" rows="10" data-en-placeholder="Type or paste your text here…" data-ko-placeholder="여기에 글을 입력하거나 붙여넣으세요…" placeholder="Type or paste your text here…"></textarea>
+
+<div class="drop" id="fileDrop">
+  <span data-i18n data-en="Drag a .txt file here, or click to choose" data-ko="텍스트 파일(.txt)을 끌어다 놓거나 클릭해서 선택">Drag a .txt file here, or click to choose</span>
+  <input type="file" accept=".txt,text/plain">
+  <ul class="filelist"></ul>
+</div>
+
+<label for="size" data-i18n data-en="Font size (pt)" data-ko="글자 크기(pt)">Font size (pt)</label>
+<input type="number" id="size" min="6" max="48" value="11">
+
+<button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Create PDF" data-ko="PDF 만들기">Create PDF</button>
+<p class="err" id="err"></p>
+</main>
+
+<footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
+
+<script src="../wasm_exec.js"></script>
+<script src="../app.js"></script>
+<script>
+let fontBytes = null;
+let wasmReady = false, fontOk = false;
+const btn = document.getElementById("run");
+const err = document.getElementById("err");
+const txt = document.getElementById("txt");
+const size = document.getElementById("size");
+
+function maybeEnable() { btn.disabled = !(wasmReady && fontOk); }
+btn.disabled = true;
+
+const fontReady = fetch("../NanumGothic-Regular.ttf")
+  .then(r => r.arrayBuffer())
+  .then(buf => { fontBytes = new Uint8Array(buf); fontOk = true; maybeEnable(); })
+  .catch(e => { showErr(err, t("Failed to load font: ", "폰트를 불러오지 못했습니다: ") + e); throw e; });
+
+boot("./txt2pdf.wasm").then(() => { wasmReady = true; maybeEnable(); }).catch(() => {});
+
+const fileDz = dropzone("fileDrop", { multiple: false });
+
+const fileInput = document.querySelector("#fileDrop input[type=file]");
+fileInput.addEventListener("change", async () => {
+  if (fileInput.files.length > 0) {
+    const f = fileInput.files[0];
+    const buf = await f.arrayBuffer();
+    txt.value = new TextDecoder().decode(buf);
+  }
+});
+
+btn.addEventListener("click", () => run(btn, async () => {
+  const text = txt.value;
+  if (!text.trim()) { showErr(err, t("Enter some text.", "텍스트를 입력하세요.")); return; }
+  const r = pdfRun(text, fontBytes, parseInt(size.value) || 11);
+  finish(r, "text.pdf", err);
+}));
+</script>
+</body>
+</html>
