@@ -28,7 +28,7 @@ const AD_PUBLISHER = "";
 // Set to your Cloudflare Web Analytics token to enable cookieless traffic
 // stats. Empty string keeps the site fully local/private — initAnalytics()
 // below no-ops when this is empty.
-const CF_ANALYTICS_TOKEN = ""; // set to your Cloudflare Web Analytics token to enable cookieless traffic stats
+const CF_ANALYTICS_TOKEN = "601375b9daec4190bc475f274dcaf5bb"; // Cloudflare Web Analytics (cookieless)
 
 const I18N = {
   ja: {
