@@ -10,3 +10,8 @@ web/wasm_exec.js
 # OS / editor cruft
 .DS_Store
 *.log
+
+# Local tool state / caches
+.gstack/
+.wrangler/
+web/.gstack/
