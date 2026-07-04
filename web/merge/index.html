@@ -33,6 +33,12 @@
 <link rel="alternate" hreflang="fr" href="https://paper-tools-4iq.pages.dev/fr/merge/">
 <link rel="alternate" hreflang="de" href="https://paper-tools-4iq.pages.dev/de/merge/">
 <link rel="alternate" hreflang="x-default" href="https://paper-tools-4iq.pages.dev/merge/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"How to merge PDFs","step":[{"@type":"HowToStep","position":1,"name":"Drop two or more PDF files into the dropzone — they'll be combined in the order you add them."},{"@type":"HowToStep","position":2,"name":"Check the file list to confirm the order is correct."},{"@type":"HowToStep","position":3,"name":"Click \"Merge\" to download the combined PDF."}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Are my files uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No — everything runs locally in your browser via WebAssembly; your files never leave your device."}},{"@type":"Question","name":"Can I change the order of the files after adding them?","acceptedAnswer":{"@type":"Answer","text":"Not directly — remove the files and re-add them in the order you want, since files are merged in the order you select them."}}]}
+</script>
 </head>
 <body>
 
@@ -59,6 +65,19 @@
 
 <button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Merge" data-ko="병합하기">Merge</button>
 <p class="err" id="err"></p>
+<section class="page-info">
+<h2 data-i18n data-en="How to merge PDFs" data-ko="PDF 병합 방법">How to merge PDFs</h2>
+<ol>
+  <li data-i18n data-en="Drop two or more PDF files into the dropzone — they'll be combined in the order you add them." data-ko="PDF 파일을 2개 이상 드롭존에 놓습니다. 추가한 순서대로 합쳐집니다.">Drop two or more PDF files into the dropzone — they'll be combined in the order you add them.</li>
+  <li data-i18n data-en="Check the file list to confirm the order is correct." data-ko="파일 목록에서 순서가 맞는지 확인합니다.">Check the file list to confirm the order is correct.</li>
+  <li data-i18n data-en="Click &quot;Merge&quot; to download the combined PDF." data-ko="&quot;Merge&quot; 버튼을 클릭하면 합쳐진 PDF가 다운로드됩니다.">Click "Merge" to download the combined PDF.</li>
+</ol>
+<h2 data-i18n data-en="FAQ" data-ko="자주 묻는 질문">FAQ</h2>
+<h3 data-i18n data-en="Are my files uploaded to a server?" data-ko="파일들이 서버에 업로드되나요?">Are my files uploaded to a server?</h3>
+<p data-i18n data-en="No — everything runs locally in your browser via WebAssembly; your files never leave your device." data-ko="아니요 — 모든 처리는 WebAssembly를 통해 브라우저 안에서만 이루어지며, 파일은 기기 밖으로 나가지 않습니다.">No — everything runs locally in your browser via WebAssembly; your files never leave your device.</p>
+<h3 data-i18n data-en="Can I change the order of the files after adding them?" data-ko="파일을 추가한 뒤 순서를 바꿀 수 있나요?">Can I change the order of the files after adding them?</h3>
+<p data-i18n data-en="Not directly — remove the files and re-add them in the order you want, since files are merged in the order you select them." data-ko="직접 바꿀 수는 없습니다. 파일은 선택한 순서대로 합쳐지므로, 원하는 순서로 다시 선택해서 추가하세요.">Not directly — remove the files and re-add them in the order you want, since files are merged in the order you select them.</p>
+</section>
 </main>
 
 <footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>

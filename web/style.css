@@ -294,3 +294,9 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+.page-info { margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+.page-info h2 { font-size: 1.05rem; font-weight: 600; margin: 1.5rem 0 .5rem; }
+.page-info ol { padding-left: 1.25rem; margin: 0; } .page-info li { margin: .35rem 0; }
+.page-info h3 { font-size: .95rem; font-weight: 600; margin: 1rem 0 .25rem; }
+.page-info p { margin: 0; color: var(--muted); }

@@ -308,6 +308,22 @@ function transformJsonLd(html, pagePath, lang, pageKey, metaI18n, i18n, enToKo, 
           });
         }
 
+        // HowTo (tool pages): translate the heading name and each step's name.
+        if (obj["@type"] === "HowTo") {
+          if (obj.name) {
+            obj.name = translateText(obj.name, lang, i18n, enToKo, sourceFile);
+          }
+          if (Array.isArray(obj.step)) {
+            obj.step = obj.step.map((step) => {
+              if (step.name) {
+                step.name = translateText(step.name, lang, i18n, enToKo, sourceFile);
+              }
+              return step;
+            });
+          }
+        }
+
+        // FAQPage (landing page and tool pages): translate each Q/A pair.
         if (obj["@type"] === "FAQPage" && obj.mainEntity) {
           obj.mainEntity = obj.mainEntity.map((qa) => {
             if (qa.name) {
@@ -420,6 +436,12 @@ function transformPageForLanguage(sourceHtml, sourceFile, pagePath, lang, i18n, 
   // Extract tool slug for asset rewriting
   const toolSlug = pagePath && pagePath !== "/" ? pagePath.replace(/\/$/, "") : null;
 
+  // EN->KO lookup used for JSON-LD (which has no sibling data-ko attribute to
+  // read directly). The landing page alone doesn't cover strings that only
+  // appear on a given tool page (e.g. its HowTo/FAQ copy), so merge in a map
+  // built from this page's own data-i18n elements.
+  const pageEnToKo = { ...enToKo, ...buildToolNameKoMap(sourceHtml) };
+
   // Step 4a: Bake data-i18n elements
   html = bakeI18nElements(html, lang, i18n, enToKo, sourceFile);
 
@@ -435,7 +457,7 @@ function transformPageForLanguage(sourceHtml, sourceFile, pagePath, lang, i18n, 
   html = rewriteCanonicalURLs(html, pagePath, lang);
 
   // Step 4e: Transform JSON-LD
-  html = transformJsonLd(html, pagePath, lang, pageKey, metaI18n, i18n, enToKo, sourceFile);
+  html = transformJsonLd(html, pagePath, lang, pageKey, metaI18n, i18n, pageEnToKo, sourceFile);
 
   // Step 4f: Rewrite asset paths
   html = rewriteAssetPaths(html, toolSlug);

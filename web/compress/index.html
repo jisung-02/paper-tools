@@ -33,6 +33,12 @@
 <link rel="alternate" hreflang="fr" href="https://paper-tools-4iq.pages.dev/fr/compress/">
 <link rel="alternate" hreflang="de" href="https://paper-tools-4iq.pages.dev/de/compress/">
 <link rel="alternate" hreflang="x-default" href="https://paper-tools-4iq.pages.dev/compress/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"How to compress a PDF","step":[{"@type":"HowToStep","position":1,"name":"Drop a PDF file into the dropzone."},{"@type":"HowToStep","position":2,"name":"Adjust the image quality slider and the max image width."},{"@type":"HowToStep","position":3,"name":"Click \"Compress\" to download the smaller PDF."}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is my file uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No — everything runs locally in your browser via WebAssembly; your file never leaves your device."}},{"@type":"Question","name":"How much smaller will my file get?","acceptedAnswer":{"@type":"Answer","text":"It depends on the file — Compress recompresses embedded images using lossy JPEG, so image-heavy PDFs shrink the most, while text-only PDFs barely change."}}]}
+</script>
 </head>
 <body>
 
@@ -68,6 +74,19 @@
 
 <button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Compress" data-ko="압축하기">Compress</button>
 <p class="err" id="err"></p>
+<section class="page-info">
+<h2 data-i18n data-en="How to compress a PDF" data-ko="PDF 압축 방법">How to compress a PDF</h2>
+<ol>
+  <li data-i18n data-en="Drop a PDF file into the dropzone." data-ko="PDF 파일을 드롭존에 놓습니다.">Drop a PDF file into the dropzone.</li>
+  <li data-i18n data-en="Adjust the image quality slider and the max image width." data-ko="이미지 품질 슬라이더와 최대 이미지 폭을 조정합니다.">Adjust the image quality slider and the max image width.</li>
+  <li data-i18n data-en="Click &quot;Compress&quot; to download the smaller PDF." data-ko="&quot;Compress&quot; 버튼을 클릭하면 용량이 줄어든 PDF가 다운로드됩니다.">Click "Compress" to download the smaller PDF.</li>
+</ol>
+<h2 data-i18n data-en="FAQ" data-ko="자주 묻는 질문">FAQ</h2>
+<h3 data-i18n data-en="Is my file uploaded to a server?" data-ko="파일이 서버에 업로드되나요?">Is my file uploaded to a server?</h3>
+<p data-i18n data-en="No — everything runs locally in your browser via WebAssembly; your file never leaves your device." data-ko="아니요 — 모든 처리는 WebAssembly를 통해 브라우저 안에서만 이루어지며, 파일은 기기 밖으로 나가지 않습니다.">No — everything runs locally in your browser via WebAssembly; your file never leaves your device.</p>
+<h3 data-i18n data-en="How much smaller will my file get?" data-ko="파일 용량이 얼마나 줄어드나요?">How much smaller will my file get?</h3>
+<p data-i18n data-en="It depends on the file — Compress recompresses embedded images using lossy JPEG, so image-heavy PDFs shrink the most, while text-only PDFs barely change." data-ko="파일마다 다릅니다. 이 기능은 내장된 이미지를 손실 압축(JPEG) 방식으로 다시 압축하므로, 이미지가 많은 PDF일수록 많이 줄어들고 텍스트 위주 PDF는 거의 줄지 않습니다.">It depends on the file — Compress recompresses embedded images using lossy JPEG, so image-heavy PDFs shrink the most, while text-only PDFs barely change.</p>
+</section>
 <p class="result" id="result"></p>
 </main>
 

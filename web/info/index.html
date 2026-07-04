@@ -33,6 +33,12 @@
 <link rel="alternate" hreflang="fr" href="https://paper-tools-4iq.pages.dev/fr/info/">
 <link rel="alternate" hreflang="de" href="https://paper-tools-4iq.pages.dev/de/info/">
 <link rel="alternate" hreflang="x-default" href="https://paper-tools-4iq.pages.dev/info/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"How to view PDF info","step":[{"@type":"HowToStep","position":1,"name":"Drop a PDF file into the dropzone."},{"@type":"HowToStep","position":2,"name":"Click \"Show Info\"."},{"@type":"HowToStep","position":3,"name":"Review the page count, file size, page sizes and metadata shown below."}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is my file uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No — everything runs locally in your browser via WebAssembly; your file never leaves your device."}},{"@type":"Question","name":"Does this tool change my PDF?","acceptedAnswer":{"@type":"Answer","text":"No — Info is read-only; it only reads and displays details, and never modifies or re-saves the file."}}]}
+</script>
 </head>
 <body>
 
@@ -58,6 +64,19 @@
 
 <button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Show Info" data-ko="정보 보기">Show Info</button>
 <p class="err" id="err"></p>
+<section class="page-info">
+<h2 data-i18n data-en="How to view PDF info" data-ko="PDF 정보 확인 방법">How to view PDF info</h2>
+<ol>
+  <li data-i18n data-en="Drop a PDF file into the dropzone." data-ko="PDF 파일을 드롭존에 놓습니다.">Drop a PDF file into the dropzone.</li>
+  <li data-i18n data-en="Click &quot;Show Info&quot;." data-ko="&quot;Show Info&quot; 버튼을 클릭합니다.">Click "Show Info".</li>
+  <li data-i18n data-en="Review the page count, file size, page sizes and metadata shown below." data-ko="아래에 표시되는 페이지 수, 파일 크기, 페이지 크기, 메타데이터를 확인합니다.">Review the page count, file size, page sizes and metadata shown below.</li>
+</ol>
+<h2 data-i18n data-en="FAQ" data-ko="자주 묻는 질문">FAQ</h2>
+<h3 data-i18n data-en="Is my file uploaded to a server?" data-ko="파일이 서버에 업로드되나요?">Is my file uploaded to a server?</h3>
+<p data-i18n data-en="No — everything runs locally in your browser via WebAssembly; your file never leaves your device." data-ko="아니요 — 모든 처리는 WebAssembly를 통해 브라우저 안에서만 이루어지며, 파일은 기기 밖으로 나가지 않습니다.">No — everything runs locally in your browser via WebAssembly; your file never leaves your device.</p>
+<h3 data-i18n data-en="Does this tool change my PDF?" data-ko="이 도구가 PDF를 변경하나요?">Does this tool change my PDF?</h3>
+<p data-i18n data-en="No — Info is read-only; it only reads and displays details, and never modifies or re-saves the file." data-ko="아니요. Info는 읽기 전용으로, 정보를 표시하기만 할 뿐 파일을 수정하거나 다시 저장하지 않습니다.">No — Info is read-only; it only reads and displays details, and never modifies or re-saves the file.</p>
+</section>
 
 <dl class="info" id="infoOut"></dl>
 <pre class="pagesizes" id="pageSizes"></pre>

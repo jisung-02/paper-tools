@@ -33,6 +33,12 @@
 <link rel="alternate" hreflang="fr" href="https://paper-tools-4iq.pages.dev/fr/interleave/">
 <link rel="alternate" hreflang="de" href="https://paper-tools-4iq.pages.dev/de/interleave/">
 <link rel="alternate" hreflang="x-default" href="https://paper-tools-4iq.pages.dev/interleave/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"How to interleave front and back scans","step":[{"@type":"HowToStep","position":1,"name":"Drop the front-side scan PDF into the \"Front scan\" dropzone."},{"@type":"HowToStep","position":2,"name":"Drop the back-side scan PDF into the \"Back scan\" dropzone, and check \"Back scan is in reverse order\" if your scanner produced it that way."},{"@type":"HowToStep","position":3,"name":"Click \"Interleave\" to download the combined, correctly ordered PDF."}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Are my files uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No — everything runs locally in your browser via WebAssembly; your files never leave your device."}},{"@type":"Question","name":"What does \"Back scan is in reverse order\" mean?","acceptedAnswer":{"@type":"Answer","text":"Many scanners feed the back sides in reverse when scanning a stack two-sided with a single-sided feeder. Checking this option flips the back-scan order so pages interleave correctly as front 1, back 1, front 2, back 2, and so on."}}]}
+</script>
 </head>
 <body>
 
@@ -71,6 +77,19 @@
 
 <button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Interleave" data-ko="교차 병합하기">Interleave</button>
 <p class="err" id="err"></p>
+<section class="page-info">
+<h2 data-i18n data-en="How to interleave front and back scans" data-ko="앞뒤 스캔 교차 병합 방법">How to interleave front and back scans</h2>
+<ol>
+  <li data-i18n data-en="Drop the front-side scan PDF into the &quot;Front scan&quot; dropzone." data-ko="&quot;앞면 스캔&quot; 드롭존에 앞면을 스캔한 PDF를 놓습니다.">Drop the front-side scan PDF into the "Front scan" dropzone.</li>
+  <li data-i18n data-en="Drop the back-side scan PDF into the &quot;Back scan&quot; dropzone, and check &quot;Back scan is in reverse order&quot; if your scanner produced it that way." data-ko="&quot;뒷면 스캔&quot; 드롭존에 뒷면을 스캔한 PDF를 놓습니다. 스캐너가 역순으로 스캔했다면 &quot;뒷면이 역순으로 스캔됨&quot;을 체크합니다.">Drop the back-side scan PDF into the "Back scan" dropzone, and check "Back scan is in reverse order" if your scanner produced it that way.</li>
+  <li data-i18n data-en="Click &quot;Interleave&quot; to download the combined, correctly ordered PDF." data-ko="&quot;Interleave&quot; 버튼을 클릭하면 순서가 맞게 교차 병합된 PDF가 다운로드됩니다.">Click "Interleave" to download the combined, correctly ordered PDF.</li>
+</ol>
+<h2 data-i18n data-en="FAQ" data-ko="자주 묻는 질문">FAQ</h2>
+<h3 data-i18n data-en="Are my files uploaded to a server?" data-ko="파일들이 서버에 업로드되나요?">Are my files uploaded to a server?</h3>
+<p data-i18n data-en="No — everything runs locally in your browser via WebAssembly; your files never leave your device." data-ko="아니요 — 모든 처리는 WebAssembly를 통해 브라우저 안에서만 이루어지며, 파일은 기기 밖으로 나가지 않습니다.">No — everything runs locally in your browser via WebAssembly; your files never leave your device.</p>
+<h3 data-i18n data-en="What does &quot;Back scan is in reverse order&quot; mean?" data-ko="&quot;뒷면이 역순으로 스캔됨&quot;은 무슨 뜻인가요?">What does "Back scan is in reverse order" mean?</h3>
+<p data-i18n data-en="Many scanners feed the back sides in reverse when scanning a stack two-sided with a single-sided feeder. Checking this option flips the back-scan order so pages interleave correctly as front 1, back 1, front 2, back 2, and so on." data-ko="단면 스캐너로 양면 문서를 스캔하면 뒷면이 역순으로 쌓이는 경우가 많습니다. 이 옵션을 체크하면 뒷면 순서를 뒤집어서 앞면1, 뒷면1, 앞면2, 뒷면2 순서로 올바르게 교차 배치합니다.">Many scanners feed the back sides in reverse when scanning a stack two-sided with a single-sided feeder. Checking this option flips the back-scan order so pages interleave correctly as front 1, back 1, front 2, back 2, and so on.</p>
+</section>
 </main>
 
 <footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>

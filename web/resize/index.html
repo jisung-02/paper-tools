@@ -33,6 +33,12 @@
 <link rel="alternate" hreflang="fr" href="https://paper-tools-4iq.pages.dev/fr/resize/">
 <link rel="alternate" hreflang="de" href="https://paper-tools-4iq.pages.dev/de/resize/">
 <link rel="alternate" hreflang="x-default" href="https://paper-tools-4iq.pages.dev/resize/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"How to resize PDF pages","step":[{"@type":"HowToStep","position":1,"name":"Drop a PDF file into the dropzone."},{"@type":"HowToStep","position":2,"name":"Choose a target size (A4 portrait, A4 landscape, Letter or A5) and, optionally, which pages to resize (leave blank for all)."},{"@type":"HowToStep","position":3,"name":"Click \"Resize\" to download the resized PDF."}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is my file uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No — everything runs locally in your browser via WebAssembly; your file never leaves your device."}},{"@type":"Question","name":"Are annotations preserved when resizing?","acceptedAnswer":{"@type":"Answer","text":"No — links and annotations are removed, since the original page content is scaled to fit the new size."}}]}
+</script>
 </head>
 <body>
 
@@ -70,6 +76,19 @@
 
 <button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Resize" data-ko="크기 바꾸기">Resize</button>
 <p class="err" id="err"></p>
+<section class="page-info">
+<h2 data-i18n data-en="How to resize PDF pages" data-ko="PDF 페이지 크기 변경 방법">How to resize PDF pages</h2>
+<ol>
+  <li data-i18n data-en="Drop a PDF file into the dropzone." data-ko="PDF 파일을 드롭존에 놓습니다.">Drop a PDF file into the dropzone.</li>
+  <li data-i18n data-en="Choose a target size (A4 portrait, A4 landscape, Letter or A5) and, optionally, which pages to resize (leave blank for all)." data-ko="목표 크기(A4 세로, A4 가로, Letter, A5)를 고르고, 필요하면 대상 페이지를 지정합니다(비우면 전체).">Choose a target size (A4 portrait, A4 landscape, Letter or A5) and, optionally, which pages to resize (leave blank for all).</li>
+  <li data-i18n data-en="Click &quot;Resize&quot; to download the resized PDF." data-ko="&quot;Resize&quot; 버튼을 클릭하면 크기가 바뀐 PDF가 다운로드됩니다.">Click "Resize" to download the resized PDF.</li>
+</ol>
+<h2 data-i18n data-en="FAQ" data-ko="자주 묻는 질문">FAQ</h2>
+<h3 data-i18n data-en="Is my file uploaded to a server?" data-ko="파일이 서버에 업로드되나요?">Is my file uploaded to a server?</h3>
+<p data-i18n data-en="No — everything runs locally in your browser via WebAssembly; your file never leaves your device." data-ko="아니요 — 모든 처리는 WebAssembly를 통해 브라우저 안에서만 이루어지며, 파일은 기기 밖으로 나가지 않습니다.">No — everything runs locally in your browser via WebAssembly; your file never leaves your device.</p>
+<h3 data-i18n data-en="Are annotations preserved when resizing?" data-ko="크기를 바꾸면 주석이 유지되나요?">Are annotations preserved when resizing?</h3>
+<p data-i18n data-en="No — links and annotations are removed, since the original page content is scaled to fit the new size." data-ko="아니요. 원본 페이지 내용이 새 크기에 맞게 조정되면서 링크와 주석은 제거됩니다.">No — links and annotations are removed, since the original page content is scaled to fit the new size.</p>
+</section>
 </main>
 
 <footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
