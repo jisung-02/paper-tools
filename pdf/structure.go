@@ -126,6 +126,7 @@ func NUp(file []byte, per int) ([]byte, error) {
 	type form struct {
 		ref            Ref
 		x0, y0, x1, y1 float64
+		rotate         int // effective /Rotate: 0, 90, 180, or 270
 	}
 	forms := make([]form, len(pages))
 	for i, pg := range pages {
@@ -154,6 +155,18 @@ func NUp(file []byte, per int) ([]byte, error) {
 			x0, y0, x1, y1 = 0, 0, 612, 792
 		}
 
+		// pd["Rotate"] is now the fully resolved effective rotation: the
+		// gap-fill loop above already copied it down from pg.Attrs (which
+		// Pages() resolves through the ancestor chain) whenever the page
+		// itself didn't set /Rotate directly.
+		rotate := 0
+		if v, ok := rnum(b.rv(pd["Rotate"])); ok {
+			rotate = ((int(v) % 360) + 360) % 360
+			if rotate != 90 && rotate != 180 && rotate != 270 {
+				rotate = 0
+			}
+		}
+
 		var parts [][]byte
 		switch c := b.rv(pd["Contents"]).(type) {
 		case *Stream:
@@ -178,19 +191,20 @@ func NUp(file []byte, per int) ([]byte, error) {
 		content := bytes.Join(parts, []byte("\n"))
 		comp := zlibDefault(content)
 
-		formRef := b.alloc()
-		b.objs[formRef.Num-1] = &Stream{
-			Dict: Dict{
-				"Type":      Name("XObject"),
-				"Subtype":   Name("Form"),
-				"BBox":      Array{x0, y0, x1, y1},
-				"Resources": pd["Resources"],
-				"Filter":    Name("FlateDecode"),
-				"Length":    len(comp),
-			},
-			Data: comp,
+		formDict := Dict{
+			"Type":      Name("XObject"),
+			"Subtype":   Name("Form"),
+			"BBox":      Array{x0, y0, x1, y1},
+			"Resources": pd["Resources"],
+			"Filter":    Name("FlateDecode"),
+			"Length":    len(comp),
 		}
-		forms[i] = form{ref: formRef, x0: x0, y0: y0, x1: x1, y1: y1}
+		if mat := rotateMatrix(rotate, x0, y0, x1, y1); mat != nil {
+			formDict["Matrix"] = mat
+		}
+		formRef := b.alloc()
+		b.objs[formRef.Num-1] = &Stream{Dict: formDict, Data: comp}
+		forms[i] = form{ref: formRef, x0: x0, y0: y0, x1: x1, y1: y1, rotate: rotate}
 
 		// the original page shell is no longer needed: its content and
 		// resources now live in the Form XObject above.
@@ -226,9 +240,24 @@ func NUp(file []byte, per int) ([]byte, error) {
 			cellX := gutter + float64(col)*(cellW+gutter)
 			cellY := sheetH - gutter - float64(row+1)*cellH - float64(row)*gutter
 			bw, bh := f.x1-f.x0, f.y1-f.y0
+			if f.rotate == 90 || f.rotate == 270 {
+				// rotateMatrix already swaps the form's effective width and
+				// height onto the (0,0)-origin box below; the cell fit must
+				// use the same swapped aspect so a sideways page is scaled
+				// against the cell it will actually occupy once rotated.
+				bw, bh = bh, bw
+			}
 			s := math.Min(cellW/bw, cellH/bh)
-			tx := cellX + (cellW-s*bw)/2 - s*f.x0
-			ty := cellY + (cellH-s*bh)/2 - s*f.y0
+			var tx, ty float64
+			if f.rotate == 0 {
+				tx = cellX + (cellW-s*bw)/2 - s*f.x0
+				ty = cellY + (cellH-s*bh)/2 - s*f.y0
+			} else {
+				// rotateMatrix maps the rotated box's origin to (0,0), so no
+				// further offset by x0/y0 is needed here.
+				tx = cellX + (cellW-s*bw)/2
+				ty = cellY + (cellH-s*bh)/2
+			}
 			name := fmt.Sprintf("F%d", i)
 			xobjDict[Name(name)] = f.ref
 			fmt.Fprintf(&ops, "q %.4f 0 0 %.4f %.2f %.2f cm /%s Do Q\n", s, s, tx, ty, name)
@@ -250,8 +279,27 @@ func NUp(file []byte, per int) ([]byte, error) {
 	b.objs[pagesRef.Num-1] = Dict{"Type": Name("Pages"), "Kids": kids, "Count": len(kids)}
 	b.objs[catalogRef.Num-1] = Dict{"Type": Name("Catalog"), "Pages": pagesRef}
 
-	// ponytail: /Rotate ignored in n-up; bake rotation if users complain
 	return b.bytes(catalogRef), nil
+}
+
+// rotateMatrix returns the Form XObject /Matrix that bakes a page's
+// effective /Rotate into its placement so an N-up cell shows the page the
+// way a viewer would display it. Content operators and BBox stay expressed
+// in the page's own (unrotated) coordinate system; the Matrix maps that
+// space onto a box whose origin is (0,0) and whose width/height are
+// swapped for a 90/270 degree rotation, matching how the page would look
+// once rotated. Returns nil for rotate == 0 (identity, no Matrix needed).
+func rotateMatrix(rotate int, x0, y0, x1, y1 float64) Array {
+	switch rotate {
+	case 90:
+		return Array{0.0, -1.0, 1.0, 0.0, -y0, x1}
+	case 180:
+		return Array{-1.0, 0.0, 0.0, -1.0, x1, y1}
+	case 270:
+		return Array{0.0, 1.0, -1.0, 0.0, y1, -x0}
+	default:
+		return nil
+	}
 }
 
 // InsertBlank inserts count blank pages after page `after` (0 = before page 1).
