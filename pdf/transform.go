@@ -119,13 +119,22 @@ func Crop(file []byte, ranges string, left, bottom, right, top float64) ([]byte,
 
 // WatermarkOpts configures Watermark.
 type WatermarkOpts struct {
-	Text     string
+	Text    string
+	FontTTF []byte // optional TrueType font bytes; embedded as a subset for
+	// Unicode text. When nil, Text must be Latin-1 (base-14
+	// Helvetica is used instead).
 	FontSize float64 // 0 -> 48
 	Opacity  float64 // 0 -> 0.3 (clamped to (0,1])
 	Diagonal bool    // rotate 45 degrees around the page center
 }
 
 // Watermark stamps translucent text onto every page.
+//
+// When opts.FontTTF is provided, it is parsed and subset down to the glyphs
+// used by opts.Text and embedded as a CIDFontType2/Identity-H font (same
+// mechanics as TextToPDF), so any Unicode text (e.g. Korean) can be used.
+// When opts.FontTTF is nil, opts.Text must be Latin-1 and is drawn with the
+// shared base-14 Helvetica font as before.
 func Watermark(file []byte, opts WatermarkOpts) ([]byte, error) {
 	if opts.FontSize == 0 {
 		opts.FontSize = 48
@@ -136,10 +145,24 @@ func Watermark(file []byte, opts WatermarkOpts) ([]byte, error) {
 	if opts.Opacity > 1 {
 		opts.Opacity = 1
 	}
-	esc, err := escapeText(opts.Text)
-	if err != nil {
-		return nil, err
+
+	var f *ttfFont // non-nil => embed & draw via Identity-H
+	var esc string // set only in the base-14 Latin-1 path
+	if len(opts.FontTTF) > 0 {
+		var err error
+		f, err = parseTTF(opts.FontTTF)
+		if err != nil {
+			return nil, err
+		}
+		f.markUsed([]rune(opts.Text)...)
+	} else {
+		var err error
+		esc, err = escapeText(opts.Text)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	d, err := Parse(file)
 	if err != nil {
 		return nil, err
@@ -154,8 +177,21 @@ func Watermark(file []byte, opts WatermarkOpts) ([]byte, error) {
 		theta = math.Pi / 4
 	}
 	c, s := math.Cos(theta), math.Sin(theta)
-	// ponytail: 0.5em average glyph width, no metrics table
-	w := 0.5 * opts.FontSize * float64(len(opts.Text))
+
+	var w float64
+	if f != nil {
+		// Sum real per-glyph advance widths now that we have font metrics.
+		for _, r := range opts.Text {
+			gid, _ := f.gid(r)
+			w += float64(f.advance1000(gid)) * opts.FontSize / 1000
+		}
+	} else {
+		// ponytail: 0.5em average glyph width, no metrics table
+		w = 0.5 * opts.FontSize * float64(len([]rune(opts.Text)))
+	}
+
+	var type0Ref Ref
+	embedded := false
 
 	mut := func(b *builder, pageIndex int, pd Dict, m map[int]Ref) error {
 		x0, y0, x1, y1, ok := b.rect(pd["CropBox"])
@@ -167,13 +203,29 @@ func Watermark(file []byte, opts WatermarkOpts) ([]byte, error) {
 		}
 		cx, cy := (x0+x1)/2, (y0+y1)/2
 		e := cx - w/2*c
-		f := cy - w/2*s
-		ops := fmt.Sprintf("/GSW0 gs BT /FUW0 %.2f Tf 0.5 g %.2f %.2f %.2f %.2f %.2f %.2f Tm (%s) Tj ET",
-			opts.FontSize, c, s, -s, c, e, f, esc)
+		ty := cy - w/2*s
 
 		res := b.ensureResources(pd)
 		b.ownedSub(res, "ExtGState")["GSW0"] = b.gstateRef(opts.Opacity)
-		b.ownedSub(res, "Font")["FUW0"] = b.helveticaRef()
+
+		var ops string
+		if f != nil {
+			if !embedded {
+				var err error
+				type0Ref, err = embedTTF(b, f, []rune(opts.Text))
+				if err != nil {
+					return err
+				}
+				embedded = true
+			}
+			b.ownedSub(res, "Font")["FUW0"] = type0Ref
+			ops = fmt.Sprintf("/GSW0 gs BT /FUW0 %.2f Tf 0.5 g %.2f %.2f %.2f %.2f %.2f %.2f Tm <%X> Tj ET",
+				opts.FontSize, c, s, -s, c, e, ty, f.encode(opts.Text))
+		} else {
+			b.ownedSub(res, "Font")["FUW0"] = b.helveticaRef()
+			ops = fmt.Sprintf("/GSW0 gs BT /FUW0 %.2f Tf 0.5 g %.2f %.2f %.2f %.2f %.2f %.2f Tm (%s) Tj ET",
+				opts.FontSize, c, s, -s, c, e, ty, esc)
+		}
 		b.appendContent(pd, []byte(ops))
 		return nil
 	}

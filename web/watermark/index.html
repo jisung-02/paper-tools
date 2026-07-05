@@ -7,6 +7,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Watermark PDF — free & private | Paper Tools</title>
+<script src="/theme.js"></script>
 <link rel="stylesheet" href="../style.css">
 <link rel="preload" href="./watermark.wasm" as="fetch" crossorigin>
 <meta name="description" content="Add a watermark to PDF online — free & private. Stamp text diagonally across every page right in your browser; no upload, no signup.">
@@ -99,6 +100,12 @@
 <script src="../wasm_exec.js"></script>
 <script src="../app.js"></script>
 <script>
+let fontBytes = new Uint8Array(0);
+const fontReady = fetch("../NanumGothic-Regular.ttf")
+  .then(r => r.arrayBuffer())
+  .then(buf => { fontBytes = new Uint8Array(buf); })
+  .catch(() => { fontBytes = new Uint8Array(0); });
+
 boot("./watermark.wasm");
 const fileDz = dropzone("fileDrop", { multiple: false });
 const btn = document.getElementById("run");
@@ -120,8 +127,9 @@ btn.addEventListener("click", () => run(btn, async () => {
     showErr(err, t("Enter the watermark text.", "워터마크 문구를 입력하세요."));
     return;
   }
+  await fontReady;
   const file = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(file, text.value, parseFloat(fontSize.value) || 48, parseFloat(opacity.value) || 0.3, diagonal.checked);
+  const r = pdfRun(file, text.value, parseFloat(fontSize.value) || 48, parseFloat(opacity.value) || 0.3, diagonal.checked, fontBytes);
   finish(r, "watermarked.pdf", err);
 }));
 </script>

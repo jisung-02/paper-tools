@@ -2,6 +2,7 @@ package pdf
 
 import (
 	"bytes"
+	"os"
 	"strings"
 	"testing"
 )
@@ -159,6 +160,68 @@ func TestWatermarkKorean(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "Latin-1") {
 		t.Errorf("error should mention Latin-1, got: %v", err)
+	}
+}
+
+func TestWatermarkKoreanWithFont(t *testing.T) {
+	fontTTF, err := os.ReadFile("../web/NanumGothic-Regular.ttf")
+	if err != nil {
+		t.Fatalf("read font: %v", err)
+	}
+	out, err := Watermark(classicPDF(), WatermarkOpts{Text: "한글 워터마크", FontTTF: fontTTF})
+	if err != nil {
+		t.Fatalf("Watermark: %v", err)
+	}
+	d, err := Parse(out)
+	if err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	pages, err := d.Pages()
+	if err != nil {
+		t.Fatalf("Pages: %v", err)
+	}
+	for _, pg := range pages {
+		pd := d.Get(pg.Num).(Dict)
+		res, ok := d.R(pd["Resources"]).(Dict)
+		if !ok {
+			t.Fatalf("page %d missing Resources", pg.Num)
+		}
+		font, ok := d.R(res["Font"]).(Dict)
+		if !ok || font["FUW0"] == nil {
+			t.Fatalf("page %d missing Font/FUW0", pg.Num)
+		}
+		type0, ok := d.R(font["FUW0"]).(Dict)
+		if !ok || type0["Subtype"] != Name("Type0") || type0["Encoding"] != Name("Identity-H") {
+			t.Fatalf("page %d FUW0 is not a Type0/Identity-H font: %v", pg.Num, type0)
+		}
+		descFonts, ok := d.R(type0["DescendantFonts"]).(Array)
+		if !ok || len(descFonts) != 1 {
+			t.Fatalf("page %d DescendantFonts = %v", pg.Num, type0["DescendantFonts"])
+		}
+		cidFont, ok := d.R(descFonts[0]).(Dict)
+		if !ok || cidFont["Subtype"] != Name("CIDFontType2") {
+			t.Fatalf("page %d descendant font is not CIDFontType2: %v", pg.Num, cidFont)
+		}
+		fd, ok := d.R(cidFont["FontDescriptor"]).(Dict)
+		if !ok {
+			t.Fatalf("page %d missing FontDescriptor", pg.Num)
+		}
+		fontFile, ok := d.R(fd["FontFile2"]).(*Stream)
+		if !ok || len(fontFile.Data) == 0 {
+			t.Fatalf("page %d FontFile2 missing or empty", pg.Num)
+		}
+		contents, ok := d.R(pd["Contents"]).(Array)
+		if !ok || len(contents) == 0 {
+			t.Fatalf("page %d Contents = %v", pg.Num, pd["Contents"])
+		}
+		last := d.R(contents[len(contents)-1])
+		st, ok := last.(*Stream)
+		if !ok {
+			t.Fatalf("page %d last content is not a stream", pg.Num)
+		}
+		if !bytes.Contains(st.Data, []byte("Tj ET")) {
+			t.Errorf("page %d last content stream missing watermark text op: %s", pg.Num, st.Data)
+		}
 	}
 }
 
