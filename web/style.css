@@ -1,10 +1,46 @@
 :root {
+  color-scheme: light dark;
   --bg: #ffffff;
   --fg: #18181b;
   --muted: #71717a;
   --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --border-stronger: #a1a1aa;
   --hover: #f4f4f5;
   --err: #dc2626;
+}
+
+/* Dark palette: same monochrome scale, inverted. An explicit choice
+   (data-theme) always wins over the OS-level media query below — see the
+   :root[data-theme="dark"] block, which applies regardless of OS setting. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #09090b;
+    --fg: #f4f4f5;
+    --muted: #a1a1aa;
+    --border: #3f3f46;
+    --border-strong: #52525b;
+    --border-stronger: #71717a;
+    --hover: #27272a;
+    --err: #f87171;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #09090b;
+  --fg: #f4f4f5;
+  --muted: #a1a1aa;
+  --border: #3f3f46;
+  --border-strong: #52525b;
+  --border-stronger: #71717a;
+  --hover: #27272a;
+  --err: #f87171;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -58,6 +94,22 @@ header {
   cursor: pointer;
 }
 
+.themetoggle {
+  font: inherit;
+  font-size: .85rem;
+  line-height: 1;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: .2rem .45rem;
+  cursor: pointer;
+}
+.themetoggle:hover {
+  background: var(--hover);
+  border-color: var(--border-strong);
+}
+
 /* main */
 main {
   max-width: 720px;
@@ -109,7 +161,7 @@ main.wide { max-width: 960px; }
 }
 .card-link:hover {
   background: var(--hover);
-  border-color: #d4d4d8;
+  border-color: var(--border-strong);
 }
 .card-link .name {
   font-weight: 550;
@@ -146,7 +198,7 @@ main .desc {
 }
 .drop:hover,
 .drop.over {
-  border-color: #a1a1aa;
+  border-color: var(--border-stronger);
   background: var(--hover);
 }
 .drop:focus-visible {
@@ -225,7 +277,7 @@ input[type="range"] {
 button.primary {
   margin-top: 1.5rem;
   background: var(--fg);
-  color: #fff;
+  color: var(--bg);
   border: none;
   border-radius: 8px;
   padding: .6rem 1.25rem;
