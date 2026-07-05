@@ -2,7 +2,7 @@
 
 > Privacy-first PDF, image and document tools that run entirely in your browser via Go compiled to WebAssembly. Files never leave your device — free, no signup, no installs.
 
-Paper Tools is a collection of 32 client-side file tools, live at https://papertools.dev . Every tool loads a small WebAssembly module and does all processing locally in the tab; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source and built with the Go standard library only — no third-party dependencies.
+Paper Tools is a collection of 32 client-side file tools, live at https://papertools.dev . Every tool loads a small WebAssembly module and does all processing locally in the tab; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source.
 
 ## Tools
 

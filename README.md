@@ -21,12 +21,6 @@ WebAssembly.
 drop a file, get a result — nothing leaves the browser tab. No server, no
 uploads, no account.
 
-The entire PDF engine is a **from-scratch, dependency-free Go package**
-(`pdf/`): a hand-written PDF 1.7 reader/writer, a TrueType font subsetter, a
-CFB/OLE parser for legacy `.hwp` files — no C libraries, no third-party Go
-modules. Each tool ships as its own small `.wasm` binary, so visiting
-`/merge/` downloads only the merge code, not all 32 tools.
-
 ### Tools
 
 | Group | Tools |
@@ -39,18 +33,12 @@ modules. Each tool ships as its own small `.wasm` binary, so visiting
 
 ### Highlights
 
-- **Zero third-party dependencies.** Go standard library only (`go.mod` has no
-  `require`s). The PDF parser/writer, image handling, encryption, and font
-  subsetting are all hand-written.
-- **Korean-capable text rendering.** A NanumGothic (OFL) TrueType subset is
-  embedded into generated PDFs (CIDFontType2 / Identity-H), so `Text → PDF`,
-  `Markdown → PDF` and the document converters render Hangul correctly.
-- **Legacy `.hwp` support.** A minimal Compound File Binary reader + HWP record
-  decoder, validated by hand against 6 real Hancom files (16 KB–2.1 MB).
-- **Dark mode, on by default.** A pre-paint `theme.js` check applies your OS
-  or saved light/dark preference before first render, so there's no flash of
-  the wrong theme; the UI language also auto-detects from your browser's
-  locale on first visit.
+- **Korean text renders correctly** in generated PDFs, including `Text → PDF`,
+  `Markdown → PDF` and the document converters.
+- **Legacy `.hwp` files are supported.**
+- **Dark mode, on by default.** Follows your OS or saved light/dark
+  preference with no flash of the wrong theme; the UI language also
+  auto-detects from your browser's locale on first visit.
 - **7 UI languages**, English default: English · 한국어 · 日本語 · 中文(简体) ·
   Español · Français · Deutsch. The brand and technical tokens (PDF, Word,
   `.docx`, …) stay untranslated.
@@ -98,9 +86,6 @@ enable brotli/gzip.
 go test ./pdf ./imgconv
 ```
 
-The `pdf` package is where all PDF semantics live; the wasm and web layers
-are thin wrappers.
-
 ### Limitations
 
 - Encrypted PDFs must go through **Unlock** first; other tools reject
@@ -129,11 +114,6 @@ are thin wrappers.
 브라우저 안에서 완결되는 PDF·이미지·문서 도구 32종. 도구를 열고 파일을
 올리면 결과가 나옴 — **아무것도 서버로 나가지 않음**. 서버·업로드·계정 없음.
 
-PDF 엔진 전체가 **서드파티 없이 처음부터 작성한 Go 패키지**(`pdf/`)임. 직접
-구현한 PDF 1.7 리더/라이터, TrueType 폰트 서브세터, 레거시 `.hwp`용 CFB/OLE
-파서로 구성됨. C 라이브러리·외부 Go 모듈 미사용. 각 도구는 자체 `.wasm`
-하나로 배포되므로 `/merge/` 방문 시 병합 코드만 내려받고 32개 전부는 받지 않음.
-
 ### 도구
 
 | 분류 | 도구 |
@@ -146,16 +126,11 @@ PDF 엔진 전체가 **서드파티 없이 처음부터 작성한 Go 패키지**
 
 ### 특징
 
-- **서드파티 의존성 0.** Go 표준 라이브러리만 사용(`go.mod`에 `require` 없음).
-  PDF 파서/라이터, 이미지 처리, 암호화, 폰트 서브셋 전부 직접 구현.
-- **한글 출력.** 나눔고딕(OFL) TrueType 서브셋을 생성 PDF에 임베드
-  (CIDFontType2 / Identity-H)하여 `텍스트 → PDF`, `마크다운 → PDF`와 문서
-  변환에서 한글이 제대로 출력됨.
-- **레거시 `.hwp` 지원.** 최소 CFB 리더 + HWP 레코드 디코더. 실제 한컴 파일
-  6개(16 KB–2.1 MB)로 직접 검증함.
-- **다크 모드 기본 지원.** 첫 렌더링 전에 실행되는 `theme.js`가 OS 설정 또는
-  저장된 선택을 즉시 반영해 화면 깜빡임 없음. UI 언어도 브라우저 로케일에
-  맞춰 첫 방문 시 자동 선택됨.
+- **한글 출력 정상 지원.** `텍스트 → PDF`, `마크다운 → PDF`를 포함해 생성된
+  PDF에서 한글이 제대로 출력됨.
+- **레거시 `.hwp` 지원.**
+- **다크 모드 기본 지원.** OS 설정 또는 저장된 선택을 즉시 반영해 화면
+  깜빡임 없음. UI 언어도 브라우저 로케일에 맞춰 첫 방문 시 자동 선택됨.
 - **UI 7개 언어**, 영어 기본: English · 한국어 · 日本語 · 中文(简体) · Español ·
   Français · Deutsch. 브랜드와 기술 용어(PDF, Word, `.docx` 등)는 원문 유지.
 - **기본값이 프라이버시.** 옵션을 켜기 전엔 어떤 추적 스크립트도 불러오지 않음
@@ -201,8 +176,6 @@ brotli/gzip을 켜면 됨.
 ```sh
 go test ./pdf ./imgconv
 ```
-
-PDF 로직은 전부 `pdf` 패키지에 있으며, wasm·web 계층은 얇은 래퍼임.
 
 ### 한계
 
