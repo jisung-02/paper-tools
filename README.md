@@ -1,8 +1,7 @@
 # Paper Tools
 
 Privacy-first PDF & file tools that run **entirely in your browser**. Files
-are never uploaded — every conversion happens locally via Go compiled to
-WebAssembly.
+are never uploaded — every conversion happens locally on your device.
 
 **Live:** https://papertools.dev
 
