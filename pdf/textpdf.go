@@ -129,6 +129,13 @@ func TextToPDF(text string, fontTTF []byte, opts TextPDFOpts) ([]byte, error) {
 // logical line with zero runes still yields exactly one (empty) visual line,
 // so callers can always advance the cursor by one leading per input line.
 func wrapLine(f *ttfFont, s string, fontSize float64) []string {
+	return wrapLineWidth(f, s, fontSize, textContentWidth)
+}
+
+// wrapLineWidth is wrapLine with an explicit target width, so callers that
+// lay out narrower content (e.g. indented list items or blockquotes in
+// md.go) can reuse the same greedy wrap logic.
+func wrapLineWidth(f *ttfFont, s string, fontSize, width float64) []string {
 	runes := []rune(s)
 	if len(runes) == 0 {
 		return []string{""}
@@ -139,16 +146,16 @@ func wrapLine(f *ttfFont, s string, fontSize float64) []string {
 	for start < len(runes) {
 		end := start
 		lastSpace := -1 // index into runes of the last space since start, or -1
-		width := 0.0
+		w := 0.0
 		for end < len(runes) {
-			w := lineWidth(f, runes[end:end+1], fontSize)
-			if width+w > textContentWidth && end > start {
+			cw := lineWidth(f, runes[end:end+1], fontSize)
+			if w+cw > width && end > start {
 				break
 			}
 			if runes[end] == ' ' {
 				lastSpace = end
 			}
-			width += w
+			w += cw
 			end++
 		}
 		if end >= len(runes) {
