@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>Compare PDFs — free & private | Paper Tools</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="../style.css">
+<link rel="preload" href="./pdfdiff.wasm" as="fetch" crossorigin>
+<meta name="description" content="Compare two PDFs online — free & private. See exactly what text changed between two versions right in your browser; files never upload, no signup.">
+<link rel="canonical" href="https://papertools.dev/pdfdiff/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Paper Tools">
+<meta property="og:title" content="Compare PDFs — Paper Tools">
+<meta property="og:description" content="Compare two PDFs online — free & private. See exactly what text changed between two versions right in your browser; files never upload, no signup.">
+<meta property="og:url" content="https://papertools.dev/pdfdiff/">
+<meta property="og:image" content="https://papertools.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Compare PDFs — Paper Tools">
+<meta name="twitter:description" content="Compare two PDFs online — free & private. See exactly what text changed between two versions right in your browser; files never upload, no signup.">
+<meta name="twitter:image" content="https://papertools.dev/og.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Compare PDFs — Paper Tools","url":"https://papertools.dev/pdfdiff/","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","browserRequirements":"Requires WebAssembly","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Compare two PDFs online — free & private. See exactly what text changed between two versions right in your browser; files never upload, no signup.","isPartOf":{"@type":"WebSite","name":"Paper Tools","url":"https://papertools.dev/"}}
+</script>
+<!-- hreflang -->
+<link rel="alternate" hreflang="en" href="https://papertools.dev/pdfdiff/">
+<link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdfdiff/">
+<link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdfdiff/">
+<link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdfdiff/">
+<link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdfdiff/">
+<link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/">
+<link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/">
+<link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"How to compare two PDFs","step":[{"@type":"HowToStep","position":1,"name":"Drop the original PDF into the \"A (original)\" dropzone."},{"@type":"HowToStep","position":2,"name":"Drop the revised PDF into the \"B (revised)\" dropzone."},{"@type":"HowToStep","position":3,"name":"Click \"Compare\" to download a text diff report."}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Are my files uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No — everything runs locally in your browser via WebAssembly; your files never leave your device."}},{"@type":"Question","name":"Does this compare the visual layout of the PDFs?","acceptedAnswer":{"@type":"Answer","text":"No — Compare PDFs only compares each file's extracted text, line by line; visual layout, images and formatting differences are not detected."}}]}
+</script>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="../" data-i18n data-en="Paper Tools" data-ko="종이도구">Paper Tools</a>
+  <nav class="langtoggle">
+    <button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button>
+  </nav>
+</header>
+
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+
+<h1 data-i18n data-en="Compare PDFs" data-ko="PDF 비교">Compare PDFs</h1>
+<p class="desc" data-i18n data-en="Compare the text of two PDFs and see what changed." data-ko="두 PDF의 텍스트를 비교해 달라진 부분을 확인합니다.">Compare the text of two PDFs and see what changed.</p>
+<p id="status">Loading tool…</p>
+
+<label for="aDrop" data-i18n data-en="A (original)" data-ko="A (원본)">A (original)</label>
+<div class="drop" id="aDrop">
+  <span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span>
+  <input type="file" id="aInput" accept="application/pdf">
+  <ul class="filelist"></ul>
+</div>
+
+<label for="bDrop" data-i18n data-en="B (revised)" data-ko="B (수정본)">B (revised)</label>
+<div class="drop" id="bDrop">
+  <span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span>
+  <input type="file" id="bInput" accept="application/pdf">
+  <ul class="filelist"></ul>
+</div>
+
+<button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Compare" data-ko="비교하기">Compare</button>
+<p class="err" id="err"></p>
+<section class="page-info">
+<h2 data-i18n data-en="How to compare two PDFs" data-ko="두 PDF를 비교하는 방법">How to compare two PDFs</h2>
+<ol>
+  <li data-i18n data-en="Drop the original PDF into the &quot;A (original)&quot; dropzone." data-ko="&quot;A (원본)&quot; 드롭존에 원본 PDF를 놓습니다.">Drop the original PDF into the "A (original)" dropzone.</li>
+  <li data-i18n data-en="Drop the revised PDF into the &quot;B (revised)&quot; dropzone." data-ko="&quot;B (수정본)&quot; 드롭존에 수정된 PDF를 놓습니다.">Drop the revised PDF into the "B (revised)" dropzone.</li>
+  <li data-i18n data-en="Click &quot;Compare&quot; to download a text diff report." data-ko="&quot;Compare&quot; 버튼을 클릭하면 텍스트 비교 결과 파일이 다운로드됩니다.">Click "Compare" to download a text diff report.</li>
+</ol>
+<h2 data-i18n data-en="FAQ" data-ko="자주 묻는 질문">FAQ</h2>
+<h3 data-i18n data-en="Are my files uploaded to a server?" data-ko="파일들이 서버에 업로드되나요?">Are my files uploaded to a server?</h3>
+<p data-i18n data-en="No — everything runs locally in your browser via WebAssembly; your files never leave your device." data-ko="아니요 — 모든 처리는 WebAssembly를 통해 브라우저 안에서만 이루어지며, 파일은 기기 밖으로 나가지 않습니다.">No — everything runs locally in your browser via WebAssembly; your files never leave your device.</p>
+<h3 data-i18n data-en="Does this compare the visual layout of the PDFs?" data-ko="PDF의 시각적 레이아웃도 비교하나요?">Does this compare the visual layout of the PDFs?</h3>
+<p data-i18n data-en="No — Compare PDFs only compares each file's extracted text, line by line; visual layout, images and formatting differences are not detected." data-ko="아니요 — PDF 비교는 각 파일에서 추출한 텍스트를 줄 단위로만 비교하며, 시각적 레이아웃·이미지·서식 차이는 감지하지 않습니다.">No — Compare PDFs only compares each file's extracted text, line by line; visual layout, images and formatting differences are not detected.</p>
+</section>
+</main>
+
+<footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
+
+<script src="../wasm_exec.js"></script>
+<script src="../app.js"></script>
+<script>
+boot("./pdfdiff.wasm");
+const aDz = dropzone("aDrop", { multiple: false });
+const bDz = dropzone("bDrop", { multiple: false });
+const btn = document.getElementById("run");
+const err = document.getElementById("err");
+
+btn.addEventListener("click", () => run(btn, async () => {
+  if (aDz.files.length < 1 || bDz.files.length < 1) {
+    showErr(err, t("Select both PDF A and PDF B.", "PDF A와 PDF B를 모두 선택하세요."));
+    return;
+  }
+  const a = await fileBytes(aDz.files[0]);
+  const b = await fileBytes(bDz.files[0]);
+  const r = pdfRun(a, b);
+  finish(r, "diff.txt", err, "text/plain");
+}));
+</script>
+</body>
+</html>
