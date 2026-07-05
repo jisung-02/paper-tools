@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Stamp / Signature on PDF — free & private | Paper Tools</title>
@@ -57,14 +58,14 @@
 <p class="desc" data-i18n data-en="Overlay a stamp or signature image onto PDF pages." data-ko="도장이나 서명 이미지를 PDF 페이지에 올립니다.">Overlay a stamp or signature image onto PDF pages.</p>
 <p id="status">Loading tool…</p>
 
-<label for="pdfDrop" data-i18n data-en="PDF file" data-ko="PDF 파일">PDF file</label>
+<label for="pdfInput" data-i18n data-en="PDF file" data-ko="PDF 파일">PDF file</label>
 <div class="drop" id="pdfDrop">
   <span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span>
   <input type="file" id="pdfInput" accept="application/pdf">
   <ul class="filelist"></ul>
 </div>
 
-<label for="imgDrop" data-i18n data-en="Stamp image (PNG or JPG)" data-ko="도장·서명 이미지 (PNG 또는 JPG)">Stamp image (PNG or JPG)</label>
+<label for="imgInput" data-i18n data-en="Stamp image (PNG or JPG)" data-ko="도장·서명 이미지 (PNG 또는 JPG)">Stamp image (PNG or JPG)</label>
 <div class="drop" id="imgDrop">
   <span data-i18n data-en="Drag an image here, or click to choose" data-ko="이미지를 끌어다 놓거나 클릭해서 선택">Drag an image here, or click to choose</span>
   <input type="file" id="imgInput" accept="image/png,image/jpeg">
@@ -110,7 +111,10 @@
 </section>
 </main>
 
-<footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
+<footer>
+  <span data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</span>
+  · <a href="../privacy/" data-i18n data-en="Privacy" data-ko="개인정보처리방침">Privacy</a>
+</footer>
 
 <script src="../wasm_exec.js"></script>
 <script src="../app.js"></script>
@@ -138,7 +142,7 @@ btn.addEventListener("click", () => run(btn, async () => {
   const pdfFile = pdfDz.files[0];
   const pdfBytes = await fileBytes(pdfFile);
   const imgBytes = await fileBytes(imgDz.files[0]);
-  const r = pdfRun(pdfBytes, imgBytes, position.value, parseFloat(widthPct.value) || 20, parseFloat(opacity.value) || 1, pages.value.trim());
+  const r = pdfRun(pdfBytes, imgBytes, position.value, Math.min(100, Math.max(1, parseFloat(widthPct.value) || 20)), Math.min(1, Math.max(0.05, parseFloat(opacity.value) || 1)), pages.value.trim());
   finish(r, baseName(pdfFile.name) + "-stamped.pdf", err);
 }));
 </script>

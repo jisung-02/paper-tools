@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Compare PDFs — free & private | Paper Tools</title>
@@ -57,14 +58,14 @@
 <p class="desc" data-i18n data-en="Compare the text of two PDFs and see what changed." data-ko="두 PDF의 텍스트를 비교해 달라진 부분을 확인합니다.">Compare the text of two PDFs and see what changed.</p>
 <p id="status">Loading tool…</p>
 
-<label for="aDrop" data-i18n data-en="A (original)" data-ko="A (원본)">A (original)</label>
+<label for="aInput" data-i18n data-en="A (original)" data-ko="A (원본)">A (original)</label>
 <div class="drop" id="aDrop">
   <span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span>
   <input type="file" id="aInput" accept="application/pdf">
   <ul class="filelist"></ul>
 </div>
 
-<label for="bDrop" data-i18n data-en="B (revised)" data-ko="B (수정본)">B (revised)</label>
+<label for="bInput" data-i18n data-en="B (revised)" data-ko="B (수정본)">B (revised)</label>
 <div class="drop" id="bDrop">
   <span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span>
   <input type="file" id="bInput" accept="application/pdf">
@@ -88,7 +89,10 @@
 </section>
 </main>
 
-<footer data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</footer>
+<footer>
+  <span data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</span>
+  · <a href="../privacy/" data-i18n data-en="Privacy" data-ko="개인정보처리방침">Privacy</a>
+</footer>
 
 <script src="../wasm_exec.js"></script>
 <script src="../app.js"></script>
