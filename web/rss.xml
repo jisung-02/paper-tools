@@ -5,7 +5,42 @@
 <link>https://papertools.dev/</link>
 <description>Free, private PDF &amp; file tools that run entirely in your browser — no uploads, no signup.</description>
 <language>en</language>
-<lastBuildDate>Fri, 04 Jul 2026 00:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sat, 05 Jul 2026 00:00:00 GMT</lastBuildDate>
+<item>
+<title>Markdown to PDF</title>
+<link>https://papertools.dev/md2pdf/</link>
+<guid isPermaLink="true">https://papertools.dev/md2pdf/</guid>
+<description>Convert Markdown to PDF online — free &amp; private, with Korean support. Drop a .md file right in your browser; no upload, no signup.</description>
+<pubDate>Sat, 05 Jul 2026 00:00:00 GMT</pubDate>
+</item>
+<item>
+<title>Stamp / Signature on PDF</title>
+<link>https://papertools.dev/stamp/</link>
+<guid isPermaLink="true">https://papertools.dev/stamp/</guid>
+<description>Add a stamp or signature to a PDF online — free &amp; private. Place a PNG/JPG image at any position, size and opacity right in your browser; no upload, no signup.</description>
+<pubDate>Sat, 05 Jul 2026 00:00:00 GMT</pubDate>
+</item>
+<item>
+<title>Image Resize</title>
+<link>https://papertools.dev/imgresize/</link>
+<guid isPermaLink="true">https://papertools.dev/imgresize/</guid>
+<description>Resize images online — free &amp; private. Shrink PNG, JPG or GIF to a max width/height right in your browser; never upscales, no upload, no signup.</description>
+<pubDate>Sat, 05 Jul 2026 00:00:00 GMT</pubDate>
+</item>
+<item>
+<title>Excel to CSV Converter</title>
+<link>https://papertools.dev/xlsx2csv/</link>
+<guid isPermaLink="true">https://papertools.dev/xlsx2csv/</guid>
+<description>Convert Excel to CSV online — free &amp; private. Turn .xlsx sheets into CSV (or a ZIP of CSVs) right in your browser; files never upload, no signup.</description>
+<pubDate>Sat, 05 Jul 2026 00:00:00 GMT</pubDate>
+</item>
+<item>
+<title>Compare PDFs</title>
+<link>https://papertools.dev/pdfdiff/</link>
+<guid isPermaLink="true">https://papertools.dev/pdfdiff/</guid>
+<description>Compare two PDFs online — free &amp; private. See exactly what text changed between two versions right in your browser; files never upload, no signup.</description>
+<pubDate>Sat, 05 Jul 2026 00:00:00 GMT</pubDate>
+</item>
 <item>
 <title>Insert Blank PDF Page</title>
 <link>https://papertools.dev/blank/</link>

@@ -1,11 +1,11 @@
 {
   "": {
-    "ko": {"title": "Paper Tools — 브라우저 속 PDF 도구", "description": "27가지 파일 도구. 업로드도 설치도 필요 없이, 이 탭에서 바로 사용하세요."},
-    "ja": {"title": "Paper Tools — ブラウザ内のPDFツール", "description": "27種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。"},
-    "zh": {"title": "Paper Tools — 浏览器内的PDF工具", "description": "27 款文件工具。无需上传,无需安装——就在这个标签页中直接使用。"},
-    "es": {"title": "Paper Tools — PDF en tu navegador", "description": "27 herramientas de archivos. Sin subidas ni instalaciones: todo aquí mismo, en esta pestaña."},
-    "fr": {"title": "Paper Tools — PDF dans votre navigateur", "description": "27 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet."},
-    "de": {"title": "Paper Tools — PDF-Tools im Browser", "description": "27 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab."}
+    "ko": {"title": "Paper Tools — 브라우저 속 PDF 도구", "description": "32가지 파일 도구. 업로드도 설치도 필요 없이, 이 탭에서 바로 사용하세요."},
+    "ja": {"title": "Paper Tools — ブラウザ内のPDFツール", "description": "32種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。"},
+    "zh": {"title": "Paper Tools — 浏览器内的PDF工具", "description": "32 款文件工具。无需上传,无需安装——就在这个标签页中直接使用。"},
+    "es": {"title": "Paper Tools — PDF en tu navegador", "description": "32 herramientas de archivos. Sin subidas ni instalaciones: todo aquí mismo, en esta pestaña."},
+    "fr": {"title": "Paper Tools — PDF dans votre navigateur", "description": "32 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet."},
+    "de": {"title": "Paper Tools — PDF-Tools im Browser", "description": "32 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab."}
   },
   "privacy": {
     "ko": {"title": "개인정보 처리방침 — Paper Tools", "description": "Paper Tools가 파일을 다루는 방식: 모든 작업이 브라우저에서 실행되며, 어떤 파일도 업로드되지 않습니다."},
@@ -144,12 +144,12 @@
     "de": {"title": "PDF-Infos & Seitenzahl — kostenlos & privat | Paper Tools", "description": "PDF-Informationen online prüfen — kostenlos & privat. Seitenzahl, Größe und Metadaten direkt im Browser anzeigen; kein Datei-Upload, keine Anmeldung nötig."}
   },
   "protect": {
-    "ko": {"title": "PDF 비밀번호 보호 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF를 비밀번호로 보호하세요 — 무료이고 비공개입니다. 브라우저에서 바로 AES-128 비밀번호로 PDF를 암호화할 수 있으며, 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
-    "ja": {"title": "PDFパスワード保護 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFをパスワード保護 — 無料・非公開。ブラウザ内でAES-128パスワードによりPDFを暗号化でき、ファイルはアップロードされず、登録も不要です。"},
-    "zh": {"title": "PDF 密码保护 — 免费且私密 | Paper Tools", "description": "在线为 PDF 设置密码保护——免费且私密。在浏览器中直接用 AES-128 密码加密 PDF;文件绝不上传,无需注册。"},
-    "es": {"title": "Proteger PDF con contraseña — gratis y privado | Paper Tools", "description": "Protege un PDF con contraseña en línea — gratis y privado. Cifra un PDF con una contraseña AES-128 directamente en tu navegador; los archivos nunca se suben, sin registro."},
-    "fr": {"title": "Protéger un PDF par mot de passe — gratuit et privé | Paper Tools", "description": "Protégez un PDF par mot de passe en ligne — gratuit et privé. Chiffrez un PDF avec un mot de passe AES-128 directement dans votre navigateur ; les fichiers ne sont jamais envoyés, sans inscription."},
-    "de": {"title": "PDF mit Passwort schützen — kostenlos & privat | Paper Tools", "description": "PDF online mit einem Passwort schützen — kostenlos & privat. PDF direkt im Browser mit einem AES-128-Passwort verschlüsseln; Dateien werden nie hochgeladen, keine Anmeldung nötig."}
+    "ko": {"title": "PDF 비밀번호 보호 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF를 비밀번호로 보호하세요 — 무료이고 비공개입니다. 브라우저에서 바로 AES-256(권장) 또는 AES-128 비밀번호로 PDF를 암호화할 수 있으며, 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
+    "ja": {"title": "PDFパスワード保護 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFをパスワード保護 — 無料・非公開。ブラウザ内でAES-256(推奨)またはAES-128のパスワードによりPDFを暗号化でき、ファイルはアップロードされず、登録も不要です。"},
+    "zh": {"title": "PDF 密码保护 — 免费且私密 | Paper Tools", "description": "在线为 PDF 设置密码保护——免费且私密。在浏览器中直接用 AES-256(推荐)或 AES-128 密码加密 PDF;文件绝不上传,无需注册。"},
+    "es": {"title": "Proteger PDF con contraseña — gratis y privado | Paper Tools", "description": "Protege un PDF con contraseña en línea — gratis y privado. Cifra un PDF con una contraseña AES-256 (recomendado) o AES-128 directamente en tu navegador; los archivos nunca se suben, sin registro."},
+    "fr": {"title": "Protéger un PDF par mot de passe — gratuit et privé | Paper Tools", "description": "Protégez un PDF par mot de passe en ligne — gratuit et privé. Chiffrez un PDF avec un mot de passe AES-256 (recommandé) ou AES-128 directement dans votre navigateur ; les fichiers ne sont jamais envoyés, sans inscription."},
+    "de": {"title": "PDF mit Passwort schützen — kostenlos & privat | Paper Tools", "description": "PDF online mit einem Passwort schützen — kostenlos & privat. PDF direkt im Browser mit AES-256 (empfohlen) oder AES-128 verschlüsseln; Dateien werden nie hochgeladen, keine Anmeldung nötig."}
   },
   "unlock": {
     "ko": {"title": "PDF 잠금 해제 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF 잠금을 해제하세요 — 무료이고 비공개입니다. 알고 있는 비밀번호를 브라우저에서 바로 제거할 수 있으며, 파일은 기기 밖으로 나가지 않고 업로드나 회원가입도 필요 없습니다."},
@@ -230,5 +230,45 @@
     "es": {"title": "Convertidor de Hangul a Word — gratis y privado | Paper Tools", "description": "Convierte Hangul HWPX a Word en línea — gratis y privado. Transforma el texto y los párrafos de un .hwpx en .docx directamente en tu navegador; sin subidas, sin registro."},
     "fr": {"title": "Convertisseur Hangul vers Word — gratuit et privé | Paper Tools", "description": "Convertissez Hangul HWPX en Word en ligne — gratuit et privé. Transformez le texte et les paragraphes d'un .hwpx en .docx directement dans votre navigateur ; sans envoi, sans inscription."},
     "de": {"title": "Hangul-zu-Word-Konverter — kostenlos & privat | Paper Tools", "description": "Hangul HWPX online in Word umwandeln — kostenlos & privat. Text und Absätze aus .hwpx direkt im Browser in .docx umwandeln; kein Upload, keine Anmeldung."}
+  },
+  "md2pdf": {
+    "ko": {"title": "마크다운을 PDF로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 마크다운을 PDF로 변환하세요 — 무료이고 비공개이며 한글도 지원합니다. 브라우저에서 바로 .md 파일을 끌어다 놓을 수 있으며, 업로드나 회원가입이 필요 없습니다."},
+    "ja": {"title": "MarkdownをPDFに変換 — 無料・非公開 | Paper Tools", "description": "オンラインでMarkdownをPDFに変換 — 無料・非公開、韓国語にも対応。ブラウザ内で.mdファイルをそのままドロップするだけ、アップロードも登録も不要です。"},
+    "zh": {"title": "Markdown 转 PDF — 免费且私密 | Paper Tools", "description": "在线将 Markdown 转换为 PDF——免费且私密,支持韩文。在浏览器中直接拖入 .md 文件;无需上传,无需注册。"},
+    "es": {"title": "Markdown a PDF — gratis y privado | Paper Tools", "description": "Convierte Markdown a PDF en línea — gratis y privado, con soporte para coreano. Suelta un archivo .md directamente en tu navegador; sin subidas, sin registro."},
+    "fr": {"title": "Markdown vers PDF — gratuit et privé | Paper Tools", "description": "Convertissez Markdown en PDF en ligne — gratuit et privé, avec prise en charge du coréen. Déposez un fichier .md directement dans votre navigateur ; sans envoi, sans inscription."},
+    "de": {"title": "Markdown in PDF umwandeln — kostenlos & privat | Paper Tools", "description": "Markdown online in PDF umwandeln — kostenlos & privat, mit Unterstützung für Koreanisch. Eine .md-Datei direkt im Browser ablegen; kein Upload, keine Anmeldung."}
+  },
+  "stamp": {
+    "ko": {"title": "PDF 도장·서명 삽입 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF에 도장이나 서명을 추가하세요 — 무료이고 비공개입니다. 원하는 위치·크기·불투명도로 PNG/JPG 이미지를 브라우저에서 바로 올릴 수 있으며, 업로드나 회원가입이 필요 없습니다."},
+    "ja": {"title": "PDFにスタンプ・署名を追加 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFにスタンプや署名を追加 — 無料・非公開。好きな位置・サイズ・不透明度でPNG/JPG画像をブラウザ内でそのまま配置でき、アップロードも登録も不要です。"},
+    "zh": {"title": "PDF 添加印章/签名 — 免费且私密 | Paper Tools", "description": "在线为 PDF 添加印章或签名——免费且私密。在浏览器中直接以任意位置、大小和不透明度放置 PNG/JPG 图片;无需上传,无需注册。"},
+    "es": {"title": "Sello / Firma en PDF — gratis y privado | Paper Tools", "description": "Añade un sello o una firma a un PDF en línea — gratis y privado. Coloca una imagen PNG/JPG en cualquier posición, tamaño y opacidad directamente en tu navegador; sin subidas, sin registro."},
+    "fr": {"title": "Tampon / Signature sur PDF — gratuit et privé | Paper Tools", "description": "Ajoutez un tampon ou une signature à un PDF en ligne — gratuit et privé. Placez une image PNG/JPG à la position, la taille et l'opacité de votre choix directement dans votre navigateur ; sans envoi, sans inscription."},
+    "de": {"title": "Stempel / Unterschrift auf PDF — kostenlos & privat | Paper Tools", "description": "Online einen Stempel oder eine Unterschrift zu einem PDF hinzufügen — kostenlos & privat. Ein PNG/JPG-Bild an beliebiger Position, Größe und Deckkraft direkt im Browser platzieren; kein Upload, keine Anmeldung."}
+  },
+  "imgresize": {
+    "ko": {"title": "이미지 크기 조정 — 무료·비공개 | Paper Tools", "description": "온라인에서 이미지 크기를 조정하세요 — 무료이고 비공개입니다. PNG, JPG, GIF를 브라우저에서 바로 최대 너비·높이에 맞게 줄일 수 있으며, 확대하지 않고 업로드나 회원가입도 필요 없습니다."},
+    "ja": {"title": "画像サイズ変更 — 無料・非公開 | Paper Tools", "description": "オンラインで画像サイズを変更 — 無料・非公開。PNG、JPG、GIFをブラウザ内で最大幅・高さに縮小でき、拡大されることはなく、アップロードも登録も不要です。"},
+    "zh": {"title": "图片缩放 — 免费且私密 | Paper Tools", "description": "在线调整图片大小——免费且私密。在浏览器中直接将 PNG、JPG 或 GIF 缩小到最大宽度/高度;绝不放大,无需上传,无需注册。"},
+    "es": {"title": "Redimensionar imagen — gratis y privado | Paper Tools", "description": "Redimensiona imágenes en línea — gratis y privado. Reduce PNG, JPG o GIF a un ancho/alto máximo directamente en tu navegador; nunca las agranda, sin subidas, sin registro."},
+    "fr": {"title": "Redimensionner l'image — gratuit et privé | Paper Tools", "description": "Redimensionnez des images en ligne — gratuit et privé. Réduisez des PNG, JPG ou GIF à une largeur/hauteur maximale directement dans votre navigateur ; sans jamais les agrandir, sans envoi, sans inscription."},
+    "de": {"title": "Bildgröße ändern — kostenlos & privat | Paper Tools", "description": "Bilder online in der Größe ändern — kostenlos & privat. PNG, JPG oder GIF direkt im Browser auf eine maximale Breite/Höhe verkleinern; nie vergrößert, kein Upload, keine Anmeldung."}
+  },
+  "xlsx2csv": {
+    "ko": {"title": "엑셀을 CSV로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 엑셀을 CSV로 변환하세요 — 무료이고 비공개입니다. .xlsx 시트를 브라우저에서 바로 CSV(또는 여러 CSV를 담은 ZIP)로 만들 수 있으며, 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
+    "ja": {"title": "ExcelをCSVに変換 — 無料・非公開 | Paper Tools", "description": "オンラインでExcelをCSVに変換 — 無料・非公開。.xlsxのシートをブラウザ内でそのままCSV(または複数CSVをまとめたZIP)に変換でき、ファイルはアップロードされず、登録も不要です。"},
+    "zh": {"title": "Excel 转 CSV 转换器 — 免费且私密 | Paper Tools", "description": "在线将 Excel 转换为 CSV——免费且私密。在浏览器中直接将 .xlsx 工作表转为 CSV(或多个 CSV 打包的 ZIP);文件绝不上传,无需注册。"},
+    "es": {"title": "Conversor de Excel a CSV — gratis y privado | Paper Tools", "description": "Convierte Excel a CSV en línea — gratis y privado. Transforma las hojas .xlsx en CSV (o un ZIP de CSV) directamente en tu navegador; los archivos nunca se suben, sin registro."},
+    "fr": {"title": "Convertisseur Excel vers CSV — gratuit et privé | Paper Tools", "description": "Convertissez Excel en CSV en ligne — gratuit et privé. Transformez des feuilles .xlsx en CSV (ou un ZIP de CSV) directement dans votre navigateur ; les fichiers ne sont jamais envoyés, sans inscription."},
+    "de": {"title": "Excel-zu-CSV-Konverter — kostenlos & privat | Paper Tools", "description": "Excel online in CSV umwandeln — kostenlos & privat. .xlsx-Tabellenblätter direkt im Browser in CSV (oder ein ZIP mit CSV-Dateien) umwandeln; Dateien werden nie hochgeladen, keine Anmeldung nötig."}
+  },
+  "pdfdiff": {
+    "ko": {"title": "PDF 비교 — 무료·비공개 | Paper Tools", "description": "온라인에서 두 PDF를 비교하세요 — 무료이고 비공개입니다. 두 버전 사이에서 달라진 텍스트를 브라우저에서 바로 정확히 확인할 수 있으며, 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
+    "ja": {"title": "PDF比較 — 無料・非公開 | Paper Tools", "description": "オンラインで2つのPDFを比較 — 無料・非公開。2つのバージョン間で変更されたテキストをブラウザ内で正確に確認でき、ファイルはアップロードされず、登録も不要です。"},
+    "zh": {"title": "比较 PDF — 免费且私密 | Paper Tools", "description": "在线比较两个 PDF——免费且私密。在浏览器中直接准确查看两个版本之间发生了哪些文本变化;文件绝不上传,无需注册。"},
+    "es": {"title": "Comparar PDFs — gratis y privado | Paper Tools", "description": "Compara dos PDF en línea — gratis y privado. Descubre exactamente qué texto ha cambiado entre dos versiones directamente en tu navegador; los archivos nunca se suben, sin registro."},
+    "fr": {"title": "Comparer des PDF — gratuit et privé | Paper Tools", "description": "Comparez deux PDF en ligne — gratuit et privé. Découvrez exactement quel texte a changé entre deux versions directement dans votre navigateur ; les fichiers ne sont jamais envoyés, sans inscription."},
+    "de": {"title": "PDFs vergleichen — kostenlos & privat | Paper Tools", "description": "Zwei PDFs online vergleichen — kostenlos & privat. Sehen Sie genau, welcher Text sich zwischen zwei Versionen geändert hat, direkt im Browser; Dateien werden nie hochgeladen, keine Anmeldung nötig."}
   }
 }

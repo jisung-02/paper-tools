@@ -2,7 +2,7 @@
 
 > Privacy-first PDF, image and document tools that run entirely in your browser via Go compiled to WebAssembly. Files never leave your device — free, no signup, no installs.
 
-Paper Tools is a collection of 27 client-side file tools, live at https://papertools.dev . Every tool loads a small WebAssembly module and does all processing locally in the tab; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source and built with the Go standard library only — no third-party dependencies.
+Paper Tools is a collection of 32 client-side file tools, live at https://papertools.dev . Every tool loads a small WebAssembly module and does all processing locally in the tab; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source and built with the Go standard library only — no third-party dependencies.
 
 ## Tools
 
@@ -33,6 +33,11 @@ Paper Tools is a collection of 27 client-side file tools, live at https://papert
 - [Old Hangul → PDF](https://papertools.dev/hwp2pdf/): Convert old .hwp text into a PDF (text-focused).
 - [Word → Hangul](https://papertools.dev/docx2hwpx/): Convert .docx to .hwpx (text and paragraphs only).
 - [Hangul → Word](https://papertools.dev/hwpx2docx/): Convert .hwpx to .docx (text and paragraphs only).
+- [Markdown → PDF](https://papertools.dev/md2pdf/): Convert a Markdown (.md) file to PDF, with Korean font support.
+- [Excel → CSV](https://papertools.dev/xlsx2csv/): Convert an .xlsx workbook's sheets to CSV (or a ZIP of CSVs for multiple sheets).
+- [Image Resize](https://papertools.dev/imgresize/): Shrink an image to a maximum width/height; never upscales.
+- [Stamp / Signature](https://papertools.dev/stamp/): Overlay a stamp or signature image onto PDF pages at a chosen position, size and opacity.
+- [Compare PDFs](https://papertools.dev/pdfdiff/): Compare the extracted text of two PDFs and download a diff report.
 
 ## Key facts
 
@@ -40,5 +45,7 @@ Paper Tools is a collection of 27 client-side file tools, live at https://papert
 - Free to use, for every tool, with no account or signup.
 - Works in any modern browser, on desktop or mobile, with no installation.
 - Open source: https://github.com/jisung-02/paper-tools
-- Password protection uses AES-128 encryption.
-- Document-to-PDF conversions (Word, Hangul/HWPX, old Hangul/HWP) are text-only — layout, tables and images are not preserved.
+- Password protection uses AES-256 (recommended) or AES-128 encryption.
+- Document-to-PDF conversions (Word, Hangul/HWPX, old Hangul/HWP, Markdown) are text-only — layout, tables and images are not preserved.
+- Excel → CSV keeps date cells as their raw Excel serial number, not a calendar date.
+- Compare PDFs compares extracted text only, not visual layout.

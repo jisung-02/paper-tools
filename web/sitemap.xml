@@ -337,6 +337,66 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/md2pdf/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/md2pdf/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/stamp/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/stamp/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/imgresize/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/imgresize/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/xlsx2csv/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/xlsx2csv/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/pdfdiff/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/privacy/</loc>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/privacy/"/>
@@ -683,6 +743,66 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/hwpx2docx/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/hwpx2docx/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ko/md2pdf/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/md2pdf/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ko/stamp/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/stamp/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ko/imgresize/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/imgresize/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ko/xlsx2csv/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/xlsx2csv/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ko/pdfdiff/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
   </url>
   <url>
     <loc>https://papertools.dev/ko/privacy/</loc>
@@ -1033,6 +1153,66 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/ja/md2pdf/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/md2pdf/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ja/stamp/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/stamp/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ja/imgresize/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/imgresize/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ja/xlsx2csv/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/xlsx2csv/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ja/pdfdiff/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/ja/privacy/</loc>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/privacy/"/>
@@ -1379,6 +1559,66 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/hwpx2docx/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/hwpx2docx/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/zh/md2pdf/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/md2pdf/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/zh/stamp/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/stamp/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/zh/imgresize/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/imgresize/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/zh/xlsx2csv/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/xlsx2csv/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/zh/pdfdiff/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
   </url>
   <url>
     <loc>https://papertools.dev/zh/privacy/</loc>
@@ -1729,6 +1969,66 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/es/md2pdf/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/md2pdf/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/es/stamp/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/stamp/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/es/imgresize/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/imgresize/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/es/xlsx2csv/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/xlsx2csv/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/es/pdfdiff/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/es/privacy/</loc>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/privacy/"/>
@@ -2077,6 +2377,66 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/fr/md2pdf/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/md2pdf/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/fr/stamp/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/stamp/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/fr/imgresize/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/imgresize/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/fr/xlsx2csv/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/xlsx2csv/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/fr/pdfdiff/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/fr/privacy/</loc>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/privacy/"/>
@@ -2423,6 +2783,66 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/hwpx2docx/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/hwpx2docx/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/de/md2pdf/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/md2pdf/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/md2pdf/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/de/stamp/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/stamp/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/stamp/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/de/imgresize/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/imgresize/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/imgresize/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/de/xlsx2csv/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/xlsx2csv/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/xlsx2csv/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/de/pdfdiff/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
   </url>
   <url>
     <loc>https://papertools.dev/de/privacy/</loc>

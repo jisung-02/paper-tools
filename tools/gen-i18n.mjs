@@ -15,7 +15,8 @@ const TOOL_SLUGS = [
   "merge", "interleave", "split", "remove", "reorder", "blank", "rotate",
   "crop", "resize", "nup", "img2pdf", "watermark", "pagenum", "compress",
   "metadata", "info", "protect", "unlock", "imgconv", "pdftext", "pdfimages",
-  "txt2pdf", "docx2pdf", "hwpx2pdf", "hwp2pdf", "docx2hwpx", "hwpx2docx"
+  "txt2pdf", "docx2pdf", "hwpx2pdf", "hwp2pdf", "docx2hwpx", "hwpx2docx",
+  "md2pdf", "stamp", "imgresize", "xlsx2csv", "pdfdiff"
 ];
 
 let warningCount = 0;
@@ -601,7 +602,7 @@ async function main() {
 
     // STEP 8: Print summary
     console.log(`${warningCount} missing I18N keys encountered`);
-    console.log("Generated 174 pages across 6 languages.");
+    console.log(`Generated ${LANGS_TO_GEN.length * sourcePages.length} pages across ${LANGS_TO_GEN.length} languages.`);
   } catch (error) {
     console.error("FATAL ERROR:", error.message);
     process.exit(1);
