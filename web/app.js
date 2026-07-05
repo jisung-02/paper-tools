@@ -21,6 +21,23 @@ const LANGS = [
 ];
 const LANG_CODES = LANGS.map((l) => l[0]);
 
+// localStorage can throw synchronously — Safari's "Block All Cookies" throws
+// on getItem, and private-mode Safari throws on setItem once the quota is
+// (deliberately) zero. Route every access through these so a blocked/absent
+// store degrades to "no preference" instead of crashing page boot.
+function storeGet(k) {
+  try {
+    return localStorage.getItem(k);
+  } catch (e) {
+    return null;
+  }
+}
+function storeSet(k, v) {
+  try {
+    localStorage.setItem(k, v);
+  } catch (e) {}
+}
+
 // Set to your EthicalAds publisher id to enable ads. Empty string keeps the
 // site fully local/private — initAds() below no-ops when this is empty.
 const AD_PUBLISHER = "";
@@ -53,6 +70,7 @@ const I18N = {
     "Adjust the image quality slider and the max image width.": "画像品質のスライダーと最大画像幅を調整します。",
     "After page (0 = at the very front)": "挿入位置(0=先頭)",
     "Angle": "角度",
+    "Any text — Korean (Hangul) and other Unicode characters are supported": "任意のテキスト — 韓国語(ハングル)や他のUnicode文字にも対応しています",
     "Are annotations preserved when resizing?": "サイズ変更をしても注釈は保持されますか?",
     "Are my files uploaded to a server?": "ファイルはサーバーにアップロードされますか?",
     "Are my images uploaded to a server?": "画像はサーバーにアップロードされますか?",
@@ -202,7 +220,7 @@ const I18N = {
     "Enter the pages to remove.": "削除するページを入力してください。",
     "Enter the pages you want, e.g. \"1-3,7\".": "抽出したいページを入力します。例:「1-3,7」",
     "Enter the password.": "パスワードを入力します。",
-    "Enter the watermark text (Latin letters, numbers and symbols only), and adjust size, opacity and diagonal placement.": "ウォーターマークのテキストを入力します(英数字・記号のみ)。サイズ、不透明度、斜め配置を調整します。",
+    "Enter the watermark text, and adjust size, opacity and diagonal placement.": "ウォーターマークのテキストを入力します。サイズ、不透明度、斜め配置を調整します。",
     "Enter the watermark text.": "ウォーターマークのテキストを入力してください。",
     "Excel → CSV": "Excel → CSV",
     "Extract": "抽出",
@@ -274,7 +292,6 @@ const I18N = {
     "JPEG quality": "JPEG品質",
     "JPG quality": "JPG品質",
     "Keywords": "キーワード",
-    "Latin letters, numbers and symbols only": "英数字・記号のみ",
     "Latin letters/numbers only": "英数字のみ",
     "Leave blank to keep existing value": "既存の値を保持する場合は空欄のまま",
     "Leave blank to match the user password": "ユーザーパスワードと同じにする場合は空欄のまま",
@@ -314,7 +331,6 @@ const I18N = {
     "No — links and annotations are removed, since the original page content is scaled to fit the new size.": "いいえ。元のページ内容が新しいサイズに合わせて拡大縮小されるため、リンクと注釈は削除されます。",
     "No — pages are laid out 2 or 4 per A4 sheet, but any page rotation flags in the source PDF are ignored.": "いいえ。ページはA4用紙1枚に2ページまたは4ページで配置されますが、元のPDFのページ回転情報は無視されます。",
     "No — password-protected .hwp files aren't supported; remove the password in Hangul Word Processor first.": "いいえ。パスワード保護された.hwpファイルには対応していません。先にHangul Word Processorでパスワードを解除してください。",
-    "No — the watermark font only supports Latin letters, digits and symbols; Korean (Hangul) text is not supported.": "いいえ。ウォーターマークのフォントは英数字・記号のみに対応しており、韓国語(ハングル)のテキストには対応していません。",
     "No — this is a text-focused conversion; layout, tables, images and styling are not preserved.": "いいえ。これはテキスト中心の変換であり、レイアウト・表・画像・書式は保持されません。",
     "No. Every tool runs inside your browser via WebAssembly; your files never leave your device.": "いいえ。すべてのツールはWebAssemblyを使ってブラウザ内で動作するため、ファイルがお使いの端末から外に出ることはありません。",
     "No. It works in any modern browser, on desktop or mobile.": "いいえ。最新のブラウザであれば、パソコンでもスマートフォンでも動作します。",
@@ -443,6 +459,7 @@ const I18N = {
     "Word → PDF": "Word → PDF",
     "Working…": "処理中…",
     "Yes": "はい",
+    "Yes — a Korean-capable font is embedded into the PDF automatically, so Hangul renders correctly.": "はい。韓国語(ハングル)に対応したフォントが自動的にPDFへ埋め込まれるため、ハングルも正しく表示されます。",
     "Yes — a PNG image's transparency is preserved, so a signature or stamp with a transparent background overlays cleanly onto the page.": "はい — PNG画像の透明度はそのまま保持されるため、透明な背景の署名やスタンプはページにきれいに重なります。",
     "Yes — an embedded NanumGothic font subset renders Korean (Hangul) text correctly in the PDF.": "はい。ナンムゴシックのサブセットフォントが内蔵されており、PDF内で韓国語(ハングル)のテキストが正しく表示されます。",
     "Yes — links and annotations are removed from the cropped PDF.": "はい。切り抜き後のPDFではリンクと注釈が削除されます。",
@@ -480,6 +497,7 @@ const I18N = {
     "Adjust the image quality slider and the max image width.": "调整图片质量滑块和最大图片宽度。",
     "After page (0 = at the very front)": "插入到第几页之后(0 = 最前面)",
     "Angle": "角度",
+    "Any text — Korean (Hangul) and other Unicode characters are supported": "任意文字——支持韩文(Hangul)及其他 Unicode 字符",
     "Are annotations preserved when resizing?": "调整大小时会保留注释吗?",
     "Are my files uploaded to a server?": "我的文件会上传到服务器吗?",
     "Are my images uploaded to a server?": "我的图片会上传到服务器吗?",
@@ -629,7 +647,7 @@ const I18N = {
     "Enter the pages to remove.": "请输入要删除的页面。",
     "Enter the pages you want, e.g. \"1-3,7\".": "输入需要的页面，例如“1-3,7”。",
     "Enter the password.": "输入密码。",
-    "Enter the watermark text (Latin letters, numbers and symbols only), and adjust size, opacity and diagonal placement.": "输入水印文字(仅限拉丁字母、数字和符号)，并调整大小、不透明度和对角线位置。",
+    "Enter the watermark text, and adjust size, opacity and diagonal placement.": "输入水印文字，并调整大小、不透明度和对角线位置。",
     "Enter the watermark text.": "请输入水印文字。",
     "Excel → CSV": "Excel → CSV",
     "Extract": "提取",
@@ -701,7 +719,6 @@ const I18N = {
     "JPEG quality": "JPEG 质量",
     "JPG quality": "JPG 质量",
     "Keywords": "关键词",
-    "Latin letters, numbers and symbols only": "仅限拉丁字母、数字和符号",
     "Latin letters/numbers only": "仅限拉丁字母/数字",
     "Leave blank to keep existing value": "留空以保留现有值",
     "Leave blank to match the user password": "留空以与用户密码相同",
@@ -741,7 +758,6 @@ const I18N = {
     "No — links and annotations are removed, since the original page content is scaled to fit the new size.": "不会——由于原始页面内容会缩放以适应新尺寸，链接和注释都会被移除。",
     "No — pages are laid out 2 or 4 per A4 sheet, but any page rotation flags in the source PDF are ignored.": "不会——页面会以每张 A4 纸2或4页的方式排布，但源 PDF 中的页面旋转信息会被忽略。",
     "No — password-protected .hwp files aren't supported; remove the password in Hangul Word Processor first.": "不支持——受密码保护的 .hwp 文件不受支持；请先在 Hangul Word Processor 中移除密码。",
-    "No — the watermark font only supports Latin letters, digits and symbols; Korean (Hangul) text is not supported.": "不可以——水印字体仅支持拉丁字母、数字和符号，不支持韩文(Hangul)文字。",
     "No — this is a text-focused conversion; layout, tables, images and styling are not preserved.": "不会——这是以文本为主的转换；不会保留版式、表格、图片和样式。",
     "No. Every tool runs inside your browser via WebAssembly; your files never leave your device.": "不会。所有工具都通过 WebAssembly 在您的浏览器中运行，您的文件永远不会离开您的设备。",
     "No. It works in any modern browser, on desktop or mobile.": "不需要。它可以在任何现代浏览器中运行，无论是电脑还是手机。",
@@ -870,6 +886,7 @@ const I18N = {
     "Word → PDF": "Word → PDF",
     "Working…": "处理中…",
     "Yes": "是",
+    "Yes — a Korean-capable font is embedded into the PDF automatically, so Hangul renders correctly.": "可以——系统会自动将支持韩文的字体嵌入 PDF，因此韩文(Hangul)可以正确显示。",
     "Yes — a PNG image's transparency is preserved, so a signature or stamp with a transparent background overlays cleanly onto the page.": "可以 — PNG 图片的透明度会被保留，因此带有透明背景的签名或印章可以干净地叠加到页面上。",
     "Yes — an embedded NanumGothic font subset renders Korean (Hangul) text correctly in the PDF.": "支持——内置的 NanumGothic 字体子集可在 PDF 中正确显示韩文(Hangul)文字。",
     "Yes — links and annotations are removed from the cropped PDF.": "是的——裁剪后的 PDF 中链接和注释会被移除。",
@@ -907,6 +924,7 @@ const I18N = {
     "Adjust the image quality slider and the max image width.": "Ajusta el control deslizante de calidad de imagen y el ancho máximo de imagen.",
     "After page (0 = at the very front)": "Después de la página (0 = al principio)",
     "Angle": "Ángulo",
+    "Any text — Korean (Hangul) and other Unicode characters are supported": "Cualquier texto — se admite coreano (Hangul) y otros caracteres Unicode",
     "Are annotations preserved when resizing?": "¿Se conservan las anotaciones al cambiar el tamaño?",
     "Are my files uploaded to a server?": "¿Mis archivos se suben a un servidor?",
     "Are my images uploaded to a server?": "¿Mis imágenes se suben a un servidor?",
@@ -1056,7 +1074,7 @@ const I18N = {
     "Enter the pages to remove.": "Introduce las páginas que quieres eliminar.",
     "Enter the pages you want, e.g. \"1-3,7\".": "Introduce las páginas que quieres, p. ej. «1-3,7».",
     "Enter the password.": "Introduce la contraseña.",
-    "Enter the watermark text (Latin letters, numbers and symbols only), and adjust size, opacity and diagonal placement.": "Introduce el texto de la marca de agua (solo letras, números y símbolos latinos), y ajusta el tamaño, la opacidad y la colocación diagonal.",
+    "Enter the watermark text, and adjust size, opacity and diagonal placement.": "Introduce el texto de la marca de agua, y ajusta el tamaño, la opacidad y la colocación diagonal.",
     "Enter the watermark text.": "Introduce el texto de la marca de agua.",
     "Excel → CSV": "Excel → CSV",
     "Extract": "Extraer",
@@ -1128,7 +1146,6 @@ const I18N = {
     "JPEG quality": "Calidad JPEG",
     "JPG quality": "Calidad JPG",
     "Keywords": "Palabras clave",
-    "Latin letters, numbers and symbols only": "Solo letras, números y símbolos latinos",
     "Latin letters/numbers only": "Solo letras y números latinos",
     "Leave blank to keep existing value": "Déjalo en blanco para conservar el valor actual",
     "Leave blank to match the user password": "Déjalo en blanco para que coincida con la contraseña de usuario",
@@ -1168,7 +1185,6 @@ const I18N = {
     "No — links and annotations are removed, since the original page content is scaled to fit the new size.": "No — los enlaces y las anotaciones se eliminan, ya que el contenido original de la página se escala para ajustarse al nuevo tamaño.",
     "No — pages are laid out 2 or 4 per A4 sheet, but any page rotation flags in the source PDF are ignored.": "No — las páginas se disponen 2 o 4 por hoja A4, pero cualquier indicador de rotación de página del PDF original se ignora.",
     "No — password-protected .hwp files aren't supported; remove the password in Hangul Word Processor first.": "No — los archivos .hwp protegidos con contraseña no son compatibles; primero quita la contraseña en Hangul Word Processor.",
-    "No — the watermark font only supports Latin letters, digits and symbols; Korean (Hangul) text is not supported.": "No — la fuente de la marca de agua solo admite letras, números y símbolos latinos; el texto coreano (Hangul) no es compatible.",
     "No — this is a text-focused conversion; layout, tables, images and styling are not preserved.": "No — esta es una conversión centrada en texto; no se conservan el diseño, las tablas, las imágenes ni el estilo.",
     "No. Every tool runs inside your browser via WebAssembly; your files never leave your device.": "No. Cada herramienta se ejecuta dentro de tu navegador mediante WebAssembly; tus archivos nunca salen de tu dispositivo.",
     "No. It works in any modern browser, on desktop or mobile.": "No. Funciona en cualquier navegador moderno, tanto en ordenador como en móvil.",
@@ -1297,6 +1313,7 @@ const I18N = {
     "Word → PDF": "Word → PDF",
     "Working…": "Procesando…",
     "Yes": "Sí",
+    "Yes — a Korean-capable font is embedded into the PDF automatically, so Hangul renders correctly.": "Sí — se incrusta automáticamente en el PDF una fuente compatible con coreano, de modo que el hangul se muestra correctamente.",
     "Yes — a PNG image's transparency is preserved, so a signature or stamp with a transparent background overlays cleanly onto the page.": "Sí — se conserva la transparencia de la imagen PNG, por lo que una firma o sello con fondo transparente se superpone limpiamente sobre la página.",
     "Yes — an embedded NanumGothic font subset renders Korean (Hangul) text correctly in the PDF.": "Sí — un subconjunto de fuente NanumGothic incrustado muestra correctamente el texto coreano (Hangul) en el PDF.",
     "Yes — links and annotations are removed from the cropped PDF.": "Sí — los enlaces y las anotaciones se eliminan del PDF recortado.",
@@ -1334,6 +1351,7 @@ const I18N = {
     "Adjust the image quality slider and the max image width.": "Ajustez le curseur de qualité d'image et la largeur maximale d'image.",
     "After page (0 = at the very front)": "Après la page (0 = tout au début)",
     "Angle": "Angle",
+    "Any text — Korean (Hangul) and other Unicode characters are supported": "Tout texte — le coréen (Hangul) et les autres caractères Unicode sont pris en charge",
     "Are annotations preserved when resizing?": "Les annotations sont-elles conservées lors du redimensionnement ?",
     "Are my files uploaded to a server?": "Mes fichiers sont-ils envoyés sur un serveur ?",
     "Are my images uploaded to a server?": "Mes images sont-elles envoyées sur un serveur ?",
@@ -1483,7 +1501,7 @@ const I18N = {
     "Enter the pages to remove.": "Saisissez les pages à supprimer.",
     "Enter the pages you want, e.g. \"1-3,7\".": "Saisissez les pages souhaitées, par ex. « 1-3,7 ».",
     "Enter the password.": "Saisissez le mot de passe.",
-    "Enter the watermark text (Latin letters, numbers and symbols only), and adjust size, opacity and diagonal placement.": "Saisissez le texte du filigrane (lettres, chiffres et symboles latins uniquement), et ajustez la taille, l'opacité et le placement diagonal.",
+    "Enter the watermark text, and adjust size, opacity and diagonal placement.": "Saisissez le texte du filigrane, et ajustez la taille, l'opacité et le placement diagonal.",
     "Enter the watermark text.": "Saisissez le texte du filigrane.",
     "Excel → CSV": "Excel → CSV",
     "Extract": "Extraire",
@@ -1555,7 +1573,6 @@ const I18N = {
     "JPEG quality": "Qualité JPEG",
     "JPG quality": "Qualité JPG",
     "Keywords": "Mots-clés",
-    "Latin letters, numbers and symbols only": "Lettres, chiffres et symboles latins uniquement",
     "Latin letters/numbers only": "Lettres et chiffres latins uniquement",
     "Leave blank to keep existing value": "Laissez vide pour conserver la valeur actuelle",
     "Leave blank to match the user password": "Laissez vide pour qu'il corresponde au mot de passe utilisateur",
@@ -1595,7 +1612,6 @@ const I18N = {
     "No — links and annotations are removed, since the original page content is scaled to fit the new size.": "Non — les liens et les annotations sont supprimés, car le contenu original de la page est mis à l'échelle pour s'adapter à la nouvelle taille.",
     "No — pages are laid out 2 or 4 per A4 sheet, but any page rotation flags in the source PDF are ignored.": "Non — les pages sont disposées à raison de 2 ou 4 par feuille A4, mais les indicateurs de rotation de page du PDF source sont ignorés.",
     "No — password-protected .hwp files aren't supported; remove the password in Hangul Word Processor first.": "Non — les fichiers .hwp protégés par mot de passe ne sont pas pris en charge ; supprimez d'abord le mot de passe dans Hangul Word Processor.",
-    "No — the watermark font only supports Latin letters, digits and symbols; Korean (Hangul) text is not supported.": "Non — la police du filigrane ne prend en charge que les lettres, chiffres et symboles latins ; le texte coréen (Hangul) n'est pas pris en charge.",
     "No — this is a text-focused conversion; layout, tables, images and styling are not preserved.": "Non — il s'agit d'une conversion axée sur le texte ; la mise en page, les tableaux, les images et le style ne sont pas conservés.",
     "No. Every tool runs inside your browser via WebAssembly; your files never leave your device.": "Non. Chaque outil s'exécute directement dans votre navigateur grâce à WebAssembly ; vos fichiers ne quittent jamais votre appareil.",
     "No. It works in any modern browser, on desktop or mobile.": "Non. Cela fonctionne dans n'importe quel navigateur moderne, sur ordinateur comme sur mobile.",
@@ -1724,6 +1740,7 @@ const I18N = {
     "Word → PDF": "Word → PDF",
     "Working…": "Traitement en cours…",
     "Yes": "Oui",
+    "Yes — a Korean-capable font is embedded into the PDF automatically, so Hangul renders correctly.": "Oui — une police compatible avec le coréen est automatiquement intégrée au PDF, afin que le hangul s'affiche correctement.",
     "Yes — a PNG image's transparency is preserved, so a signature or stamp with a transparent background overlays cleanly onto the page.": "Oui — la transparence de l'image PNG est conservée, de sorte qu'une signature ou un tampon à arrière-plan transparent se superpose proprement sur la page.",
     "Yes — an embedded NanumGothic font subset renders Korean (Hangul) text correctly in the PDF.": "Oui — un sous-ensemble de police NanumGothic intégré affiche correctement le texte coréen (Hangul) dans le PDF.",
     "Yes — links and annotations are removed from the cropped PDF.": "Oui — les liens et les annotations sont supprimés du PDF rogné.",
@@ -1761,6 +1778,7 @@ const I18N = {
     "Adjust the image quality slider and the max image width.": "Passen Sie den Bildqualitäts-Regler und die maximale Bildbreite an.",
     "After page (0 = at the very front)": "Nach Seite (0 = ganz am Anfang)",
     "Angle": "Winkel",
+    "Any text — Korean (Hangul) and other Unicode characters are supported": "Beliebiger Text — Koreanisch (Hangul) und andere Unicode-Zeichen werden unterstützt",
     "Are annotations preserved when resizing?": "Bleiben Anmerkungen beim Ändern der Größe erhalten?",
     "Are my files uploaded to a server?": "Werden meine Dateien auf einen Server hochgeladen?",
     "Are my images uploaded to a server?": "Werden meine Bilder auf einen Server hochgeladen?",
@@ -1910,7 +1928,7 @@ const I18N = {
     "Enter the pages to remove.": "Bitte geben Sie die zu löschenden Seiten ein.",
     "Enter the pages you want, e.g. \"1-3,7\".": "Geben Sie die gewünschten Seiten ein, z. B. „1-3,7“.",
     "Enter the password.": "Geben Sie das Passwort ein.",
-    "Enter the watermark text (Latin letters, numbers and symbols only), and adjust size, opacity and diagonal placement.": "Geben Sie den Wasserzeichentext ein (nur lateinische Buchstaben, Zahlen und Symbole) und passen Sie Größe, Deckkraft und diagonale Platzierung an.",
+    "Enter the watermark text, and adjust size, opacity and diagonal placement.": "Geben Sie den Wasserzeichentext ein und passen Sie Größe, Deckkraft und diagonale Platzierung an.",
     "Enter the watermark text.": "Bitte geben Sie den Wasserzeichentext ein.",
     "Excel → CSV": "Excel → CSV",
     "Extract": "Extrahieren",
@@ -1982,7 +2000,6 @@ const I18N = {
     "JPEG quality": "JPEG-Qualität",
     "JPG quality": "JPG-Qualität",
     "Keywords": "Schlüsselwörter",
-    "Latin letters, numbers and symbols only": "Nur lateinische Buchstaben, Zahlen und Symbole",
     "Latin letters/numbers only": "Nur lateinische Buchstaben/Zahlen",
     "Leave blank to keep existing value": "Leer lassen, um den vorhandenen Wert beizubehalten",
     "Leave blank to match the user password": "Leer lassen, um es mit dem Benutzerpasswort abzugleichen",
@@ -2022,7 +2039,6 @@ const I18N = {
     "No — links and annotations are removed, since the original page content is scaled to fit the new size.": "Nein — Links und Anmerkungen werden entfernt, da der ursprüngliche Seiteninhalt an die neue Größe angepasst wird.",
     "No — pages are laid out 2 or 4 per A4 sheet, but any page rotation flags in the source PDF are ignored.": "Nein — die Seiten werden mit 2 oder 4 pro A4-Blatt angeordnet, aber etwaige Seitenrotationsangaben im Quell-PDF werden ignoriert.",
     "No — password-protected .hwp files aren't supported; remove the password in Hangul Word Processor first.": "Nein — passwortgeschützte .hwp-Dateien werden nicht unterstützt; entfernen Sie das Passwort zuerst in Hangul Word Processor.",
-    "No — the watermark font only supports Latin letters, digits and symbols; Korean (Hangul) text is not supported.": "Nein — die Wasserzeichenschrift unterstützt nur lateinische Buchstaben, Ziffern und Symbole; koreanischer Text (Hangul) wird nicht unterstützt.",
     "No — this is a text-focused conversion; layout, tables, images and styling are not preserved.": "Nein — dies ist eine textorientierte Umwandlung; Layout, Tabellen, Bilder und Formatierung bleiben nicht erhalten.",
     "No. Every tool runs inside your browser via WebAssembly; your files never leave your device.": "Nein. Jedes Tool läuft über WebAssembly direkt in Ihrem Browser; Ihre Dateien verlassen niemals Ihr Gerät.",
     "No. It works in any modern browser, on desktop or mobile.": "Nein. Es funktioniert in jedem modernen Browser, am Desktop wie auf dem Smartphone.",
@@ -2151,6 +2167,7 @@ const I18N = {
     "Word → PDF": "Word → PDF",
     "Working…": "Wird verarbeitet …",
     "Yes": "Ja",
+    "Yes — a Korean-capable font is embedded into the PDF automatically, so Hangul renders correctly.": "Ja — eine koreanischfähige Schriftart wird automatisch in die PDF-Datei eingebettet, sodass Hangul korrekt dargestellt wird.",
     "Yes — a PNG image's transparency is preserved, so a signature or stamp with a transparent background overlays cleanly onto the page.": "Ja — die Transparenz eines PNG-Bilds bleibt erhalten, sodass eine Unterschrift oder ein Stempel mit transparentem Hintergrund sauber auf die Seite gelegt wird.",
     "Yes — an embedded NanumGothic font subset renders Korean (Hangul) text correctly in the PDF.": "Ja — ein eingebettetes NanumGothic-Schriftart-Subset stellt koreanischen Text (Hangul) im PDF korrekt dar.",
     "Yes — links and annotations are removed from the cropped PDF.": "Ja — Links und Anmerkungen werden aus dem zugeschnittenen PDF entfernt.",
@@ -2173,7 +2190,7 @@ function sanitizeLang(lang) {
 }
 
 const FIXED = window.__FIXED_LANG || "";
-let LANG = FIXED || sanitizeLang(localStorage.getItem("lang"));
+let LANG = FIXED || sanitizeLang(storeGet("lang"));
 
 function t(en, ko) {
   if (LANG === "en") return en;
@@ -2212,7 +2229,7 @@ function applyLang() {
 
 function setLang(lang) {
   const sanitized = sanitizeLang(lang);
-  localStorage.setItem("lang", sanitized);
+  storeSet("lang", sanitized);
 
   if (FIXED) {
     if (sanitized === FIXED) {
@@ -2244,13 +2261,13 @@ window.setLang = setLang;
 // whether by this function or by the language dropdown, and skips straight
 // past it.
 function detectBrowserLang() {
-  if (localStorage.getItem("lang")) return;
+  if (storeGet("lang")) return;
 
   const langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "en"];
   const prefix = String(langs[0] || "en").toLowerCase().slice(0, 2);
   const detected = LANG_CODES.indexOf(prefix) !== -1 ? prefix : "en";
 
-  localStorage.setItem("lang", detected); // persisted first: loop guard
+  storeSet("lang", detected); // persisted first: loop guard
 
   const current = FIXED || "en";
   if (detected !== current) setLang(detected);
@@ -2292,7 +2309,7 @@ function initLangSelector() {
 // one, this mirrors the `prefers-color-scheme` media query in style.css so
 // the icon matches what's actually on screen.
 function effectiveTheme() {
-  const stored = localStorage.getItem("theme");
+  const stored = storeGet("theme");
   if (stored === "light" || stored === "dark") return stored;
   return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
@@ -2311,15 +2328,35 @@ function updateThemeToggle() {
   themeToggleBtn.setAttribute("aria-label", label);
 }
 
+// The <meta name="theme-color"> tags are split into a light and a dark
+// variant, each gated on a `prefers-color-scheme` media attribute — that
+// alone keeps the browser chrome color in sync with the OS. But once the
+// visitor makes an explicit in-page choice (or one is already stored on
+// load), that choice must override the OS media query the same way
+// data-theme does, so both metas are stamped with the effective color
+// regardless of which one the media attribute would otherwise pick.
+function updateThemeColorMetas(theme) {
+  const color = theme === "dark" ? "#09090b" : "#ffffff";
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+    m.setAttribute("content", color);
+  });
+}
+
 function setTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem("theme", theme);
+  storeSet("theme", theme);
   updateThemeToggle();
+  updateThemeColorMetas(theme);
 }
 
 // Injects a toggle button next to the language <select>, inside the same
 // nav.langtoggle container so it shares its layout and visual weight.
 function initThemeToggle() {
+  // A stored theme (from a previous explicit choice) must win over the OS
+  // media query on this load too, same as theme.js does for data-theme.
+  const stored = storeGet("theme");
+  if (stored === "light" || stored === "dark") updateThemeColorMetas(stored);
+
   const nav = document.querySelector("nav.langtoggle");
   if (!nav) return;
 
@@ -2336,7 +2373,7 @@ function initThemeToggle() {
   if (window.matchMedia) {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => {
-      if (!localStorage.getItem("theme")) updateThemeToggle();
+      if (!storeGet("theme")) updateThemeToggle();
     };
     if (mq.addEventListener) mq.addEventListener("change", onChange);
     else if (mq.addListener) mq.addListener(onChange); // Safari < 14
@@ -2529,7 +2566,6 @@ const ERROR_MAP = [
   { needle: "encrypted files are not supported", en: "This PDF is password-protected. Use the Unlock tool first.", ko: "암호가 걸린 PDF입니다. 먼저 [암호 해제] 도구를 사용하세요.", ja: "このPDFはパスワードで保護されています。先に[ロック解除]ツールを使ってください。", zh: "此 PDF 受密码保护。请先使用[解锁]工具。", es: "Este PDF está protegido con contraseña. Usa primero la herramienta Desbloquear.", fr: "Ce PDF est protégé par mot de passe. Utilisez d'abord l'outil Déverrouiller.", de: "Diese PDF-Datei ist passwortgeschützt. Verwenden Sie zuerst das Tool „Entsperren\"." },
   { needle: "wrong password", en: "Incorrect password.", ko: "암호가 올바르지 않습니다.", ja: "パスワードが正しくありません。", zh: "密码不正确。", es: "Contraseña incorrecta.", fr: "Mot de passe incorrect.", de: "Falsches Passwort." },
   { needle: "only Latin-1 text is supported", en: "Watermark supports Latin letters, numbers and symbols only.", ko: "워터마크는 영문·숫자·기호만 지원합니다.", ja: "ウォーターマークは英数字・記号のみ対応しています。", zh: "水印仅支持拉丁字母、数字和符号。", es: "La marca de agua solo admite letras, números y símbolos latinos.", fr: "Le filigrane ne prend en charge que les lettres, chiffres et symboles latins.", de: "Wasserzeichen unterstützen nur lateinische Buchstaben, Zahlen und Symbole." },
-  { needle: "AES-256", en: "AES-256 encrypted files are not supported yet.", ko: "AES-256으로 암호화된 파일은 아직 지원하지 않습니다.", ja: "AES-256で暗号化されたファイルはまだ対応していません。", zh: "尚不支持 AES-256 加密的文件。", es: "Los archivos cifrados con AES-256 aún no son compatibles.", fr: "Les fichiers chiffrés avec AES-256 ne sont pas encore pris en charge.", de: "AES-256-verschlüsselte Dateien werden noch nicht unterstützt." },
   { needle: "not a PDF", en: "This doesn't look like a PDF file.", ko: "PDF 파일이 아닌 것 같습니다.", ja: "PDFファイルではないようです。", zh: "这看起来不是 PDF 文件。", es: "Esto no parece un archivo PDF.", fr: "Cela ne ressemble pas à un fichier PDF.", de: "Das sieht nicht nach einer PDF-Datei aus." },
   { needle: "unsupported format", en: "Only PNG or JPG is supported.", ko: "PNG 또는 JPG만 지원합니다.", ja: "PNGまたはJPGのみ対応しています。", zh: "仅支持 PNG 或 JPG。", es: "Solo se admiten PNG o JPG.", fr: "Seuls PNG ou JPG sont pris en charge.", de: "Nur PNG oder JPG werden unterstützt." },
   { needle: "CMYK", en: "CMYK JPEG is not supported.", ko: "CMYK JPEG는 지원하지 않습니다.", ja: "CMYKのJPEGには対応していません。", zh: "不支持 CMYK JPEG。", es: "No se admite JPEG en CMYK.", fr: "Le JPEG CMYK n'est pas pris en charge.", de: "CMYK-JPEG wird nicht unterstützt." },
@@ -2543,6 +2579,7 @@ const ERROR_MAP = [
   { needle: "xlsx 파일에 시트가 없습니다", en: "This workbook has no sheets.", ko: "xlsx 파일에 시트가 없습니다.", ja: "xlsxファイルにシートがありません。", zh: "该 xlsx 文件中没有工作表。", es: "Este libro de Excel no tiene hojas.", fr: "Ce classeur ne contient aucune feuille.", de: "Diese Arbeitsmappe enthält keine Blätter." },
   { needle: "워크시트를 찾을 수 없습니다", en: "Worksheet not found.", ko: "워크시트를 찾을 수 없습니다.", ja: "ワークシートが見つかりません。", zh: "未找到该工作表。", es: "No se encontró la hoja de cálculo.", fr: "Feuille de calcul introuvable.", de: "Arbeitsblatt nicht gefunden." },
   { needle: "xlsx 파일에 유효한 워크시트가 없습니다", en: "This workbook has no valid worksheets.", ko: "xlsx 파일에 유효한 워크시트가 없습니다.", ja: "xlsxファイルに有効なワークシートがありません。", zh: "该 xlsx 文件中没有有效的工作表。", es: "Este libro de Excel no tiene hojas de cálculo válidas.", fr: "Ce classeur ne contient aucune feuille de calcul valide.", de: "Diese Arbeitsmappe enthält keine gültigen Arbeitsblätter." },
+  { needle: "잘못된 셀 참조", en: "Invalid cell reference.", ko: "잘못된 셀 참조입니다.", ja: "無効なセル参照です。", zh: "无效的单元格引用。", es: "Referencia de celda no válida.", fr: "Référence de cellule non valide.", de: "Ungültiger Zellbezug." },
   { needle: "마크다운 내용이 비어 있습니다", en: "The Markdown content is empty.", ko: "마크다운 내용이 비어 있습니다.", ja: "Markdownの内容が空です。", zh: "Markdown 内容为空。", es: "El contenido de Markdown está vacío.", fr: "Le contenu Markdown est vide.", de: "Der Markdown-Inhalt ist leer." },
 ];
 
