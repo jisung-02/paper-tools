@@ -102,7 +102,7 @@ func StampImage(pdfData, imgData []byte, opts StampOpts) ([]byte, error) {
 			return nil
 		}
 		if !embedded {
-			ref, w, h, err := embedImage(b, imgData, 0)
+			ref, w, h, _, err := embedImage(b, imgData, 0)
 			if err != nil {
 				return err
 			}

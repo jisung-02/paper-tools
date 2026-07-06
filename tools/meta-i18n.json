@@ -96,12 +96,12 @@
     "de": {"title": "PDF N-up-Druck — kostenlos & privat | Paper Tools", "description": "Mehrere PDF-Seiten pro Blatt drucken (N-up), online — kostenlos & privat. 2 oder 4 Seiten pro Blatt direkt im Browser kombinieren; kein Upload, keine Anmeldung."}
   },
   "img2pdf": {
-    "ko": {"title": "이미지를 PDF로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 이미지를 PDF로 변환하세요 — 무료이고 비공개입니다. PNG나 JPG 이미지를 브라우저에서 바로 PDF 페이지로 만들 수 있으며, 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
-    "ja": {"title": "画像をPDFに変換 — 無料・非公開 | Paper Tools", "description": "オンラインで画像をPDFに変換 — 無料・非公開。PNGやJPG画像をブラウザ内でそのままPDFページに変換でき、ファイルはアップロードされず、登録も不要です。"},
-    "zh": {"title": "图片转 PDF — 免费且私密 | Paper Tools", "description": "在线将图片转换为 PDF——免费且私密。在浏览器中直接将 PNG 或 JPG 图片转为 PDF 页面;文件绝不上传,无需注册。"},
-    "es": {"title": "Convertir imágenes a PDF — gratis y privado | Paper Tools", "description": "Convierte imágenes a PDF en línea — gratis y privado. Transforma imágenes PNG o JPG en páginas PDF directamente en tu navegador; los archivos nunca se suben, sin registro."},
-    "fr": {"title": "Convertir des images en PDF — gratuit et privé | Paper Tools", "description": "Convertissez des images en PDF en ligne — gratuit et privé. Transformez des images PNG ou JPG en pages PDF directement dans votre navigateur ; les fichiers ne sont jamais envoyés, sans inscription."},
-    "de": {"title": "Bilder in PDF umwandeln — kostenlos & privat | Paper Tools", "description": "Bilder online in PDF umwandeln — kostenlos & privat. PNG- oder JPG-Bilder direkt im Browser in PDF-Seiten verwandeln; Dateien werden nie hochgeladen, keine Anmeldung nötig."}
+    "ko": {"title": "이미지를 PDF로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 이미지를 PDF로 변환하세요 — 무료이고 비공개입니다. PNG나 JPG 이미지를 페이지 크기, 맞춤, 여백, 회전 옵션과 함께 PDF로 만들 수 있으며 파일은 업로드되지 않습니다."},
+    "ja": {"title": "画像をPDFに変換 — 無料・非公開 | Paper Tools", "description": "オンラインで画像をPDFに変換 — 無料・非公開。PNGやJPG画像をページサイズ、合わせ方、余白、回転オプション付きでPDFにでき、ファイルはアップロードされません。"},
+    "zh": {"title": "图片转 PDF — 免费且私密 | Paper Tools", "description": "在线将图片转换为 PDF——免费且私密。可将 PNG 或 JPG 图片按页面大小、适配、边距和旋转选项转为 PDF;文件不会上传。"},
+    "es": {"title": "Convertir imágenes a PDF — gratis y privado | Paper Tools", "description": "Convierte imágenes a PDF en línea — gratis y privado. Transforma imágenes PNG o JPG en PDF con opciones de tamaño, ajuste, margen y rotación; los archivos nunca se suben."},
+    "fr": {"title": "Convertir des images en PDF — gratuit et privé | Paper Tools", "description": "Convertissez des images en PDF en ligne — gratuit et privé. Transformez des images PNG ou JPG en PDF avec options de taille, d'ajustement, de marge et de rotation; les fichiers ne sont jamais envoyés."},
+    "de": {"title": "Bilder in PDF umwandeln — kostenlos & privat | Paper Tools", "description": "Bilder online in PDF umwandeln — kostenlos & privat. PNG- oder JPG-Bilder mit Optionen für Größe, Anpassung, Rand und Drehung in PDF verwandeln; Dateien werden nie hochgeladen."}
   },
   "watermark": {
     "ko": {"title": "PDF 워터마크 추가 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF에 워터마크를 추가하세요 — 무료이고 비공개입니다. 브라우저에서 바로 모든 페이지에 대각선 텍스트를 새길 수 있으며, 업로드나 회원가입이 필요 없습니다."},

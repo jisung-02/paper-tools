@@ -16,7 +16,7 @@ Paper Tools is a collection of 34 client-side file tools, live at https://papert
 - [Crop](https://papertools.dev/crop/): Trim the margins of PDF pages.
 - [Resize](https://papertools.dev/resize/): Make every PDF page the same size (e.g. A4).
 - [N-up](https://papertools.dev/nup/): Print 2 or 4 PDF pages per sheet.
-- [Images → PDF](https://papertools.dev/img2pdf/): Turn PNG/JPG images into PDF pages, one per page.
+- [Images → PDF](https://papertools.dev/img2pdf/): Turn PNG/JPG images into PDF pages with size, fit, margin, and rotation options.
 - [Watermark](https://papertools.dev/watermark/): Stamp text diagonally across every page of a PDF.
 - [Page Numbers](https://papertools.dev/pagenum/): Add page numbers to the bottom center of a PDF.
 - [Compress](https://papertools.dev/compress/): Shrink PDF file size with compression presets, image quality, target image size and optional grayscale conversion.
