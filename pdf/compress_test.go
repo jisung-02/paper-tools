@@ -58,6 +58,92 @@ func TestCompressDownsamples(t *testing.T) {
 	}
 }
 
+func jpegPDFWithSoftMask(t *testing.T) []byte {
+	t.Helper()
+	img := image.NewNRGBA(image.Rect(0, 0, 400, 100))
+	for y := 0; y < 100; y++ {
+		for x := 0; x < 400; x++ {
+			img.SetNRGBA(x, y, color.NRGBA{R: uint8(x % 256), G: uint8(y * 2), B: 128, A: 255})
+		}
+	}
+	var jpegBuf bytes.Buffer
+	if err := jpeg.Encode(&jpegBuf, img, &jpeg.Options{Quality: 100}); err != nil {
+		t.Fatalf("jpeg.Encode: %v", err)
+	}
+
+	b := &builder{}
+	catalogRef := b.alloc()
+	pagesRef := b.alloc()
+	smaskRef := b.alloc()
+	b.objs[smaskRef.Num-1] = &Stream{
+		Dict: Dict{
+			"Type":             Name("XObject"),
+			"Subtype":          Name("Image"),
+			"Width":            400,
+			"Height":           100,
+			"BitsPerComponent": 8,
+			"ColorSpace":       Name("DeviceGray"),
+			"Filter":           Name("FlateDecode"),
+			"Length":           len(zlibDefault(bytes.Repeat([]byte{255}, 400*100))),
+		},
+		Data: zlibDefault(bytes.Repeat([]byte{255}, 400*100)),
+	}
+	imageRef := b.alloc()
+	b.objs[imageRef.Num-1] = &Stream{
+		Dict: Dict{
+			"Type":             Name("XObject"),
+			"Subtype":          Name("Image"),
+			"Width":            400,
+			"Height":           100,
+			"BitsPerComponent": 8,
+			"ColorSpace":       Name("DeviceRGB"),
+			"Filter":           Name("DCTDecode"),
+			"SMask":            smaskRef,
+			"Length":           jpegBuf.Len(),
+		},
+		Data: jpegBuf.Bytes(),
+	}
+	content := "q 400 0 0 100 0 0 cm /Im0 Do Q"
+	contentRef := b.alloc()
+	b.objs[contentRef.Num-1] = &Stream{Dict: Dict{"Length": len(content)}, Data: []byte(content)}
+	pageRef := b.alloc()
+	b.objs[pageRef.Num-1] = Dict{
+		"Type":      Name("Page"),
+		"Parent":    pagesRef,
+		"MediaBox":  Array{0, 0, 400, 100},
+		"Resources": Dict{"XObject": Dict{"Im0": imageRef}},
+		"Contents":  contentRef,
+	}
+	b.objs[pagesRef.Num-1] = Dict{"Type": Name("Pages"), "Kids": Array{pageRef}, "Count": 1}
+	b.objs[catalogRef.Num-1] = Dict{"Type": Name("Catalog"), "Pages": pagesRef}
+	return b.bytes(catalogRef)
+}
+
+func TestCompressKeepsSoftMaskedJPEGDimensions(t *testing.T) {
+	out, err := Compress(jpegPDFWithSoftMask(t), CompressOpts{MaxWidth: 200, JPEGQuality: 60})
+	if err != nil {
+		t.Fatalf("Compress: %v", err)
+	}
+	d, err := Parse(out)
+	if err != nil {
+		t.Fatalf("Parse compressed: %v", err)
+	}
+	pages, err := d.Pages()
+	if err != nil {
+		t.Fatalf("Pages: %v", err)
+	}
+	pd, _ := d.Get(pages[0].Num).(Dict)
+	res, _ := d.R(pd["Resources"]).(Dict)
+	xobjs, _ := d.R(res["XObject"]).(Dict)
+	imgObj, ok := d.R(xobjs["Im0"]).(*Stream)
+	if !ok {
+		t.Fatalf("/Im0 is not a stream")
+	}
+	if w := toFloat(d.R(imgObj.Dict["Width"])); w != 400 {
+		t.Fatalf("soft-masked JPEG width = %v, want 400", w)
+	}
+}
+
 // rawPDFWithBigStream builds a minimal one-page PDF whose content stream is
 // 10KB of repeated, highly-compressible, unfiltered text.
 func rawPDFWithBigStream() []byte {

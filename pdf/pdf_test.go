@@ -115,6 +115,17 @@ func xrefStreamPDF() []byte {
 	return buf.Bytes()
 }
 
+func negativeXrefWidthPDF() []byte {
+	var buf bytes.Buffer
+	buf.WriteString("%PDF-1.7\n")
+	off := buf.Len()
+	buf.WriteString("1 0 obj\n<< /Type /XRef /W [1 -1 1] /Size 1 /Root 1 0 R /Length 1 >>\nstream\n")
+	buf.WriteByte(1)
+	buf.WriteString("\nendstream\nendobj\n")
+	fmt.Fprintf(&buf, "startxref\n%d\n%%%%EOF\n", off)
+	return buf.Bytes()
+}
+
 func encryptedPDF() []byte {
 	var buf bytes.Buffer
 	buf.WriteString("%PDF-1.7\n")
@@ -207,6 +218,17 @@ func TestSplit(t *testing.T) {
 	}
 }
 
+func TestReorderRequiresEveryPageOnce(t *testing.T) {
+	for _, order := range []string{"2", "1,1"} {
+		if _, err := Reorder(classicPDF(), order); err == nil {
+			t.Fatalf("expected error for reorder %q", order)
+		}
+	}
+	if _, err := Reorder(classicPDF(), "2,1"); err != nil {
+		t.Fatalf("Reorder: %v", err)
+	}
+}
+
 func TestParseRanges(t *testing.T) {
 	got, err := ParseRanges("1-3,5", 10)
 	if err != nil {
@@ -234,5 +256,27 @@ func TestParseRanges(t *testing.T) {
 func TestEncrypted(t *testing.T) {
 	if _, err := Parse(encryptedPDF()); err == nil {
 		t.Fatalf("expected error for encrypted PDF")
+	}
+}
+
+func TestParseRejectsNegativeXrefStreamWidth(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("Parse panicked on malformed xref /W: %v", r)
+		}
+	}()
+	if _, err := Parse(negativeXrefWidthPDF()); err == nil {
+		t.Fatalf("expected error for negative xref /W entry")
+	}
+}
+
+func TestUnpredictRejectsInvalidPredictorDimensions(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("unpredict panicked on malformed predictor dimensions: %v", r)
+		}
+	}()
+	if _, err := unpredict([]byte{0}, 12, -2, 1, 8); err == nil {
+		t.Fatalf("expected error for invalid predictor dimensions")
 	}
 }

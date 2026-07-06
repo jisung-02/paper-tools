@@ -45,7 +45,7 @@ const AD_PUBLISHER = "";
 // Set to your Cloudflare Web Analytics token to enable cookieless traffic
 // stats. Empty string keeps the site fully local/private — initAnalytics()
 // below no-ops when this is empty.
-const CF_ANALYTICS_TOKEN = "601375b9daec4190bc475f274dcaf5bb"; // Cloudflare Web Analytics (cookieless)
+const CF_ANALYTICS_TOKEN = "";
 
 const I18N = {
   ja: {
@@ -2647,5 +2647,5 @@ function download(u8, name, mime) {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

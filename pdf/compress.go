@@ -129,6 +129,12 @@ func recodeJPEGImage(b *builder, st *Stream, opts CompressOpts) *Stream {
 	if _, ok := st.Dict["Decode"]; ok {
 		return nil
 	}
+	if _, ok := st.Dict["SMask"]; ok {
+		return nil
+	}
+	if _, ok := st.Dict["Mask"]; ok {
+		return nil
+	}
 	img, err := jpeg.Decode(bytes.NewReader(st.Data))
 	if err != nil {
 		return nil

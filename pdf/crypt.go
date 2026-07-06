@@ -704,8 +704,8 @@ func ProtectCipher(file []byte, userPw, ownerPw string, c Cipher) ([]byte, error
 // protectWith implements Protect; useRC4 selects R3/RC4-128 instead of
 // R4/AES-128, used by tests to exercise the RC4 decrypt path.
 func protectWith(file []byte, userPw, ownerPw string, useRC4 bool) ([]byte, error) {
-	if userPw == "" && ownerPw == "" {
-		return nil, fmt.Errorf("password required")
+	if userPw == "" {
+		return nil, fmt.Errorf("user password required")
 	}
 	d, err := Parse(file)
 	if err != nil {
@@ -793,8 +793,8 @@ func protectWith(file []byte, userPw, ownerPw string, useRC4 bool) ([]byte, erro
 // 32-byte file key, wrapped for both the user and owner password per
 // Algorithms 8 and 9, written out as a V=5 R=6 /AESV3 encrypt dict.
 func protectAES256(file []byte, userPw, ownerPw string) ([]byte, error) {
-	if userPw == "" && ownerPw == "" {
-		return nil, fmt.Errorf("password required")
+	if userPw == "" {
+		return nil, fmt.Errorf("user password required")
 	}
 	d, err := Parse(file)
 	if err != nil {

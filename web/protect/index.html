@@ -115,7 +115,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     showErr(err, t("Select a file.", "파일을 선택하세요."));
     return;
   }
-  if (!userPw.value && !ownerPw.value) {
+  if (!userPw.value) {
     showErr(err, t("Enter a password.", "암호를 입력하세요."));
     return;
   }

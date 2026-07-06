@@ -394,6 +394,35 @@ func Split(file []byte, ranges string) ([]byte, error) {
 	return build([]*Doc{d}, [][]Page{sel})
 }
 
+// Reorder rearranges all pages, requiring each page number exactly once.
+func Reorder(file []byte, order string) ([]byte, error) {
+	d, err := Parse(file)
+	if err != nil {
+		return nil, err
+	}
+	pages, err := d.Pages()
+	if err != nil {
+		return nil, err
+	}
+	nums, err := ParseRanges(order, len(pages))
+	if err != nil {
+		return nil, err
+	}
+	if len(nums) != len(pages) {
+		return nil, fmt.Errorf("reorder must include every page exactly once")
+	}
+	seen := map[int]bool{}
+	sel := make([]Page, len(nums))
+	for i, n := range nums {
+		if seen[n] {
+			return nil, fmt.Errorf("reorder must include every page exactly once")
+		}
+		seen[n] = true
+		sel[i] = pages[n-1]
+	}
+	return build([]*Doc{d}, [][]Page{sel})
+}
+
 // ParseRanges parses a comma-separated list of 1-based page ranges
 // ("a", "a-b", or "a-" for open-ended) against a document of n pages.
 func ParseRanges(s string, n int) ([]int, error) {

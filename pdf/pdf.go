@@ -581,6 +581,9 @@ func (d *Doc) readXrefStream(lx *lexer) (int, error) {
 		if !ok {
 			return 0, fmt.Errorf("bad /W entry")
 		}
+		if n < 0 {
+			return 0, fmt.Errorf("bad /W entry")
+		}
 		w[i] = n
 	}
 	size, _ := st.Dict["Size"].(int)
@@ -881,6 +884,9 @@ func inflate(data []byte) ([]byte, error) {
 func unpredict(data []byte, predictor, columns, colors, bpc int) ([]byte, error) {
 	if predictor <= 1 {
 		return data, nil
+	}
+	if columns <= 0 || colors <= 0 || bpc <= 0 {
+		return nil, fmt.Errorf("invalid predictor parameters")
 	}
 	if predictor == 2 {
 		if bpc != 8 {

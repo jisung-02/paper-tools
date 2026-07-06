@@ -148,6 +148,15 @@ func TestProtectEmptyPassword(t *testing.T) {
 	}
 }
 
+func TestProtectRequiresUserPassword(t *testing.T) {
+	if _, err := Protect(classicPDF(), "", "owner"); err == nil {
+		t.Fatalf("expected error for empty user password")
+	}
+	if _, err := ProtectCipher(classicPDF(), "", "owner", CipherAES256); err == nil {
+		t.Fatalf("expected AES-256 error for empty user password")
+	}
+}
+
 func TestProtectKoreanPassword(t *testing.T) {
 	_, err := Protect(classicPDF(), "한글", "")
 	if err == nil || !bytes.Contains([]byte(err.Error()), []byte("Latin-1")) {

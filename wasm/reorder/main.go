@@ -14,7 +14,7 @@ import (
 func run(args []js.Value) any {
 	file := jsu.Bytes(args[0])
 	order := args[1].String()
-	return jsu.Out(pdf.Split(file, order))
+	return jsu.Out(pdf.Reorder(file, order))
 }
 
 func main() { jsu.Register(run) }
