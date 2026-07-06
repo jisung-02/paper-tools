@@ -1,5 +1,5 @@
 import * as pdfjsLib from "/vendor/pdfjs/pdf.mjs";
-import { imageFileName, imageMime, renderScale } from "./names.mjs";
+import { imageFileName, imageMime, jpegQuality, pageNumbers, renderScale } from "./names.mjs";
 import { zipStore } from "./zip.mjs";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/vendor/pdfjs/pdf.worker.mjs";
@@ -9,6 +9,8 @@ const btn = document.getElementById("run");
 const err = document.getElementById("err");
 const fmt = document.getElementById("fmt");
 const scale = document.getElementById("scale");
+const pages = document.getElementById("pages");
+const quality = document.getElementById("quality");
 const statusEl = document.getElementById("status");
 
 if (statusEl) statusEl.hidden = true;
@@ -20,11 +22,11 @@ btn.addEventListener("click", () => window.run(btn, async () => {
     return;
   }
   const bytes = await window.fileBytes(fileDz.files[0]);
-  const zip = await renderPdfToZip(bytes, fmt.value, renderScale(scale.value));
+  const zip = await renderPdfToZip(bytes, fmt.value, renderScale(scale.value), pages.value, jpegQuality(quality.value));
   window.download(zip, "pdf-pages.zip", "application/zip");
 }));
 
-async function renderPdfToZip(bytes, format, scaleValue) {
+async function renderPdfToZip(bytes, format, scaleValue, pageRange, qualityValue) {
   let doc;
   let task;
   try {
@@ -45,7 +47,7 @@ async function renderPdfToZip(bytes, format, scaleValue) {
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) throw new Error("Canvas is not available.");
 
-    for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber++) {
+    for (const pageNumber of pageNumbers(pageRange, doc.numPages)) {
       const page = await doc.getPage(pageNumber);
       const viewport = page.getViewport({ scale: scaleValue });
       canvas.width = Math.ceil(viewport.width);
@@ -55,7 +57,7 @@ async function renderPdfToZip(bytes, format, scaleValue) {
       await page.render({ canvasContext: ctx, viewport }).promise;
       files.push({
         name: imageFileName(pageNumber, format),
-        data: await canvasBytes(canvas, imageMime(format)),
+        data: await canvasBytes(canvas, imageMime(format), qualityValue),
       });
     }
 
@@ -70,8 +72,8 @@ async function renderPdfToZip(bytes, format, scaleValue) {
   }
 }
 
-async function canvasBytes(canvas, mime) {
-  const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, 0.9));
+async function canvasBytes(canvas, mime, qualityValue) {
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, qualityValue));
   if (!blob) throw new Error("Image export failed.");
   return new Uint8Array(await blob.arrayBuffer());
 }
