@@ -2,7 +2,7 @@
 
 > Privacy-first PDF, image and document tools that run entirely in your browser. Files never leave your device — free, no signup, no installs.
 
-Paper Tools is a collection of 32 client-side file tools, live at https://papertools.dev . Every tool runs entirely in the tab and does all processing locally; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source.
+Paper Tools is a collection of 33 client-side file tools, live at https://papertools.dev . Every tool runs entirely in the tab and does all processing locally; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source.
 
 ## Tools
 
@@ -26,6 +26,7 @@ Paper Tools is a collection of 32 client-side file tools, live at https://papert
 - [Unlock](https://papertools.dev/unlock/): Remove a known password from a PDF.
 - [Image Convert](https://papertools.dev/imgconv/): Convert images between PNG, JPG and GIF.
 - [PDF → Text](https://papertools.dev/pdftext/): Extract selectable text from a PDF to a .txt file.
+- [PDF → Images](https://papertools.dev/pdf2img/): Render every PDF page as PNG or JPG images in a ZIP.
 - [Extract Images](https://papertools.dev/pdfimages/): Pull embedded images out of a PDF into a ZIP.
 - [Text → PDF](https://papertools.dev/txt2pdf/): Turn text into a PDF, with Korean font support.
 - [Word → PDF](https://papertools.dev/docx2pdf/): Convert .docx text into a PDF (text-focused).

@@ -5,6 +5,7 @@ import (
 	"compress/zlib"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -43,6 +44,17 @@ func zlibCompress(data []byte) []byte {
 	w.Write(data)
 	w.Close()
 	return buf.Bytes()
+}
+
+func TestInflateRejectsOversizedOutput(t *testing.T) {
+	raw := bytes.Repeat([]byte{'A'}, maxInflateBytes+1)
+	_, err := inflate(zlibCompress(raw))
+	if err == nil {
+		t.Fatal("expected oversized inflate output to fail")
+	}
+	if !strings.Contains(err.Error(), "too large") {
+		t.Fatalf("expected too large error, got %v", err)
+	}
 }
 
 // xrefStreamPDF builds a modern-layout PDF: catalog/Pages/page objects

@@ -306,3 +306,123 @@ func TestStampImage_UnsupportedImageFormat(t *testing.T) {
 		t.Fatalf("expected error for unsupported image format")
 	}
 }
+
+func TestStampText_BottomRightAnchor(t *testing.T) {
+	out, err := StampText(classicPDF(), StampTextOpts{
+		Text:     "OK",
+		Position: PosBottomRight,
+		FontSize: 24,
+		MarginPt: 24,
+		Opacity:  0.75,
+		Pages:    "1",
+	})
+	if err != nil {
+		t.Fatalf("StampText: %v", err)
+	}
+	d, err := Parse(out)
+	if err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	pages, err := d.Pages()
+	if err != nil {
+		t.Fatalf("Pages: %v", err)
+	}
+
+	pd1 := d.Get(pages[0].Num).(Dict)
+	data, has := lastContentData(t, d, pd1)
+	if !has {
+		t.Fatalf("page1 missing Contents")
+	}
+	// page1 (612x792 MediaBox): approximate text width = 0.5*24*2 = 24.
+	// x = 612 - 24 - 24 = 564, y = 0 + 24 = 24.
+	want := "1 0 0 1 564.00 24.00 Tm (OK) Tj"
+	if !bytes.Contains(data, []byte(want)) {
+		t.Errorf("page1 content = %q, want substring %q", data, want)
+	}
+	if !bytes.Contains(data, []byte("/GSStT0 gs BT /FStT0 24.00 Tf")) {
+		t.Errorf("page1 content missing text resources: %s", data)
+	}
+
+	res, ok := d.R(pd1["Resources"]).(Dict)
+	if !ok {
+		t.Fatalf("page1 missing Resources")
+	}
+	fonts, ok := d.R(res["Font"]).(Dict)
+	if !ok || fonts["FStT0"] == nil {
+		t.Fatalf("page1 missing /FStT0 font resource")
+	}
+	gs, ok := d.R(res["ExtGState"]).(Dict)
+	if !ok {
+		t.Fatalf("page1 missing ExtGState resources")
+	}
+	gsDict, ok := d.R(gs["GSStT0"]).(Dict)
+	if !ok {
+		t.Fatalf("GSStT0 is not a dict")
+	}
+	if ca := toFloat(gsDict["ca"]); ca != 0.75 {
+		t.Errorf("ExtGState ca = %v want 0.75", ca)
+	}
+
+	pd2 := d.Get(pages[1].Num).(Dict)
+	if _, has := lastContentData(t, d, pd2); has {
+		t.Errorf("page2 should not have been stamped")
+	}
+}
+
+func TestStampText_EmbedsUnicodeFont(t *testing.T) {
+	font := testFont(t)
+	text := "승인"
+	f, err := parseTTF(font)
+	if err != nil {
+		t.Fatalf("parseTTF: %v", err)
+	}
+	width := lineWidth(f, []rune(text), 18)
+
+	out, err := StampText(classicPDF(), StampTextOpts{
+		Text:     text,
+		FontTTF:  font,
+		Position: PosTopCenter,
+		FontSize: 18,
+		MarginPt: 30,
+		Pages:    "first",
+	})
+	if err != nil {
+		t.Fatalf("StampText: %v", err)
+	}
+	d, err := Parse(out)
+	if err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	pages, err := d.Pages()
+	if err != nil {
+		t.Fatalf("Pages: %v", err)
+	}
+	pd1 := d.Get(pages[0].Num).(Dict)
+	data, has := lastContentData(t, d, pd1)
+	if !has {
+		t.Fatalf("page1 missing Contents")
+	}
+	want := fmt.Sprintf("1 0 0 1 %.2f 744.00 Tm <", 306-width/2)
+	if !bytes.Contains(data, []byte(want)) {
+		t.Errorf("page1 content = %q, want substring %q", data, want)
+	}
+	if bytes.Contains(data, []byte(text)) {
+		t.Errorf("unicode text should be hex-encoded, got literal text in content: %s", data)
+	}
+
+	res, ok := d.R(pd1["Resources"]).(Dict)
+	if !ok {
+		t.Fatalf("page1 missing Resources")
+	}
+	fonts, ok := d.R(res["Font"]).(Dict)
+	if !ok {
+		t.Fatalf("page1 missing Font resources")
+	}
+	fontObj, ok := d.R(fonts["FStT0"]).(Dict)
+	if !ok {
+		t.Fatalf("/FStT0 is not a font dict")
+	}
+	if subtype, _ := d.R(fontObj["Subtype"]).(Name); subtype != "Type0" {
+		t.Errorf("/FStT0 subtype = %v want Type0", subtype)
+	}
+}

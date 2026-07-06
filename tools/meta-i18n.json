@@ -1,11 +1,11 @@
 {
   "": {
-    "ko": {"title": "Paper Tools — 브라우저 속 PDF 도구", "description": "32가지 파일 도구. 업로드도 설치도 필요 없이, 이 탭에서 바로 사용하세요."},
-    "ja": {"title": "Paper Tools — ブラウザ内のPDFツール", "description": "32種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。"},
-    "zh": {"title": "Paper Tools — 浏览器内的PDF工具", "description": "32 款文件工具。无需上传,无需安装——就在这个标签页中直接使用。"},
-    "es": {"title": "Paper Tools — PDF en tu navegador", "description": "32 herramientas de archivos. Sin subidas ni instalaciones: todo aquí mismo, en esta pestaña."},
-    "fr": {"title": "Paper Tools — PDF dans votre navigateur", "description": "32 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet."},
-    "de": {"title": "Paper Tools — PDF-Tools im Browser", "description": "32 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab."}
+    "ko": {"title": "Paper Tools — 브라우저 속 PDF 도구", "description": "33가지 파일 도구. 업로드도 설치도 필요 없이, 이 탭에서 바로 사용하세요."},
+    "ja": {"title": "Paper Tools — ブラウザ内のPDFツール", "description": "33種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。"},
+    "zh": {"title": "Paper Tools — 浏览器内的PDF工具", "description": "33 款文件工具。无需上传,无需安装——就在这个标签页中直接使用。"},
+    "es": {"title": "Paper Tools — PDF en tu navegador", "description": "33 herramientas de archivos. Sin subidas ni instalaciones: todo aquí mismo, en esta pestaña."},
+    "fr": {"title": "Paper Tools — PDF dans votre navigateur", "description": "33 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet."},
+    "de": {"title": "Paper Tools — PDF-Tools im Browser", "description": "33 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab."}
   },
   "privacy": {
     "ko": {"title": "개인정보 처리방침 — Paper Tools", "description": "Paper Tools가 파일을 다루는 방식: 모든 작업이 브라우저에서 실행되며, 어떤 파일도 업로드되지 않습니다."},
@@ -183,6 +183,14 @@
     "fr": {"title": "Extraire les images d'un PDF — gratuit et privé | Paper Tools", "description": "Extrayez les images d'un PDF en ligne — gratuit et privé. Récupérez les images intégrées dans un fichier ZIP directement dans votre navigateur ; les fichiers ne sont jamais envoyés, sans inscription."},
     "de": {"title": "Bilder aus PDF extrahieren — kostenlos & privat | Paper Tools", "description": "Bilder online aus einem PDF extrahieren — kostenlos & privat. Eingebettete Bilder direkt im Browser in eine ZIP-Datei ziehen; Dateien werden nie hochgeladen, keine Anmeldung nötig."}
   },
+  "pdf2img": {
+    "ko": {"title": "PDF를 이미지로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF 페이지를 이미지로 변환하세요 — 무료이고 비공개입니다. 브라우저에서 바로 각 페이지를 PNG 또는 JPG로 렌더링해 ZIP으로 내려받을 수 있으며, 파일은 업로드되지 않습니다."},
+    "ja": {"title": "PDFを画像に変換 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFページを画像に変換 — 無料・非公開。ブラウザ内で各ページをPNGまたはJPGとしてレンダリングし、ZIPでダウンロードできます。ファイルはアップロードされません。"},
+    "zh": {"title": "PDF 转图片 — 免费且私密 | Paper Tools", "description": "在线将 PDF 页面转换为图片——免费且私密。在浏览器中直接将每一页渲染为 PNG 或 JPG，并打包为 ZIP 下载；文件绝不上传。"},
+    "es": {"title": "PDF a imágenes — gratis y privado | Paper Tools", "description": "Convierte páginas PDF en imágenes en línea — gratis y privado. Renderiza cada página como PNG o JPG directamente en tu navegador y descarga un ZIP; los archivos nunca se suben."},
+    "fr": {"title": "PDF vers images — gratuit et privé | Paper Tools", "description": "Convertissez des pages PDF en images en ligne — gratuit et privé. Rendez chaque page en PNG ou JPG directement dans votre navigateur et téléchargez un ZIP ; les fichiers ne sont jamais envoyés."},
+    "de": {"title": "PDF in Bilder umwandeln — kostenlos & privat | Paper Tools", "description": "PDF-Seiten online in Bilder umwandeln — kostenlos & privat. Jede Seite direkt im Browser als PNG oder JPG rendern und als ZIP herunterladen; Dateien werden nie hochgeladen."}
+  },
   "txt2pdf": {
     "ko": {"title": "텍스트를 PDF로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 텍스트를 PDF로 변환하세요 — 무료이고 비공개이며 한글도 지원합니다. 브라우저에서 바로 텍스트를 붙여넣거나 .txt 파일을 끌어다 놓을 수 있으며, 업로드나 회원가입이 필요 없습니다."},
     "ja": {"title": "テキストをPDFに変換 — 無料・非公開 | Paper Tools", "description": "オンラインでテキストをPDFに変換 — 無料・非公開、韓国語にも対応。ブラウザ内でテキストを貼り付けるか.txtファイルをドロップするだけ、アップロードも登録も不要です。"},
@@ -240,12 +248,12 @@
     "de": {"title": "Markdown in PDF umwandeln — kostenlos & privat | Paper Tools", "description": "Markdown online in PDF umwandeln — kostenlos & privat, mit Unterstützung für Koreanisch. Eine .md-Datei direkt im Browser ablegen; kein Upload, keine Anmeldung."}
   },
   "stamp": {
-    "ko": {"title": "PDF 도장·서명 삽입 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF에 도장이나 서명을 추가하세요 — 무료이고 비공개입니다. 원하는 위치·크기·불투명도로 PNG/JPG 이미지를 브라우저에서 바로 올릴 수 있으며, 업로드나 회원가입이 필요 없습니다."},
-    "ja": {"title": "PDFにスタンプ・署名を追加 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFにスタンプや署名を追加 — 無料・非公開。好きな位置・サイズ・不透明度でPNG/JPG画像をブラウザ内でそのまま配置でき、アップロードも登録も不要です。"},
-    "zh": {"title": "PDF 添加印章/签名 — 免费且私密 | Paper Tools", "description": "在线为 PDF 添加印章或签名——免费且私密。在浏览器中直接以任意位置、大小和不透明度放置 PNG/JPG 图片;无需上传,无需注册。"},
-    "es": {"title": "Sello / Firma en PDF — gratis y privado | Paper Tools", "description": "Añade un sello o una firma a un PDF en línea — gratis y privado. Coloca una imagen PNG/JPG en cualquier posición, tamaño y opacidad directamente en tu navegador; sin subidas, sin registro."},
-    "fr": {"title": "Tampon / Signature sur PDF — gratuit et privé | Paper Tools", "description": "Ajoutez un tampon ou une signature à un PDF en ligne — gratuit et privé. Placez une image PNG/JPG à la position, la taille et l'opacité de votre choix directement dans votre navigateur ; sans envoi, sans inscription."},
-    "de": {"title": "Stempel / Unterschrift auf PDF — kostenlos & privat | Paper Tools", "description": "Online einen Stempel oder eine Unterschrift zu einem PDF hinzufügen — kostenlos & privat. Ein PNG/JPG-Bild an beliebiger Position, Größe und Deckkraft direkt im Browser platzieren; kein Upload, keine Anmeldung."}
+    "ko": {"title": "PDF 도장·서명 삽입 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF에 도장, 서명, 날짜, 입력한 텍스트를 추가하세요 — 무료이고 비공개입니다. PNG/JPG 이미지나 한글 지원 텍스트를 브라우저에서 원하는 위치에 바로 올릴 수 있으며, 업로드나 회원가입이 필요 없습니다."},
+    "ja": {"title": "PDFにスタンプ・署名を追加 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFにスタンプ、署名、日付、入力テキストを追加 — 無料・非公開。PNG/JPG画像またはUnicodeテキストをブラウザ内で好きな位置に配置でき、アップロードも登録も不要です。"},
+    "zh": {"title": "PDF 添加印章/签名 — 免费且私密 | Paper Tools", "description": "在线为 PDF 添加印章、签名、日期或输入的文字——免费且私密。可在浏览器中把 PNG/JPG 图片或 Unicode 文字直接放到任意位置;无需上传,无需注册。"},
+    "es": {"title": "Sello / Firma en PDF — gratis y privado | Paper Tools", "description": "Añade un sello, una firma, una fecha o texto escrito a un PDF en línea — gratis y privado. Coloca una imagen PNG/JPG o texto Unicode en cualquier posición directamente en tu navegador; sin subidas, sin registro."},
+    "fr": {"title": "Tampon / Signature sur PDF — gratuit et privé | Paper Tools", "description": "Ajoutez un tampon, une signature, une date ou du texte saisi à un PDF en ligne — gratuit et privé. Placez une image PNG/JPG ou du texte Unicode à la position voulue directement dans votre navigateur ; sans envoi, sans inscription."},
+    "de": {"title": "Stempel / Unterschrift auf PDF — kostenlos & privat | Paper Tools", "description": "Online einen Stempel, eine Unterschrift, ein Datum oder eingegebenen Text zu einem PDF hinzufügen — kostenlos & privat. Ein PNG/JPG-Bild oder Unicode-Text direkt im Browser an beliebiger Position platzieren; kein Upload, keine Anmeldung."}
   },
   "imgresize": {
     "ko": {"title": "이미지 크기 조정 — 무료·비공개 | Paper Tools", "description": "온라인에서 이미지 크기를 조정하세요 — 무료이고 비공개입니다. PNG, JPG, GIF를 브라우저에서 바로 최대 너비·높이에 맞게 줄일 수 있으며, 확대하지 않고 업로드나 회원가입도 필요 없습니다."},

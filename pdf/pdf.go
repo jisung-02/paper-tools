@@ -15,6 +15,10 @@ import (
 // ErrEncrypted is returned by Parse when the document has an /Encrypt entry.
 var ErrEncrypted = errors.New("encrypted files are not supported")
 
+const maxInflateBytes = 64 << 20
+
+var errInflateTooLarge = errors.New("inflated stream too large")
+
 type Ref struct{ Num, Gen int }
 type Name string
 type Dict map[Name]any
@@ -868,15 +872,33 @@ func (d *Doc) decodeStream(s *Stream) ([]byte, error) { return decodeStreamWith(
 
 func inflate(data []byte) ([]byte, error) {
 	if zr, err := zlib.NewReader(bytes.NewReader(data)); err == nil {
-		if out, err2 := io.ReadAll(zr); err2 == nil {
+		out, err2 := readAllInflateLimited(zr)
+		zr.Close()
+		if err2 == nil {
 			return out, nil
+		}
+		if errors.Is(err2, errInflateTooLarge) {
+			return nil, err2
 		}
 	}
 	// Some files omit the zlib header; fall back to raw deflate.
 	fr := flate.NewReader(bytes.NewReader(data))
-	out, err := io.ReadAll(fr)
+	out, err := readAllInflateLimited(fr)
+	fr.Close()
 	if err != nil {
 		return nil, fmt.Errorf("inflate: %w", err)
+	}
+	return out, nil
+}
+
+func readAllInflateLimited(r io.Reader) ([]byte, error) {
+	lr := &io.LimitedReader{R: r, N: maxInflateBytes + 1}
+	out, err := io.ReadAll(lr)
+	if err != nil {
+		return nil, err
+	}
+	if len(out) > maxInflateBytes {
+		return nil, fmt.Errorf("%w: limit %d bytes", errInflateTooLarge, maxInflateBytes)
 	}
 	return out, nil
 }

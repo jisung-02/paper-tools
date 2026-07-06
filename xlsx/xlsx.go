@@ -9,9 +9,12 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 )
+
+const maxZipEntryBytes = 64 << 20
 
 // Sheet holds one worksheet's name and its CSV-encoded contents.
 type Sheet struct {
@@ -177,14 +180,21 @@ func ToCSV(data []byte) ([]Sheet, error) {
 
 // readZipFile fully reads a *zip.File's contents.
 func readZipFile(f *zip.File) ([]byte, error) {
+	if f.UncompressedSize64 > maxZipEntryBytes {
+		return nil, fmt.Errorf("xlsx entry %q too large: limit %d bytes", f.Name, maxZipEntryBytes)
+	}
 	rc, err := f.Open()
 	if err != nil {
 		return nil, err
 	}
 	defer rc.Close()
+	lr := &io.LimitedReader{R: rc, N: maxZipEntryBytes + 1}
 	var buf bytes.Buffer
-	if _, err := buf.ReadFrom(rc); err != nil {
+	if _, err := buf.ReadFrom(lr); err != nil {
 		return nil, err
+	}
+	if buf.Len() > maxZipEntryBytes {
+		return nil, fmt.Errorf("xlsx entry %q too large: limit %d bytes", f.Name, maxZipEntryBytes)
 	}
 	return buf.Bytes(), nil
 }

@@ -3,6 +3,7 @@ package xlsx
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/binary"
 	"strings"
 	"testing"
 )
@@ -40,6 +41,23 @@ func buildXlsx(entries []zipEntry) []byte {
 		panic(err)
 	}
 	return buf.Bytes()
+}
+
+func patchZipUncompressedSize(data []byte, size uint32) []byte {
+	out := append([]byte(nil), data...)
+	const (
+		localHeaderSig   = 0x04034b50
+		centralHeaderSig = 0x02014b50
+	)
+	for i := 0; i+30 <= len(out); i++ {
+		switch binary.LittleEndian.Uint32(out[i:]) {
+		case localHeaderSig:
+			binary.LittleEndian.PutUint32(out[i+22:], size)
+		case centralHeaderSig:
+			binary.LittleEndian.PutUint32(out[i+24:], size)
+		}
+	}
+	return out
 }
 
 func workbookXMLFor(sheetNames ...string) string {
@@ -227,5 +245,33 @@ func TestToCSV_InvalidZip(t *testing.T) {
 	_, err := ToCSV([]byte("not a zip file at all"))
 	if err == nil {
 		t.Fatal("expected error for non-zip input")
+	}
+}
+
+func TestReadZipFileRejectsOversizedDeclaredEntry(t *testing.T) {
+	data := buildXlsx([]zipEntry{{"xl/workbook.xml", "x"}})
+	data = patchZipUncompressedSize(data, uint32(maxZipEntryBytes+1))
+
+	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	if err != nil {
+		t.Fatalf("zip.NewReader: %v", err)
+	}
+	var workbook *zip.File
+	for _, f := range zr.File {
+		if f.Name == "xl/workbook.xml" {
+			workbook = f
+			break
+		}
+	}
+	if workbook == nil {
+		t.Fatal("missing workbook entry")
+	}
+
+	_, err = readZipFile(workbook)
+	if err == nil {
+		t.Fatal("expected oversized zip entry to fail")
+	}
+	if !strings.Contains(err.Error(), "too large") {
+		t.Fatalf("expected too large error, got %v", err)
 	}
 }

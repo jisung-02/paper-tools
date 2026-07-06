@@ -30,6 +30,17 @@ type StampOpts struct {
 	Pages        string   // ParseRanges syntax ("1-3,5"), "first", "last", or "" for all pages
 }
 
+// StampTextOpts configures StampText.
+type StampTextOpts struct {
+	Text     string
+	FontTTF  []byte   // optional TrueType font bytes for Unicode text
+	Position Position // "" -> bottom-right
+	FontSize float64  // <=0 -> 24
+	MarginPt float64  // <=0 -> 24
+	Opacity  float64  // <=0 -> 1 (fully opaque), clamped to (0,1]
+	Pages    string   // ParseRanges syntax ("1-3,5"), "first", "last", or "" for all pages
+}
+
 // validPositions enumerates the nine accepted Position values.
 var validPositions = map[Position]bool{
 	PosTopLeft: true, PosTopCenter: true, PosTopRight: true,
@@ -115,6 +126,116 @@ func StampImage(pdfData, imgData []byte, opts StampOpts) ([]byte, error) {
 		b.ownedSub(res, "XObject")["StIm0"] = xobjRef
 		b.ownedSub(res, "ExtGState")["GSSt0"] = b.gstateRef(opacity)
 		ops := fmt.Sprintf("/GSSt0 gs %.2f 0 0 %.2f %.2f %.2f cm /StIm0 Do", drawW, drawH, x, y)
+		b.appendContent(pd, []byte(ops))
+		return nil
+	}
+
+	return buildWith([]*Doc{d}, [][]Page{pages}, mut)
+}
+
+// StampText overlays a text label onto selected pages at one of the same fixed
+// anchor positions as StampImage. With FontTTF it embeds a small Type0 subset
+// so Unicode text, including Korean, can be stamped.
+func StampText(pdfData []byte, opts StampTextOpts) ([]byte, error) {
+	text := strings.TrimSpace(opts.Text)
+	if text == "" {
+		return nil, fmt.Errorf("stamp text is empty")
+	}
+	pos := opts.Position
+	if pos == "" {
+		pos = PosBottomRight
+	}
+	if !validPositions[pos] {
+		return nil, fmt.Errorf("unknown stamp position %q", pos)
+	}
+	fontSize := opts.FontSize
+	if fontSize <= 0 {
+		fontSize = 24
+	}
+	margin := opts.MarginPt
+	if margin <= 0 {
+		margin = 24
+	}
+	opacity := opts.Opacity
+	if opacity <= 0 {
+		opacity = 1
+	}
+	if opacity > 1 {
+		opacity = 1
+	}
+
+	var f *ttfFont
+	var esc string
+	var width float64
+	usedRunes := []rune(text)
+	if len(opts.FontTTF) > 0 {
+		var err error
+		f, err = parseTTF(opts.FontTTF)
+		if err != nil {
+			return nil, err
+		}
+		f.markUsed(usedRunes...)
+		width = lineWidth(f, usedRunes, fontSize)
+	} else {
+		var err error
+		esc, err = escapeText(text)
+		if err != nil {
+			return nil, err
+		}
+		width = 0.5 * fontSize * float64(len(usedRunes))
+	}
+
+	d, err := Parse(pdfData)
+	if err != nil {
+		return nil, err
+	}
+	pages, err := d.Pages()
+	if err != nil {
+		return nil, err
+	}
+	sel, err := selectedSet(mapPageAlias(opts.Pages, len(pages)), len(pages))
+	if err != nil {
+		return nil, err
+	}
+
+	var type0Ref Ref
+	embedded := false
+
+	mut := func(b *builder, pageIndex int, pd Dict, m map[int]Ref) error {
+		if !sel[pageIndex+1] {
+			return nil
+		}
+
+		x0, y0, x1, y1, ok := b.rect(pd["CropBox"])
+		if !ok {
+			x0, y0, x1, y1, ok = b.rect(pd["MediaBox"])
+		}
+		if !ok {
+			x0, y0, x1, y1 = 0, 0, 612, 792
+		}
+		x, y := anchorXY(pos, x0, y0, x1, y1, width, fontSize, margin)
+
+		res := b.ensureResources(pd)
+		b.ownedSub(res, "ExtGState")["GSStT0"] = b.gstateRef(opacity)
+
+		var ops string
+		if f != nil {
+			if !embedded {
+				var err error
+				type0Ref, err = embedTTF(b, f, usedRunes)
+				if err != nil {
+					return err
+				}
+				embedded = true
+			}
+			b.ownedSub(res, "Font")["FStT0"] = type0Ref
+			ops = fmt.Sprintf("/GSStT0 gs BT /FStT0 %.2f Tf 0 g 1 0 0 1 %.2f %.2f Tm <%X> Tj ET",
+				fontSize, x, y, f.encode(text))
+		} else {
+			b.ownedSub(res, "Font")["FStT0"] = b.helveticaRef()
+			ops = fmt.Sprintf("/GSStT0 gs BT /FStT0 %.2f Tf 0 g 1 0 0 1 %.2f %.2f Tm (%s) Tj ET",
+				fontSize, x, y, esc)
+		}
 		b.appendContent(pd, []byte(ops))
 		return nil
 	}
