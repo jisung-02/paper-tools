@@ -116,7 +116,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     return;
   }
   if (!userPw.value) {
-    showErr(err, t("Enter a password.", "암호를 입력하세요."));
+    showErr(err, t("Enter a password.", "사용자 암호를 입력하세요."));
     return;
   }
   const file = await fileBytes(fileDz.files[0]);

@@ -10,7 +10,7 @@ import (
 )
 
 // pdfRun(file, order) -> PDF bytes with pages in the given order.
-// Reordering is just an extraction whose ranges list every page once.
+// Reorder rejects missing or duplicated pages instead of behaving like extract.
 func run(args []js.Value) any {
 	file := jsu.Bytes(args[0])
 	order := args[1].String()

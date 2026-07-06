@@ -70,6 +70,7 @@ func jpegPDFWithSoftMask(t *testing.T) []byte {
 	if err := jpeg.Encode(&jpegBuf, img, &jpeg.Options{Quality: 100}); err != nil {
 		t.Fatalf("jpeg.Encode: %v", err)
 	}
+	maskData := zlibDefault(bytes.Repeat([]byte{255}, 400*100))
 
 	b := &builder{}
 	catalogRef := b.alloc()
@@ -84,9 +85,9 @@ func jpegPDFWithSoftMask(t *testing.T) []byte {
 			"BitsPerComponent": 8,
 			"ColorSpace":       Name("DeviceGray"),
 			"Filter":           Name("FlateDecode"),
-			"Length":           len(zlibDefault(bytes.Repeat([]byte{255}, 400*100))),
+			"Length":           len(maskData),
 		},
-		Data: zlibDefault(bytes.Repeat([]byte{255}, 400*100)),
+		Data: maskData,
 	}
 	imageRef := b.alloc()
 	b.objs[imageRef.Num-1] = &Stream{
