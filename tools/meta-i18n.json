@@ -1,11 +1,11 @@
 {
   "": {
-    "ko": {"title": "Paper Tools — 브라우저 속 PDF 도구", "description": "33가지 파일 도구. 업로드도 설치도 필요 없이, 이 탭에서 바로 사용하세요."},
-    "ja": {"title": "Paper Tools — ブラウザ内のPDFツール", "description": "33種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。"},
-    "zh": {"title": "Paper Tools — 浏览器内的PDF工具", "description": "33 款文件工具。无需上传,无需安装——就在这个标签页中直接使用。"},
-    "es": {"title": "Paper Tools — PDF en tu navegador", "description": "33 herramientas de archivos. Sin subidas ni instalaciones: todo aquí mismo, en esta pestaña."},
-    "fr": {"title": "Paper Tools — PDF dans votre navigateur", "description": "33 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet."},
-    "de": {"title": "Paper Tools — PDF-Tools im Browser", "description": "33 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab."}
+    "ko": {"title": "Paper Tools — 브라우저 속 PDF 도구", "description": "34가지 파일 도구. 업로드도 설치도 필요 없이, 이 탭에서 바로 사용하세요."},
+    "ja": {"title": "Paper Tools — ブラウザ内のPDFツール", "description": "34種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。"},
+    "zh": {"title": "Paper Tools — 浏览器内的PDF工具", "description": "34 款文件工具。无需上传,无需安装——就在这个标签页中直接使用。"},
+    "es": {"title": "Paper Tools — PDF en tu navegador", "description": "34 herramientas de archivos. Sin subidas ni instalaciones: todo aquí mismo, en esta pestaña."},
+    "fr": {"title": "Paper Tools — PDF dans votre navigateur", "description": "34 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet."},
+    "de": {"title": "Paper Tools — PDF-Tools im Browser", "description": "34 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab."}
   },
   "privacy": {
     "ko": {"title": "개인정보 처리방침 — Paper Tools", "description": "Paper Tools가 파일을 다루는 방식: 모든 작업이 브라우저에서 실행되며, 어떤 파일도 업로드되지 않습니다."},
@@ -254,6 +254,14 @@
     "es": {"title": "Sello / Firma en PDF — gratis y privado | Paper Tools", "description": "Añade un sello, una firma, una fecha o texto escrito a un PDF en línea — gratis y privado. Coloca una imagen PNG/JPG o texto Unicode en cualquier posición directamente en tu navegador; sin subidas, sin registro."},
     "fr": {"title": "Tampon / Signature sur PDF — gratuit et privé | Paper Tools", "description": "Ajoutez un tampon, une signature, une date ou du texte saisi à un PDF en ligne — gratuit et privé. Placez une image PNG/JPG ou du texte Unicode à la position voulue directement dans votre navigateur ; sans envoi, sans inscription."},
     "de": {"title": "Stempel / Unterschrift auf PDF — kostenlos & privat | Paper Tools", "description": "Online einen Stempel, eine Unterschrift, ein Datum oder eingegebenen Text zu einem PDF hinzufügen — kostenlos & privat. Ein PNG/JPG-Bild oder Unicode-Text direkt im Browser an beliebiger Position platzieren; kein Upload, keine Anmeldung."}
+  },
+  "flatten": {
+    "ko": {"title": "PDF 평면화 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF 주석과 폼 표시를 평면화하세요 — 무료이고 비공개입니다. 보이는 도장, 서명, 폼 표시를 브라우저에서 바로 일반 페이지 내용으로 굳힐 수 있으며, 업로드나 회원가입이 필요 없습니다."},
+    "ja": {"title": "PDFをフラット化 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFの注釈とフォーム表示をフラット化 — 無料・非公開。表示されているスタンプ、署名、フォーム表示をブラウザ内で通常のページ内容に変換でき、アップロードも登録も不要です。"},
+    "zh": {"title": "扁平化 PDF — 免费且私密 | Paper Tools", "description": "在线扁平化 PDF 注释和表单外观——免费且私密。可在浏览器中将可见印章、签名和表单外观转换为普通页面内容;无需上传,无需注册。"},
+    "es": {"title": "Aplanar PDF — gratis y privado | Paper Tools", "description": "Aplana anotaciones y apariencias de formularios PDF en línea — gratis y privado. Convierte sellos, firmas y widgets visibles en contenido normal de página directamente en tu navegador; sin subidas, sin registro."},
+    "fr": {"title": "Aplatir un PDF — gratuit et privé | Paper Tools", "description": "Aplatissez les annotations PDF et les apparences de formulaire en ligne — gratuit et privé. Transformez les tampons, signatures et champs visibles en contenu de page normal directement dans votre navigateur ; sans envoi, sans inscription."},
+    "de": {"title": "PDF reduzieren — kostenlos & privat | Paper Tools", "description": "PDF-Anmerkungen und Formularansichten online reduzieren — kostenlos & privat. Sichtbare Stempel, Unterschriften und Formularfelder direkt im Browser in normalen Seiteninhalt umwandeln; kein Upload, keine Anmeldung."}
   },
   "imgresize": {
     "ko": {"title": "이미지 크기 조정 — 무료·비공개 | Paper Tools", "description": "온라인에서 이미지 크기를 조정하세요 — 무료이고 비공개입니다. PNG, JPG, GIF를 브라우저에서 바로 최대 너비·높이에 맞게 줄일 수 있으며, 확대하지 않고 업로드나 회원가입도 필요 없습니다."},

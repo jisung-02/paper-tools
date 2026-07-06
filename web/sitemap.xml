@@ -181,6 +181,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/compress/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/flatten/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/flatten/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/metadata/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/metadata/"/>
@@ -599,6 +611,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/compress/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/compress/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/compress/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ko/flatten/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/flatten/"/>
   </url>
   <url>
     <loc>https://papertools.dev/ko/metadata/</loc>
@@ -1021,6 +1045,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/compress/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/ja/flatten/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/flatten/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/ja/metadata/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/metadata/"/>
@@ -1439,6 +1475,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/compress/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/compress/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/compress/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/zh/flatten/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/flatten/"/>
   </url>
   <url>
     <loc>https://papertools.dev/zh/metadata/</loc>
@@ -1861,6 +1909,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/compress/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/es/flatten/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/flatten/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/es/metadata/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/metadata/"/>
@@ -2281,6 +2341,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/compress/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/fr/flatten/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/flatten/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/fr/metadata/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/metadata/"/>
@@ -2699,6 +2771,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/compress/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/compress/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/compress/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/de/flatten/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/flatten/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/flatten/"/>
   </url>
   <url>
     <loc>https://papertools.dev/de/metadata/</loc>

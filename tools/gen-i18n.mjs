@@ -14,7 +14,7 @@ const LANGS_TO_GEN = ["ko", "ja", "zh", "es", "fr", "de"];
 const TOOL_SLUGS = [
   "merge", "interleave", "split", "remove", "reorder", "blank", "rotate",
   "crop", "resize", "nup", "img2pdf", "watermark", "pagenum", "compress",
-  "metadata", "info", "protect", "unlock", "imgconv", "pdftext", "pdfimages",
+  "flatten", "metadata", "info", "protect", "unlock", "imgconv", "pdftext", "pdfimages",
   "pdf2img", "txt2pdf", "docx2pdf", "hwpx2pdf", "hwp2pdf", "docx2hwpx", "hwpx2docx",
   "md2pdf", "stamp", "imgresize", "xlsx2csv", "pdfdiff"
 ];

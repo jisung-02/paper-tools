@@ -16,7 +16,7 @@ are never uploaded — every conversion happens locally on your device.
 
 ### What it is
 
-33 client-side tools for PDFs, images, and office documents. Open a tool,
+34 client-side tools for PDFs, images, and office documents. Open a tool,
 drop a file, get a result — nothing leaves the browser tab. No server, no
 uploads, no account.
 
@@ -26,8 +26,8 @@ uploads, no account.
 |-------|-------|
 | **Organize** | Merge · Interleave · Split & Extract · Remove Pages · Reorder · Insert Blank |
 | **Transform** | Rotate · Crop · Resize · N-up |
-| **Content** | Images → PDF · Watermark · Page Numbers · Stamp / Signature / Text |
-| **Convert** | Image Convert (PNG/JPG/GIF) · Image Resize · PDF → Text · PDF → Images (ZIP) · Extract Images (ZIP) · Text → PDF · Markdown → PDF · Word → PDF · Hangul(.hwpx) → PDF · Old Hangul(.hwp) → PDF · Word ↔ Hangul · Excel → CSV |
+| **Content** | Images → PDF · Watermark · Page Numbers · Stamp / Signature / Text · Flatten PDF |
+| **Convert** | Image Convert (PNG/JPG/GIF) · Image Resize · PDF → Text · PDF → Images (page ranges, PNG/JPG quality, ZIP) · Extract Images (ZIP) · Text → PDF · Markdown → PDF · Word → PDF · Hangul(.hwpx) → PDF · Old Hangul(.hwp) → PDF · Word ↔ Hangul · Excel → CSV |
 | **Document** | Compress · Metadata · PDF Info · Protect (AES-256/AES-128) · Unlock · Compare PDFs |
 
 ### Highlights
@@ -111,7 +111,7 @@ go test ./pdf ./imgconv
 
 ### 개요
 
-브라우저 안에서 완결되는 PDF·이미지·문서 도구 33종. 도구를 열고 파일을
+브라우저 안에서 완결되는 PDF·이미지·문서 도구 34종. 도구를 열고 파일을
 올리면 결과가 나옴 — **아무것도 서버로 나가지 않음**. 서버·업로드·계정 없음.
 
 ### 도구
@@ -120,8 +120,8 @@ go test ./pdf ./imgconv
 |------|------|
 | **구성** | 병합 · 교차 병합 · 분할·추출 · 페이지 삭제 · 순서 변경 · 빈 페이지 |
 | **변형** | 회전 · 자르기 · 크기 통일 · N-up |
-| **콘텐츠** | 이미지 → PDF · 워터마크 · 페이지 번호 · 도장·서명 삽입 |
-| **변환** | 이미지 변환(PNG/JPG/GIF) · 이미지 크기 줄이기 · PDF → 텍스트 · PDF → 이미지(ZIP) · 이미지 추출(ZIP) · 텍스트 → PDF · 마크다운 → PDF · Word → PDF · 한글(.hwpx) → PDF · 옛한글(.hwp) → PDF · Word ↔ 한글 · 엑셀 → CSV |
+| **콘텐츠** | 이미지 → PDF · 워터마크 · 페이지 번호 · 도장·서명·텍스트 삽입 · PDF 평면화 |
+| **변환** | 이미지 변환(PNG/JPG/GIF) · 이미지 크기 줄이기 · PDF → 텍스트 · PDF → 이미지(페이지 범위, PNG/JPG 품질, ZIP) · 이미지 추출(ZIP) · 텍스트 → PDF · 마크다운 → PDF · Word → PDF · 한글(.hwpx) → PDF · 옛한글(.hwp) → PDF · Word ↔ 한글 · 엑셀 → CSV |
 | **파일** | 압축 · 메타데이터 · PDF 정보 · 암호 설정(AES-256/AES-128) · 암호 해제 · PDF 비교 |
 
 ### 특징
