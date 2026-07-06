@@ -12,6 +12,7 @@ import (
 type CompressOpts struct {
 	JPEGQuality int // 1-100; 0 -> 70
 	MaxWidth    int // downsample images wider than this many pixels; 0 -> 1600
+	Grayscale   bool
 }
 
 // Compress rewrites file, recompressing its images and streams to shrink
@@ -232,6 +233,9 @@ func csComponents(b *builder, csv any) (comps int, gray bool, ok bool) {
 // JPEG-encodes it, returning a replacement stream only if strictly smaller
 // than st.Data.
 func reencodeAsJPEG(st *Stream, img image.Image, opts CompressOpts) *Stream {
+	if opts.Grayscale {
+		img = grayscaleImage(img)
+	}
 	bounds := img.Bounds()
 	if bounds.Dx() > opts.MaxWidth {
 		img = downscale(img, opts.MaxWidth)
@@ -266,6 +270,20 @@ func reencodeAsJPEG(st *Stream, img image.Image, opts CompressOpts) *Stream {
 	nd["Filter"] = Name("DCTDecode")
 	nd["Length"] = buf.Len()
 	return &Stream{Dict: nd, Data: buf.Bytes()}
+}
+
+func grayscaleImage(img image.Image) image.Image {
+	b := img.Bounds()
+	if g, ok := img.(*image.Gray); ok && b.Min.X == 0 && b.Min.Y == 0 {
+		return g
+	}
+	out := image.NewGray(image.Rect(0, 0, b.Dx(), b.Dy()))
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			out.SetGray(x-b.Min.X, y-b.Min.Y, color.GrayModel.Convert(img.At(x, y)).(color.Gray))
+		}
+	}
+	return out
 }
 
 // downscale bilinearly resamples img down to width maxW, preserving aspect

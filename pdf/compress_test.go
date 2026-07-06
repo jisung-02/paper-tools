@@ -58,6 +58,50 @@ func TestCompressDownsamples(t *testing.T) {
 	}
 }
 
+func TestCompressCanConvertImagesToGrayscale(t *testing.T) {
+	img := image.NewNRGBA(image.Rect(0, 0, 400, 100))
+	for y := 0; y < 100; y++ {
+		for x := 0; x < 400; x++ {
+			img.SetNRGBA(x, y, color.NRGBA{R: uint8(x % 256), G: uint8(y * 2), B: 180, A: 255})
+		}
+	}
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: 100}); err != nil {
+		t.Fatalf("jpeg.Encode: %v", err)
+	}
+
+	in, err := ImagesToPDF([][]byte{buf.Bytes()}, ImagePageOpts{})
+	if err != nil {
+		t.Fatalf("ImagesToPDF: %v", err)
+	}
+	out, err := Compress(in, CompressOpts{MaxWidth: 400, JPEGQuality: 60, Grayscale: true})
+	if err != nil {
+		t.Fatalf("Compress: %v", err)
+	}
+	if len(out) >= len(in) {
+		t.Errorf("Compress grayscale output (%d bytes) not smaller than input (%d bytes)", len(out), len(in))
+	}
+
+	d, err := Parse(out)
+	if err != nil {
+		t.Fatalf("Parse compressed: %v", err)
+	}
+	pages, err := d.Pages()
+	if err != nil {
+		t.Fatalf("Pages: %v", err)
+	}
+	pd, _ := d.Get(pages[0].Num).(Dict)
+	res, _ := d.R(pd["Resources"]).(Dict)
+	xobjs, _ := d.R(res["XObject"]).(Dict)
+	imgObj, ok := d.R(xobjs["Im0"]).(*Stream)
+	if !ok {
+		t.Fatalf("/Im0 is not a stream")
+	}
+	if cs, _ := d.R(imgObj.Dict["ColorSpace"]).(Name); cs != "DeviceGray" {
+		t.Fatalf("ColorSpace = %v want DeviceGray", cs)
+	}
+}
+
 func jpegPDFWithSoftMask(t *testing.T) []byte {
 	t.Helper()
 	img := image.NewNRGBA(image.Rect(0, 0, 400, 100))
@@ -121,7 +165,7 @@ func jpegPDFWithSoftMask(t *testing.T) []byte {
 }
 
 func TestCompressKeepsSoftMaskedJPEGDimensions(t *testing.T) {
-	out, err := Compress(jpegPDFWithSoftMask(t), CompressOpts{MaxWidth: 200, JPEGQuality: 60})
+	out, err := Compress(jpegPDFWithSoftMask(t), CompressOpts{MaxWidth: 200, JPEGQuality: 60, Grayscale: true})
 	if err != nil {
 		t.Fatalf("Compress: %v", err)
 	}
@@ -142,6 +186,9 @@ func TestCompressKeepsSoftMaskedJPEGDimensions(t *testing.T) {
 	}
 	if w := toFloat(d.R(imgObj.Dict["Width"])); w != 400 {
 		t.Fatalf("soft-masked JPEG width = %v, want 400", w)
+	}
+	if cs, _ := d.R(imgObj.Dict["ColorSpace"]).(Name); cs != "DeviceRGB" {
+		t.Fatalf("soft-masked JPEG ColorSpace = %v, want DeviceRGB", cs)
 	}
 }
 

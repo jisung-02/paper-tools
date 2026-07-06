@@ -28,7 +28,7 @@ uploads, no account.
 | **Transform** | Rotate · Crop · Resize · N-up |
 | **Content** | Images → PDF · Watermark · Page Numbers · Stamp / Signature / Text · Flatten PDF |
 | **Convert** | Image Convert (PNG/JPG/GIF) · Image Resize · PDF → Text · PDF → Images (page ranges, PNG/JPG quality, ZIP) · Extract Images (ZIP) · Text → PDF · Markdown → PDF · Word → PDF · Hangul(.hwpx) → PDF · Old Hangul(.hwp) → PDF · Word ↔ Hangul · Excel → CSV |
-| **Document** | Compress · Metadata · PDF Info · Protect (AES-256/AES-128) · Unlock · Compare PDFs |
+| **Document** | Compress (quality/DPI/grayscale) · Metadata · PDF Info · Protect (AES-256/AES-128) · Unlock · Compare PDFs |
 
 ### Highlights
 
@@ -122,7 +122,7 @@ go test ./pdf ./imgconv
 | **변형** | 회전 · 자르기 · 크기 통일 · N-up |
 | **콘텐츠** | 이미지 → PDF · 워터마크 · 페이지 번호 · 도장·서명·텍스트 삽입 · PDF 평면화 |
 | **변환** | 이미지 변환(PNG/JPG/GIF) · 이미지 크기 줄이기 · PDF → 텍스트 · PDF → 이미지(페이지 범위, PNG/JPG 품질, ZIP) · 이미지 추출(ZIP) · 텍스트 → PDF · 마크다운 → PDF · Word → PDF · 한글(.hwpx) → PDF · 옛한글(.hwp) → PDF · Word ↔ 한글 · 엑셀 → CSV |
-| **파일** | 압축 · 메타데이터 · PDF 정보 · 암호 설정(AES-256/AES-128) · 암호 해제 · PDF 비교 |
+| **파일** | 압축(품질/DPI/흑백) · 메타데이터 · PDF 정보 · 암호 설정(AES-256/AES-128) · 암호 해제 · PDF 비교 |
 
 ### 특징
 

@@ -19,7 +19,7 @@ Paper Tools is a collection of 34 client-side file tools, live at https://papert
 - [Images → PDF](https://papertools.dev/img2pdf/): Turn PNG/JPG images into PDF pages, one per page.
 - [Watermark](https://papertools.dev/watermark/): Stamp text diagonally across every page of a PDF.
 - [Page Numbers](https://papertools.dev/pagenum/): Add page numbers to the bottom center of a PDF.
-- [Compress](https://papertools.dev/compress/): Shrink PDF file size by recompressing images.
+- [Compress](https://papertools.dev/compress/): Shrink PDF file size with compression presets, image quality, target image size and optional grayscale conversion.
 - [Metadata](https://papertools.dev/metadata/): Edit or remove a PDF's title, author and other metadata.
 - [PDF Info](https://papertools.dev/info/): See a PDF's page count, size and metadata.
 - [Protect](https://papertools.dev/protect/): Encrypt a PDF with an AES-128 password.

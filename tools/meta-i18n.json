@@ -120,12 +120,12 @@
     "de": {"title": "Seitenzahlen zu PDF hinzufügen — kostenlos & privat | Paper Tools", "description": "Online Seitenzahlen zu einem PDF hinzufügen — kostenlos & privat. Jede Seite unten mittig nummerieren, direkt im Browser; kein Upload, keine Anmeldung."}
   },
   "compress": {
-    "ko": {"title": "PDF 압축 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF를 압축하세요 — 무료이고 비공개입니다. 브라우저에서 바로 이미지를 재압축해 파일 크기를 줄일 수 있으며, 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
-    "ja": {"title": "PDF圧縮 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFを圧縮 — 無料・非公開。ブラウザ内で画像を再圧縮してファイルサイズを縮小でき、ファイルはアップロードされず、登録も不要です。"},
-    "zh": {"title": "压缩 PDF — 免费且私密 | Paper Tools", "description": "在线压缩 PDF——免费且私密。在浏览器中直接重新压缩图片以缩小文件体积;文件绝不上传,无需注册。"},
-    "es": {"title": "Comprimir PDF — gratis y privado | Paper Tools", "description": "Comprime un PDF en línea — gratis y privado. Reduce el tamaño del archivo recomprimiendo las imágenes directamente en tu navegador; los archivos nunca se suben, sin registro."},
-    "fr": {"title": "Compresser un PDF — gratuit et privé | Paper Tools", "description": "Compressez un PDF en ligne — gratuit et privé. Réduisez la taille du fichier en recompressant les images directement dans votre navigateur ; les fichiers ne sont jamais envoyés, sans inscription."},
-    "de": {"title": "PDF komprimieren — kostenlos & privat | Paper Tools", "description": "PDF online komprimieren — kostenlos & privat. Dateigröße durch erneutes Komprimieren der Bilder direkt im Browser verringern; Dateien werden nie hochgeladen, keine Anmeldung nötig."}
+    "ko": {"title": "PDF 압축 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF를 압축하세요 — 무료이고 비공개입니다. 브라우저에서 바로 이미지를 재압축하고 크기를 줄이며 흑백 변환도 선택할 수 있습니다. 업로드나 회원가입은 필요 없습니다."},
+    "ja": {"title": "PDF圧縮 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFを圧縮 — 無料・非公開。ブラウザ内で画像を再圧縮・縮小し、必要に応じてグレースケール化できます。アップロードも登録も不要です。"},
+    "zh": {"title": "压缩 PDF — 免费且私密 | Paper Tools", "description": "在线压缩 PDF——免费且私密。直接在浏览器中重新压缩、缩小图片，并可选择灰度转换;无需上传,无需注册。"},
+    "es": {"title": "Comprimir PDF — gratis y privado | Paper Tools", "description": "Comprime un PDF en línea — gratis y privado. Recomprime, reduce y opcionalmente convierte imágenes a escala de grises directamente en tu navegador; sin subidas ni registro."},
+    "fr": {"title": "Compresser un PDF — gratuit et privé | Paper Tools", "description": "Compressez un PDF en ligne — gratuit et privé. Recompressez, réduisez et convertissez éventuellement les images en niveaux de gris directement dans votre navigateur ; sans envoi ni inscription."},
+    "de": {"title": "PDF komprimieren — kostenlos & privat | Paper Tools", "description": "PDF online komprimieren — kostenlos & privat. Bilder direkt im Browser neu komprimieren, verkleinern und optional in Graustufen umwandeln; kein Upload, keine Anmeldung."}
   },
   "metadata": {
     "ko": {"title": "PDF 메타데이터 편집 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF 메타데이터를 편집하세요 — 무료이고 비공개입니다. 브라우저에서 바로 제목, 작성자 등을 바꾸거나 삭제할 수 있으며, 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
