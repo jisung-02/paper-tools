@@ -101,23 +101,44 @@ function buildToolNameKoMap(landingHtml) {
   return map;
 }
 
-// Helper: Extract I18N object from app.js
-function extractI18N(appJsContent) {
-  // Find "const I18N = { ... };" with balanced braces
-  const match = appJsContent.match(/const\s+I18N\s*=\s*({[^}]*(?:{[^}]*}[^}]*)*});/);
+// Helper: Extract the I18N dict for one language from web/i18n/<lang>.js
+function extractLangDict(fileContent, lang) {
+  // Find "window.I18N.<lang> = { ... };" with balanced braces
+  const re = new RegExp(
+    `window\\.I18N\\.${lang}\\s*=\\s*({[^}]*(?:{[^}]*}[^}]*)*});`
+  );
+  const match = fileContent.match(re);
   if (!match) {
-    console.error("ERROR: Could not find I18N object in app.js");
+    console.error(`ERROR: Could not find window.I18N.${lang} object in web/i18n/${lang}.js`);
     return {};
   }
   try {
-    const i18nStr = match[1];
+    const dictStr = match[1];
     // Evaluate the object literal safely
-    const fn = new Function("return (" + i18nStr + ")");
+    const fn = new Function("return (" + dictStr + ")");
     return fn();
   } catch (e) {
-    console.error("ERROR: Failed to parse I18N object:", e.message);
+    console.error(`ERROR: Failed to parse I18N.${lang} object:`, e.message);
     return {};
   }
+}
+
+// Helper: Assemble the full {ja: {...}, zh: {...}, ...} shape from the
+// per-language dict files under web/i18n/
+function extractI18N(i18nDir) {
+  const dictLangs = ["ja", "zh", "es", "fr", "de"];
+  const i18n = {};
+  for (const lang of dictLangs) {
+    const filePath = path.join(i18nDir, `${lang}.js`);
+    if (!fs.existsSync(filePath)) {
+      console.error(`ERROR: web/i18n/${lang}.js not found`);
+      i18n[lang] = {};
+      continue;
+    }
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+    i18n[lang] = extractLangDict(fileContent, lang);
+  }
+  return i18n;
 }
 
 // Helper: Translate text using I18N or enToKo map
@@ -428,6 +449,20 @@ function insertFixedLangMarker(html, lang) {
   );
 }
 
+// Languages that ship their own translation dict under web/i18n/. Korean is
+// excluded: its strings live inline as data-ko attributes, so ko pages need
+// no dict at all.
+const DICT_LANGS = ["ja", "zh", "es", "fr", "de"];
+
+// Helper: Insert the language's dict <script> tag before the app.js script
+function insertDictScript(html, lang) {
+  const tag = `<script src="/i18n/${lang}.js"></script>`;
+  return html.replace(
+    /(<script src="\/app\.js"><\/script>)/,
+    tag + "\n$1"
+  );
+}
+
 // Main transformation pipeline for a single page per language
 function transformPageForLanguage(sourceHtml, sourceFile, pagePath, lang, i18n, metaI18n, enToKo) {
   let html = sourceHtml;
@@ -474,6 +509,12 @@ function transformPageForLanguage(sourceHtml, sourceFile, pagePath, lang, i18n, 
     html = insertFixedLangMarker(html, lang);
   }
 
+  // Step 4j: Insert the language's dict script (ja/zh/es/fr/de only; ko
+  // needs no dict since its strings are inline data-ko attributes)
+  if (DICT_LANGS.includes(lang)) {
+    html = insertDictScript(html, lang);
+  }
+
   return html;
 }
 
@@ -488,15 +529,9 @@ async function main() {
       }
     }
 
-    // STEP 1: Extract I18N from app.js
-    let i18n = {};
-    const appJsPath = path.join(webDir, "app.js");
-    if (fs.existsSync(appJsPath)) {
-      const appJsContent = fs.readFileSync(appJsPath, "utf-8");
-      i18n = extractI18N(appJsContent);
-    } else {
-      console.warn("WARNING: app.js not found; translations will fall back to English");
-    }
+    // STEP 1: Extract I18N from web/i18n/<lang>.js dict files
+    const i18nDir = path.join(webDir, "i18n");
+    const i18n = extractI18N(i18nDir);
 
     // STEP 2: Load meta-i18n.json
     let metaI18n = {};
