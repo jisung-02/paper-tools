@@ -19,6 +19,9 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Test
+        run: go test ./...
+
       - name: Build WebAssembly tools
         run: ./build.sh
 
