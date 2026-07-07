@@ -222,6 +222,22 @@ main .desc {
   white-space: nowrap;
 }
 
+/* signature pad */
+.signpad { display: inline-block; max-width: 100%; }
+.signcanvas {
+  display: block;
+  width: 400px;
+  max-width: 100%;
+  height: 160px;
+  background: #ffffff;
+  border: 1.5px dashed var(--border);
+  border-radius: 12px;
+  touch-action: none;
+  cursor: crosshair;
+}
+.signcanvas:hover { border-color: var(--border-stronger); }
+#drawFields button.secondary { margin-top: .75rem; }
+
 /* controls */
 label {
   display: block;
