@@ -472,6 +472,9 @@ func (d *Doc) mergeTrailer(t Dict) {
 }
 
 func (d *Doc) readXrefSection(off int) (int, error) {
+	if off < 0 || off >= len(d.data) {
+		return 0, fmt.Errorf("xref offset %d out of range", off)
+	}
 	lx := &lexer{d: d.data, pos: off}
 	save := lx.pos
 	kw := lx.keyword()
