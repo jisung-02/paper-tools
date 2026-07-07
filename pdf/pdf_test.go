@@ -292,3 +292,17 @@ func TestUnpredictRejectsInvalidPredictorDimensions(t *testing.T) {
 		t.Fatalf("expected error for invalid predictor dimensions")
 	}
 }
+
+// FuzzParse exercises the PDF parser entry point with arbitrary bytes; the
+// only failure mode under test is a panic (errors are expected and ignored).
+func FuzzParse(f *testing.F) {
+	f.Add([]byte(""))
+	f.Add([]byte("%PDF-1.4"))
+	f.Add(classicPDF())
+	f.Add(xrefStreamPDF())
+	f.Add(negativeXrefWidthPDF())
+	f.Add(encryptedPDF())
+	f.Fuzz(func(t *testing.T, data []byte) {
+		Parse(data)
+	})
+}

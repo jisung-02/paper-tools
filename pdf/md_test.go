@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func testFont(t *testing.T) []byte {
+func testFont(t testing.TB) []byte {
 	t.Helper()
 	font, err := os.ReadFile("../web/NanumGothic-Regular.ttf")
 	if err != nil {
@@ -225,4 +225,19 @@ func TestMarkdownToPDFInvalidFont(t *testing.T) {
 	if _, err := MarkdownToPDF([]byte("# hi"), []byte("not a font"), MarkdownPDFOpts{}); err == nil {
 		t.Fatal("expected error for invalid font bytes")
 	}
+}
+
+// FuzzMarkdownToPDF exercises Markdown-to-PDF text input with arbitrary
+// bytes; the only failure mode under test is a panic (errors are expected
+// and ignored). The font is fixed to the app's real bundled font, matching
+// wasm/md2pdf, which only lets the markdown bytes vary.
+func FuzzMarkdownToPDF(f *testing.F) {
+	font := testFont(f)
+	f.Add([]byte(""))
+	f.Add([]byte("%PDF-1.4"))
+	f.Add([]byte("# Title\n\nHello world paragraph.\n"))
+	f.Add([]byte("# 안녕 헤딩\n\n- item1\n- item2\n\n```\ncode block\n```\n"))
+	f.Fuzz(func(t *testing.T, md []byte) {
+		MarkdownToPDF(md, font, MarkdownPDFOpts{})
+	})
 }

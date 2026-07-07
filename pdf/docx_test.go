@@ -121,3 +121,17 @@ func TestDocxToPDF(t *testing.T) {
 		t.Errorf("extracted text missing Korean text; got: %q", text)
 	}
 }
+
+// FuzzDocxToPDF exercises DOCX parsing/conversion with arbitrary bytes; the
+// only failure mode under test is a panic (errors are expected and
+// ignored). The font is fixed to the app's real bundled font, matching
+// wasm/docx2pdf, which only lets the file bytes vary.
+func FuzzDocxToPDF(f *testing.F) {
+	font := testFont(f)
+	f.Add([]byte(""))
+	f.Add([]byte("PK\x03\x04"))
+	f.Add(buildDocx([]string{"첫째 문단 한글", "Second English 12345", ""}))
+	f.Fuzz(func(t *testing.T, data []byte) {
+		DocxToPDF(data, font, TextPDFOpts{})
+	})
+}

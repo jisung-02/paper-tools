@@ -275,3 +275,23 @@ func TestReadZipFileRejectsOversizedDeclaredEntry(t *testing.T) {
 		t.Fatalf("expected too large error, got %v", err)
 	}
 }
+
+// FuzzToCSV exercises XLSX parsing with arbitrary bytes; the only failure
+// mode under test is a panic (errors are expected and ignored).
+func FuzzToCSV(f *testing.F) {
+	sst := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><si><t>Hello</t></si><si><r><t>Hello </t></r><r><t>World</t></r></si></sst>`
+	sheet1 := wrapWorksheet(`<row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c></row>`)
+	validXlsx := buildXlsx([]zipEntry{
+		{"xl/workbook.xml", workbookXMLFor("Sheet1")},
+		{"xl/_rels/workbook.xml.rels", relsXMLFor(1)},
+		{"xl/sharedStrings.xml", sst},
+		{"xl/worksheets/sheet1.xml", sheet1},
+	})
+
+	f.Add([]byte(""))
+	f.Add([]byte("not a zip file at all"))
+	f.Add(validXlsx)
+	f.Fuzz(func(t *testing.T, data []byte) {
+		ToCSV(data)
+	})
+}

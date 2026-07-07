@@ -31,7 +31,7 @@ import (
 // below is nonetheless a real, correctly-chained FAT/mini-FAT lookup that
 // is exercised through hwp.go's own cfbFile reader; nothing is
 // special-cased for the test.
-func buildSyntheticHWP(t *testing.T) []byte {
+func buildSyntheticHWP(t testing.TB) []byte {
 	t.Helper()
 	const sectorSize = 512
 	const miniSectorSize = 64
@@ -285,4 +285,18 @@ func TestHwpTextInvalidSignature(t *testing.T) {
 	if _, err := HwpText(bad); err == nil {
 		t.Fatalf("expected error for non-CFB input")
 	}
+}
+
+// FuzzHwpToPDF exercises HWP (CFB container) parsing/conversion with
+// arbitrary bytes; the only failure mode under test is a panic (errors are
+// expected and ignored). The font is fixed to the app's real bundled font,
+// matching wasm/hwp2pdf, which only lets the file bytes vary.
+func FuzzHwpToPDF(f *testing.F) {
+	font := testFont(f)
+	f.Add([]byte(""))
+	f.Add(make([]byte, 512)) // all zeros: not a CFB signature
+	f.Add(buildSyntheticHWP(f))
+	f.Fuzz(func(t *testing.T, data []byte) {
+		HwpToPDF(data, font, TextPDFOpts{})
+	})
 }

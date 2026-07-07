@@ -47,6 +47,20 @@ func TestHwpxToPDF(t *testing.T) {
 	}
 }
 
+// FuzzHwpxToPDF exercises HWPX parsing/conversion with arbitrary bytes; the
+// only failure mode under test is a panic (errors are expected and
+// ignored). The font is fixed to the app's real bundled font, matching
+// wasm/hwpx2pdf, which only lets the file bytes vary.
+func FuzzHwpxToPDF(f *testing.F) {
+	font := testFont(f)
+	f.Add([]byte(""))
+	f.Add([]byte("PK\x03\x04"))
+	f.Add(buildTestHwpx())
+	f.Fuzz(func(t *testing.T, data []byte) {
+		HwpxToPDF(data, font, TextPDFOpts{})
+	})
+}
+
 // buildTestHwpx creates a minimal in-memory .hwpx file for testing.
 func buildTestHwpx() []byte {
 	var buf bytes.Buffer
