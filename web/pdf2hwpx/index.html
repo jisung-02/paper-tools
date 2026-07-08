@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>PDF to Hangul Converter — free & private | Paper Tools</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="../style.css">
+<link rel="preload" href="./pdf2hwpx.wasm" as="fetch" crossorigin>
+<meta name="description" content="Convert PDF to Hangul HWPX online — free & private. Extract a PDF's text and rebuild it as .hwpx paragraphs directly in your browser (layout, images and tables are not preserved); files never upload, no signup.">
+<link rel="canonical" href="https://papertools.dev/pdf2hwpx/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Paper Tools">
+<meta property="og:title" content="PDF to Hangul Converter — Paper Tools">
+<meta property="og:description" content="Convert PDF to Hangul HWPX online — free & private. Extract a PDF's text and rebuild it as .hwpx paragraphs directly in your browser (layout, images and tables are not preserved); files never upload, no signup.">
+<meta property="og:url" content="https://papertools.dev/pdf2hwpx/">
+<meta property="og:image" content="https://papertools.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PDF to Hangul Converter — Paper Tools">
+<meta name="twitter:description" content="Convert PDF to Hangul HWPX online — free & private. Extract a PDF's text and rebuild it as .hwpx paragraphs directly in your browser (layout, images and tables are not preserved); files never upload, no signup.">
+<meta name="twitter:image" content="https://papertools.dev/og.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"PDF to Hangul Converter — Paper Tools","url":"https://papertools.dev/pdf2hwpx/","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","browserRequirements":"Requires a modern browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Convert PDF to Hangul HWPX online — free & private. Extract a PDF's text and rebuild it as .hwpx paragraphs directly in your browser (layout, images and tables are not preserved); files never upload, no signup.","isPartOf":{"@type":"WebSite","name":"Paper Tools","url":"https://papertools.dev/"}}
+</script>
+<!-- hreflang -->
+<link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2hwpx/">
+<link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2hwpx/">
+<link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2hwpx/">
+<link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2hwpx/">
+<link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2hwpx/">
+<link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2hwpx/">
+<link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2hwpx/">
+<link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2hwpx/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"How to convert PDF to Hangul (.hwpx)","step":[{"@type":"HowToStep","position":1,"name":"Drop a PDF file into the dropzone."},{"@type":"HowToStep","position":2,"name":"Wait for the tool to finish loading."},{"@type":"HowToStep","position":3,"name":"Click \"Convert\" to download the .hwpx file."}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is my file uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No — everything runs locally in your browser; your file never leaves your device."}},{"@type":"Question","name":"What is preserved in the converted file?","acceptedAnswer":{"@type":"Answer","text":"Only the extracted text is carried over, split into paragraphs — layout, images, tables and fonts from the original PDF are not preserved."}},{"@type":"Question","name":"Does this work on scanned PDFs?","acceptedAnswer":{"@type":"Answer","text":"No — it extracts selectable text only; scanned or image-only PDFs have no embedded text to extract, since there is no OCR."}}]}
+</script>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="../">Paper Tools</a>
+  <nav class="langtoggle">
+    <button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button>
+  </nav>
+</header>
+
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+
+<h1 data-i18n data-en="PDF → Hangul" data-ko="PDF → 한글(.hwpx)">PDF → Hangul</h1>
+<p class="desc" data-i18n data-en="Convert PDF to Hangul (.hwpx). Extracts the text and rebuilds it as paragraphs — layout, images and tables are not preserved." data-ko="PDF를 한글(.hwpx)로 바꿉니다. 텍스트를 추출해 문단으로 재구성합니다 — 레이아웃·이미지·표는 유지되지 않습니다.">Convert PDF to Hangul (.hwpx). Extracts the text and rebuilds it as paragraphs — layout, images and tables are not preserved.</p>
+<p id="status">Loading tool…</p>
+
+<div class="drop" id="fileDrop">
+  <span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span>
+  <input type="file" accept="application/pdf,.pdf">
+  <ul class="filelist"></ul>
+</div>
+
+<button class="primary" id="run" data-needs-wasm disabled data-i18n data-en="Convert" data-ko="변환하기">Convert</button>
+<p class="err" id="err"></p>
+<section class="page-info">
+<h2 data-i18n data-en="How to convert PDF to Hangul (.hwpx)" data-ko="PDF를 한글(.hwpx)로 변환하는 방법">How to convert PDF to Hangul (.hwpx)</h2>
+<ol>
+  <li data-i18n data-en="Drop a PDF file into the dropzone." data-ko="PDF 파일을 드롭존에 놓습니다.">Drop a PDF file into the dropzone.</li>
+  <li data-i18n data-en="Wait for the tool to finish loading." data-ko="도구가 로드될 때까지 기다립니다.">Wait for the tool to finish loading.</li>
+  <li data-i18n data-en="Click &quot;Convert&quot; to download the .hwpx file." data-ko="&quot;Convert&quot; 버튼을 클릭하면 .hwpx 파일이 다운로드됩니다.">Click "Convert" to download the .hwpx file.</li>
+</ol>
+<h2 data-i18n data-en="FAQ" data-ko="자주 묻는 질문">FAQ</h2>
+<h3 data-i18n data-en="Is my file uploaded to a server?" data-ko="파일이 서버에 업로드되나요?">Is my file uploaded to a server?</h3>
+<p data-i18n data-en="No — everything runs locally in your browser; your file never leaves your device." data-ko="아니요 — 모든 처리는 브라우저 안에서만 이루어지며, 파일은 기기 밖으로 나가지 않습니다.">No — everything runs locally in your browser; your file never leaves your device.</p>
+<h3 data-i18n data-en="What is preserved in the converted file?" data-ko="변환된 파일에는 무엇이 남나요?">What is preserved in the converted file?</h3>
+<p data-i18n data-en="Only the extracted text is carried over, split into paragraphs — layout, images, tables and fonts from the original PDF are not preserved." data-ko="추출된 텍스트만 문단으로 나뉘어 옮겨집니다 — 원본 PDF의 레이아웃·이미지·표·글꼴은 유지되지 않습니다.">Only the extracted text is carried over, split into paragraphs — layout, images, tables and fonts from the original PDF are not preserved.</p>
+<h3 data-i18n data-en="Does this work on scanned PDFs?" data-ko="스캔된 PDF에서도 작동하나요?">Does this work on scanned PDFs?</h3>
+<p data-i18n data-en="No — it extracts selectable text only; scanned or image-only PDFs have no embedded text to extract, since there is no OCR." data-ko="아니요. 선택 가능한 텍스트만 추출하므로, 이미지로만 된 스캔 PDF는 텍스트가 없어 추출되지 않습니다(OCR 미지원).">No — it extracts selectable text only; scanned or image-only PDFs have no embedded text to extract, since there is no OCR.</p>
+</section>
+</main>
+
+<footer>
+  <span data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</span>
+  · <a href="../privacy/" data-i18n data-en="Privacy" data-ko="개인정보처리방침">Privacy</a>
+</footer>
+
+<script src="../wasm_exec.js"></script>
+<script src="../app.js"></script>
+<script>
+boot("./pdf2hwpx.wasm");
+const fileDz = dropzone("fileDrop", { multiple: false });
+const btn = document.getElementById("run");
+const err = document.getElementById("err");
+
+btn.addEventListener("click", () => run(btn, async () => {
+  if (fileDz.files.length < 1) {
+    showErr(err, t("Select a file.", "파일을 선택하세요."));
+    return;
+  }
+  const bytes = await fileBytes(fileDz.files[0]);
+  const r = pdfRun(bytes);
+  finish(r, "converted.hwpx", err, "application/hwp+zip");
+}));
+</script>
+</body>
+</html>

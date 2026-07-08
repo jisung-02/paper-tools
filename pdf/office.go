@@ -28,10 +28,42 @@ func splitParas(text string) []string {
 }
 
 // escapeXMLText safely escapes a string for use in XML text content.
+// xml.EscapeText only escapes & < > ' " — it does not remove control
+// characters that are outright illegal in XML 1.0 (e.g. PDF text extraction
+// can surface raw 0x01 bytes from malformed fonts), which would otherwise
+// produce a document.xml/section0.xml that strict parsers (Word, Hancom)
+// reject. Strip those first; the common clean-text path allocates nothing extra.
 func escapeXMLText(s string) string {
+	if strings.IndexFunc(s, isIllegalXMLRune) != -1 {
+		var b strings.Builder
+		b.Grow(len(s))
+		for _, r := range s {
+			if !isIllegalXMLRune(r) {
+				b.WriteRune(r)
+			}
+		}
+		s = b.String()
+	}
 	var buf bytes.Buffer
 	xml.EscapeText(&buf, []byte(s))
 	return buf.String()
+}
+
+// isIllegalXMLRune reports whether r is not a valid XML 1.0 character.
+// Legal: U+0009, U+000A, U+000D, U+0020-U+D7FF, U+E000-U+FFFD, U+10000-U+10FFFF.
+func isIllegalXMLRune(r rune) bool {
+	switch {
+	case r == 0x09 || r == 0x0A || r == 0x0D:
+		return false
+	case r >= 0x20 && r <= 0xD7FF:
+		return false
+	case r >= 0xE000 && r <= 0xFFFD:
+		return false
+	case r >= 0x10000 && r <= 0x10FFFF:
+		return false
+	default:
+		return true
+	}
 }
 
 // buildDocx builds a minimal valid .docx (zip) in memory from a list of paragraphs.
