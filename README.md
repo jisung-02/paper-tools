@@ -16,7 +16,7 @@ are never uploaded — every conversion happens locally on your device.
 
 ### What it is
 
-37 client-side tools for PDFs, images, and office documents. Open a tool,
+38 client-side tools for PDFs, images, and office documents. Open a tool,
 drop a file, get a result — nothing leaves the browser tab. No server, no
 uploads, no account.
 
@@ -28,7 +28,7 @@ uploads, no account.
 | **Transform** | Rotate · Crop · Resize · N-up |
 | **Content** | Images → PDF · Watermark · Page Numbers · Stamp / Signature (draw or upload) / Text · Flatten PDF |
 | **Convert** | Image Convert (PNG/JPG/GIF) · Image Resize · PDF → Text · OCR (scanned PDFs/images, English/Korean) · PDF → Images (page ranges, PNG/JPG quality, ZIP) · Extract Images (ZIP) · Text → PDF · Markdown → PDF · Word → PDF · Hangul(.hwpx) → PDF · Old Hangul(.hwp) → PDF · Word ↔ Hangul · PDF → Word · PDF → Hangul · Excel → CSV |
-| **Document** | Compress (quality/DPI/grayscale) · Metadata · PDF Info · Protect (AES-256/AES-128) · Unlock · Compare PDFs |
+| **Document** | Compress (quality/DPI/grayscale) · Metadata · PDF Info · Protect (AES-256/AES-128) · Unlock · Compare PDFs · Direct Send (device-to-device, never uploaded) |
 
 ### Highlights
 
@@ -131,6 +131,10 @@ go test ./pdf ./imgconv
 - `OCR` supports English and Korean text and works best on clean,
   high-resolution scans of printed text; handwriting recognition is
   hit-or-miss.
+- `Direct Send` needs both devices to be reachable from each other directly
+  (usually the same Wi-Fi or local network); it moves the file straight from
+  device to device with no server relay, and has no way to help two devices
+  on different networks find each other.
 
 ---
 
@@ -138,7 +142,7 @@ go test ./pdf ./imgconv
 
 ### 개요
 
-브라우저 안에서 완결되는 PDF·이미지·문서 도구 37종. 도구를 열고 파일을
+브라우저 안에서 완결되는 PDF·이미지·문서 도구 38종. 도구를 열고 파일을
 올리면 결과가 나옴 — **아무것도 서버로 나가지 않음**. 서버·업로드·계정 없음.
 
 ### 도구
@@ -149,7 +153,7 @@ go test ./pdf ./imgconv
 | **변형** | 회전 · 자르기 · 크기 통일 · N-up |
 | **콘텐츠** | 이미지 → PDF · 워터마크 · 페이지 번호 · 도장·서명(직접 그리기 또는 업로드)·텍스트 삽입 · PDF 평면화 |
 | **변환** | 이미지 변환(PNG/JPG/GIF) · 이미지 크기 줄이기 · PDF → 텍스트 · OCR(스캔한 PDF·이미지, 영어/한국어) · PDF → 이미지(페이지 범위, PNG/JPG 품질, ZIP) · 이미지 추출(ZIP) · 텍스트 → PDF · 마크다운 → PDF · Word → PDF · 한글(.hwpx) → PDF · 옛한글(.hwp) → PDF · Word ↔ 한글 · PDF → Word · PDF → 한글 · 엑셀 → CSV |
-| **파일** | 압축(품질/DPI/흑백) · 메타데이터 · PDF 정보 · 암호 설정(AES-256/AES-128) · 암호 해제 · PDF 비교 |
+| **파일** | 압축(품질/DPI/흑백) · 메타데이터 · PDF 정보 · 암호 설정(AES-256/AES-128) · 암호 해제 · PDF 비교 · 직접 전송(기기 간 이동, 서버 업로드 없음) |
 
 ### 특징
 
@@ -244,3 +248,6 @@ go test ./pdf ./imgconv
   읽고 씀 — 애니메이션은 유지되지 않음.
 - `OCR`은 영어와 한국어 텍스트를 지원하며, 깨끗하고 해상도가 높은 인쇄물
   스캔에서 가장 잘 동작함. 손글씨 인식은 정확도가 들쭉날쭉함.
+- `직접 전송`은 두 기기가 서로 직접 통신할 수 있어야 함(보통 같은 와이파이나
+  로컬 네트워크). 서버를 거치지 않고 기기 간에 파일을 바로 이동시키며,
+  서로 다른 네트워크에 있는 두 기기를 연결해 줄 방법은 없음.
