@@ -12,7 +12,12 @@ cp "$WASM_EXEC" web/
 
 TOOLS="merge interleave split remove reorder blank rotate crop resize nup img2pdf watermark stamp flatten pagenum compress metadata info protect unlock pdfdiff imgconv imgresize pdftext pdfimages txt2pdf md2pdf docx2pdf hwpx2pdf hwp2pdf docx2hwpx hwpx2docx pdf2docx pdf2hwpx xlsx2csv"
 
-for t in $TOOLS; do
+JOBS="${JOBS:-$(command -v nproc >/dev/null 2>&1 && nproc || sysctl -n hw.ncpu)}"
+echo "building with ${JOBS} parallel jobs..."
+
+printf '%s\n' $TOOLS | xargs -P "$JOBS" -n1 sh -c '
+  set -e
+  t="$1"
   echo "building $t..."
   tinygo build -target wasm -no-debug -o "web/$t/$t.wasm" "./wasm/$t"
   if command -v wasm-opt >/dev/null 2>&1; then
@@ -22,7 +27,7 @@ for t in $TOOLS; do
   else
     echo "warning: wasm-opt not found on PATH, skipping optimization for $t"
   fi
-done
+' sh
 
 echo
 echo "=== web/ total ==="
