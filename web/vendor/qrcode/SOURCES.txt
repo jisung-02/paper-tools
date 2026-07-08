@@ -1,0 +1,27 @@
+Vendored QR code generator for the Direct Send tool (web/send/).
+Fetched: 2026-07-08
+
+## Library: qrcode-generator@1.4.4 (npm, via unpkg)
+
+Source: https://unpkg.com/qrcode-generator@1.4.4/qrcode.js
+License: MIT (see ./LICENSE — the package itself ships no separate LICENSE
+  file on unpkg; the text above is the standard MIT license with the
+  copyright holder taken from the header comment inside qrcode.js itself:
+  "Copyright (c) 2009 Kazuhiko Arase").
+
+Files:
+  qrcode.js   56,694 bytes
+    sha256: 18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780
+
+This is the plain UMD build: loaded same-origin via a classic (non-module)
+<script> tag in web/send/index.html, which defines a single global
+`qrcode(typeNumber, errorCorrectionLevel)` factory function (no bundler,
+no build step — matching how /vendor/pdfjs/ and /vendor/tesseract/ are
+already vendored in this repo). Used only to render the offer link / reply
+code as a scannable QR (via createSvgTag); never fetched from a third-party
+CDN at runtime, and never sends any data anywhere — the QR is generated
+entirely client-side from a string already held in memory.
+
+Not vendored: qrcode.js also supports Node/CommonJS/AMD wiring in its UMD
+footer (unused here) and there is no separate .min.js or TypeScript
+declaration file published for this version.
