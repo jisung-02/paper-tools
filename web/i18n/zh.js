@@ -592,5 +592,4 @@ window.I18N.zh = {
     "Yes. All 37 tools are free, with no account and no signup.": "是的。全部 37 个工具都免费，无需账号或注册。",
     "38 file tools. No uploads, no installs — right here in this tab.": "38 款文件工具。无需上传，无需安装——就在这个标签页中直接使用。",
     "Yes. All 38 tools are free, with no account and no signup.": "是的。全部 38 个工具都免费，无需账号或注册。",
-    "Click to choose a different file": "点击选择其他文件",
 };

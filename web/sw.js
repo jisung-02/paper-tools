@@ -35,9 +35,11 @@ self.addEventListener("fetch", (event) => {
 
   // Everything else (wasm, js, css, fonts, images): network-first, so
   // online users always get the latest asset, falling back to the cache
-  // when offline.
+  // when offline. `cache: "no-cache"` forces a conditional revalidation
+  // (ETag/304) with the origin, bypassing any still-fresh HTTP cache entry
+  // stored under older (longer-lived) cache-control headers.
   event.respondWith(
-    fetch(req)
+    fetch(req, { cache: "no-cache" })
       .then((res) => {
         if (res.ok) {
           const copy = res.clone();

@@ -592,5 +592,4 @@ window.I18N.ja = {
     "Yes. All 37 tools are free, with no account and no signup.": "はい。37個すべてのツールを無料で、アカウントや登録なしで使えます。",
     "38 file tools. No uploads, no installs — right here in this tab.": "38種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。",
     "Yes. All 38 tools are free, with no account and no signup.": "はい。38個すべてのツールを無料で、アカウントや登録なしで使えます。",
-    "Click to choose a different file": "クリックして別のファイルを選択",
 };

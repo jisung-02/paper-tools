@@ -528,7 +528,6 @@ function dropzone(id, opts) {
   // The static "drag/drop or click" prompt; not every dropzone markup has
   // one, so this may be null.
   const promptEl = el.querySelector(":scope > span[data-i18n]");
-  const promptOrig = promptEl ? { en: promptEl.dataset.en, ko: promptEl.dataset.ko } : null;
   let files = [];
 
   function render() {
@@ -542,19 +541,11 @@ function dropzone(id, opts) {
     }
   }
 
-  // Once files are picked, the drag/drop prompt no longer applies — swap it
-  // for a "replace" message. Updates data-en/data-ko too, so a language
-  // switch (which re-reads those attributes) doesn't revert the swap.
+  // Once files are picked, the drag/drop prompt no longer applies — hide it
+  // entirely until the selection is cleared.
   function updatePrompt() {
     if (!promptEl) return;
-    if (files.length > 0) {
-      promptEl.dataset.en = "Click to choose a different file";
-      promptEl.dataset.ko = "클릭해서 다른 파일로 교체";
-    } else {
-      promptEl.dataset.en = promptOrig.en;
-      promptEl.dataset.ko = promptOrig.ko;
-    }
-    promptEl.textContent = t(promptEl.dataset.en, promptEl.dataset.ko);
+    promptEl.hidden = files.length > 0;
   }
 
   function setFiles(list) {
