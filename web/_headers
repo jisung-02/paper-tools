@@ -2,11 +2,13 @@
   Cache-Control: public, max-age=0, must-revalidate
 /NanumGothic-Regular.ttf
   Cache-Control: public, max-age=0, must-revalidate
-/sw.js
-  Cache-Control: public, max-age=0, must-revalidate
-/wasm_exec.js
-  Cache-Control: public, max-age=604800
 /*.html
+  Cache-Control: public, max-age=0, must-revalidate
+/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+/*.mjs
+  Cache-Control: public, max-age=0, must-revalidate
+/*.css
   Cache-Control: public, max-age=0, must-revalidate
 /icon-192.png
   Cache-Control: public, max-age=604800

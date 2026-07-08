@@ -1,6 +1,6 @@
 // Service worker for offline support. Bump CACHE to invalidate old entries
 // on the next deploy.
-const CACHE = "pt-v1";
+const CACHE = "pt-v2";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -33,20 +33,18 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else (wasm, js, css, fonts, images): stale-while-revalidate,
-  // so repeat visits are instant while the cache still refreshes in the
-  // background.
+  // Everything else (wasm, js, css, fonts, images): network-first, so
+  // online users always get the latest asset, falling back to the cache
+  // when offline.
   event.respondWith(
-    caches.match(req).then((cached) => {
-      const fetchAndUpdate = fetch(req).then((res) => {
-        if (res.ok) caches.open(CACHE).then((cache) => cache.put(req, res.clone()));
+    fetch(req)
+      .then((res) => {
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then((cache) => cache.put(req, copy));
+        }
         return res;
-      });
-      if (cached) {
-        event.waitUntil(fetchAndUpdate);
-        return cached;
-      }
-      return fetchAndUpdate;
-    }),
+      })
+      .catch(() => caches.match(req)),
   );
 });
