@@ -328,6 +328,154 @@ initAds();
 initAnalytics();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
 
+/* ------------------------------------------------ PWA file-handler launch --- */
+
+// PWA file handling ("Open with Paper Tools" on a .pdf): Windows/Chrome only,
+// entirely feature-detected below — everywhere else this section is inert.
+// stashLaunchFile/takeLaunchFile is a tiny consume-once handoff (one IndexedDB
+// store, one key) used when the launch lands on the index page (no dropzone
+// to feed directly): the file is stashed, the visitor picks a tool, and that
+// tool page's own dropzone() calls takeLaunchFile() on init — a plain read
+// that needs no launchQueue support on the tool page itself.
+function openLaunchDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open("pt-launch", 1);
+    req.onupgradeneeded = () => req.result.createObjectStore("files");
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function stashLaunchFile(file) {
+  let db;
+  try {
+    db = await openLaunchDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction("files", "readwrite");
+      tx.objectStore("files").put({ file, ts: Date.now() }, "pending");
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) {
+    // ignored — stashing is best-effort
+  } finally {
+    if (db) db.close();
+  }
+}
+
+async function takeLaunchFile() {
+  let db;
+  try {
+    db = await openLaunchDB();
+    // Resolve only once the transaction commits, so the delete below is
+    // durable by the time the caller treats the file as consumed.
+    const entry = await new Promise((resolve, reject) => {
+      const tx = db.transaction("files", "readwrite");
+      const store = tx.objectStore("files");
+      const getReq = store.get("pending");
+      getReq.onsuccess = () => {
+        store.delete("pending"); // consume-once, even if stale
+      };
+      getReq.onerror = () => reject(getReq.error);
+      tx.oncomplete = () => resolve(getReq.result || null);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+    return entry && Date.now() - entry.ts <= 2 * 60 * 1000 ? entry.file : null;
+  } catch (e) {
+    return null;
+  } finally {
+    if (db) db.close();
+  }
+}
+
+// A launched file targets whichever dropzone claims itself first (every tool
+// page has exactly one relevant dropzone); if none has initialized yet, it
+// waits in pendingLaunchFiles until dropzone() below picks it up.
+let pendingLaunchFiles = null;
+let activeDropzoneFeed = null;
+function deliverLaunchFiles(files) {
+  if (!files || !files.length) return;
+  if (activeDropzoneFeed) activeDropzoneFeed(files);
+  else pendingLaunchFiles = files;
+}
+
+// The tools showLaunchChooser() below offers — the single source of truth
+// for which tool pages are allowed to consume a stashed launch file (see
+// the dropzone() integration further down).
+const LAUNCH_TOOLS = [
+  ["/merge/", "Merge", "병합"],
+  ["/split/", "Split & Extract", "분할·추출"],
+  ["/remove/", "Remove Pages", "페이지 삭제"],
+  ["/compress/", "Compress", "압축"],
+  ["/reorder/", "Reorder", "순서 변경"],
+  ["/pdf2img/", "PDF → Images", "PDF → 이미지"],
+];
+const LAUNCH_TOOL_SLUGS = LAUNCH_TOOLS.map(([href]) => href.replace(/\//g, ""));
+
+// The tool slug for the current page, with any fixed-language prefix
+// (/ko/, /ja/, …) stripped — same slicing setLang() uses to find "rest".
+function currentToolSlug() {
+  const path = FIXED ? location.pathname.slice(("/" + FIXED).length) || "/" : location.pathname;
+  return path.split("/").filter(Boolean)[0] || "";
+}
+
+// Shows a lightweight "Open with which tool?" chooser on the index page
+// (which has no dropzone of its own to feed directly).
+function showLaunchChooser() {
+  if (document.querySelector(".launch-overlay")) return;
+  const overlay = document.createElement("div");
+  overlay.className = "launch-overlay";
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+  const box = document.createElement("div");
+  box.className = "launch-box";
+  const h2 = document.createElement("h2");
+  h2.textContent = t("Open with which tool?", "어떤 도구로 열까요?");
+  box.appendChild(h2);
+  const list = document.createElement("div");
+  list.className = "launch-list";
+  LAUNCH_TOOLS.forEach(([href, en, ko]) => {
+    const a = document.createElement("a");
+    a.className = "card-link";
+    a.href = href;
+    a.textContent = t(en, ko);
+    list.appendChild(a);
+  });
+  box.appendChild(list);
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.className = "secondary launch-cancel";
+  cancel.textContent = t("Cancel", "취소");
+  cancel.addEventListener("click", () => overlay.remove());
+  box.appendChild(cancel);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+// Fires on a File Handling API launch (Windows/Chrome PWA "Open with…").
+// A tool page (has a .drop dropzone) feeds the file straight in; the index
+// page has nothing to feed, so it stashes the file and offers a chooser.
+if ("launchQueue" in window) {
+  window.launchQueue.setConsumer(async (launchParams) => {
+    if (!launchParams.files || !launchParams.files.length) return;
+    let files;
+    try {
+      files = await Promise.all(launchParams.files.map((h) => h.getFile()));
+    } catch (e) {
+      return;
+    }
+    if (!files.length) return;
+    if (document.querySelector(".drop")) {
+      deliverLaunchFiles(files);
+    } else {
+      await stashLaunchFile(files[0]);
+      showLaunchChooser();
+    }
+  });
+}
+
 /* ---------------------------------------------------------- boot / wasm --- */
 
 // boot(wasmFile) instantiates the page's wasm binary, flips #status from
@@ -394,6 +542,10 @@ function dropzone(id, opts) {
     const arr = Array.from(list);
     files = opts.multiple ? arr : arr.slice(0, 1);
     render();
+    // Single funnel for every path that sets files (click-pick, drop): lets
+    // page-specific enhancements (e.g. web/thumbs.js) react without this
+    // file needing to know they exist.
+    el.dispatchEvent(new CustomEvent("dz:files", { detail: { files } }));
   }
 
   el.setAttribute("role", "button");
@@ -420,6 +572,26 @@ function dropzone(id, opts) {
   // bubbling back into el's click handler and reopening the picker.
   input.addEventListener("click", (e) => e.stopPropagation());
   input.addEventListener("change", () => setFiles(input.files));
+
+  // Claim any PWA-launched file: one already waiting for a dropzone (same
+  // page raced a launchQueue event ahead of this dropzone() call), or one
+  // stashed by the index page's tool chooser — the latter needs no
+  // launchQueue support on this page, just a plain IndexedDB read. The
+  // stash is only consumed on the tools showLaunchChooser() actually
+  // offered — otherwise it stays put for whichever of those tools the
+  // visitor eventually navigates to (or expires past its TTL).
+  if (!activeDropzoneFeed) {
+    activeDropzoneFeed = setFiles;
+    if (pendingLaunchFiles) {
+      const f = pendingLaunchFiles;
+      pendingLaunchFiles = null;
+      setFiles(f);
+    } else if (LAUNCH_TOOL_SLUGS.indexOf(currentToolSlug()) !== -1) {
+      takeLaunchFile().then((f) => {
+        if (f) deliverLaunchFiles([f]);
+      });
+    }
+  }
 
   return {
     get files() {

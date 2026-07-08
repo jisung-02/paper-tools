@@ -414,3 +414,35 @@ footer {
   pointer-events: none;
 }
 .thumbcell.selected { border-color: var(--fg); box-shadow: 0 0 0 2px var(--fg) inset; }
+
+/* PWA "Open with which tool?" chooser (file-handler launch on the index page) */
+.launch-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 100;
+}
+.launch-box {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+}
+.launch-box h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+.launch-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: .6rem;
+}
+.launch-cancel { margin-top: 1.25rem; }
