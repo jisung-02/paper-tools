@@ -239,6 +239,22 @@
     "fr": {"title": "Convertisseur Hangul vers Word — gratuit et privé | Paper Tools", "description": "Convertissez Hangul HWPX en Word en ligne — gratuit et privé. Transformez le texte et les paragraphes d'un .hwpx en .docx directement dans votre navigateur ; sans envoi, sans inscription."},
     "de": {"title": "Hangul-zu-Word-Konverter — kostenlos & privat | Paper Tools", "description": "Hangul HWPX online in Word umwandeln — kostenlos & privat. Text und Absätze aus .hwpx direkt im Browser in .docx umwandeln; kein Upload, keine Anmeldung."}
   },
+  "pdf2docx": {
+    "ko": {"title": "PDF를 Word로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF를 Word(.docx)로 변환하세요 — 무료이고 비공개입니다. 브라우저에서 바로 텍스트를 추출해 .docx 문단으로 재구성할 수 있으며(레이아웃·이미지·표는 유지되지 않음), 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
+    "ja": {"title": "PDFをWordに変換 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFをWord(.docx)に変換 — 無料・非公開。ブラウザ内でテキストを抽出して.docxの段落として再構成でき(レイアウト・画像・表は保持されません)、ファイルはアップロードされず、登録も不要です。"},
+    "zh": {"title": "PDF 转 Word — 免费且私密 | Paper Tools", "description": "在线将 PDF 转换为 Word(.docx)——免费且私密。在浏览器中直接提取文字并重新排版为 .docx 段落(不保留版式、图片和表格);文件绝不上传,无需注册。"},
+    "es": {"title": "Convertidor de PDF a Word — gratis y privado | Paper Tools", "description": "Convierte PDF a Word (.docx) en línea — gratis y privado. Extrae el texto y reconstrúyelo como párrafos .docx directamente en tu navegador (no se conservan el diseño, las imágenes ni las tablas); los archivos nunca se suben, sin registro."},
+    "fr": {"title": "Convertisseur PDF vers Word — gratuit et privé | Paper Tools", "description": "Convertissez PDF en Word (.docx) en ligne — gratuit et privé. Extrayez le texte et reconstruisez-le en paragraphes .docx directement dans votre navigateur (la mise en page, les images et les tableaux ne sont pas conservés) ; les fichiers ne sont jamais envoyés, sans inscription."},
+    "de": {"title": "PDF-zu-Word-Konverter — kostenlos & privat | Paper Tools", "description": "PDF online in Word (.docx) umwandeln — kostenlos & privat. Text direkt im Browser extrahieren und als .docx-Absätze neu aufbauen (Layout, Bilder und Tabellen bleiben nicht erhalten); Dateien werden nie hochgeladen, keine Anmeldung nötig."}
+  },
+  "pdf2hwpx": {
+    "ko": {"title": "PDF를 Hangul로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF를 Hangul(.hwpx)로 변환하세요 — 무료이고 비공개입니다. 브라우저에서 바로 텍스트를 추출해 .hwpx 문단으로 재구성할 수 있으며(레이아웃·이미지·표는 유지되지 않음), 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
+    "ja": {"title": "PDFをHangulに変換 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFをHangul(.hwpx)に変換 — 無料・非公開。ブラウザ内でテキストを抽出して.hwpxの段落として再構成でき(レイアウト・画像・表は保持されません)、ファイルはアップロードされず、登録も不要です。"},
+    "zh": {"title": "PDF 转 Hangul — 免费且私密 | Paper Tools", "description": "在线将 PDF 转换为 Hangul(.hwpx)——免费且私密。在浏览器中直接提取文字并重新排版为 .hwpx 段落(不保留版式、图片和表格);文件绝不上传,无需注册。"},
+    "es": {"title": "Convertidor de PDF a Hangul — gratis y privado | Paper Tools", "description": "Convierte PDF a Hangul (.hwpx) en línea — gratis y privado. Extrae el texto y reconstrúyelo como párrafos .hwpx directamente en tu navegador (no se conservan el diseño, las imágenes ni las tablas); los archivos nunca se suben, sin registro."},
+    "fr": {"title": "Convertisseur PDF vers Hangul — gratuit et privé | Paper Tools", "description": "Convertissez PDF en Hangul (.hwpx) en ligne — gratuit et privé. Extrayez le texte et reconstruisez-le en paragraphes .hwpx directement dans votre navigateur (la mise en page, les images et les tableaux ne sont pas conservés) ; les fichiers ne sont jamais envoyés, sans inscription."},
+    "de": {"title": "PDF-zu-Hangul-Konverter — kostenlos & privat | Paper Tools", "description": "PDF online in Hangul (.hwpx) umwandeln — kostenlos & privat. Text direkt im Browser extrahieren und als .hwpx-Absätze neu aufbauen (Layout, Bilder und Tabellen bleiben nicht erhalten); Dateien werden nie hochgeladen, keine Anmeldung nötig."}
+  },
   "md2pdf": {
     "ko": {"title": "마크다운을 PDF로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 마크다운을 PDF로 변환하세요 — 무료이고 비공개이며 한글도 지원합니다. 브라우저에서 바로 .md 파일을 끌어다 놓을 수 있으며, 업로드나 회원가입이 필요 없습니다."},
     "ja": {"title": "MarkdownをPDFに変換 — 無料・非公開 | Paper Tools", "description": "オンラインでMarkdownをPDFに変換 — 無料・非公開、韓国語にも対応。ブラウザ内で.mdファイルをそのままドロップするだけ、アップロードも登録も不要です。"},
@@ -286,5 +302,13 @@
     "es": {"title": "Comparar PDFs — gratis y privado | Paper Tools", "description": "Compara dos PDF en línea — gratis y privado. Descubre exactamente qué texto ha cambiado entre dos versiones directamente en tu navegador; los archivos nunca se suben, sin registro."},
     "fr": {"title": "Comparer des PDF — gratuit et privé | Paper Tools", "description": "Comparez deux PDF en ligne — gratuit et privé. Découvrez exactement quel texte a changé entre deux versions directement dans votre navigateur ; les fichiers ne sont jamais envoyés, sans inscription."},
     "de": {"title": "PDFs vergleichen — kostenlos & privat | Paper Tools", "description": "Zwei PDFs online vergleichen — kostenlos & privat. Sehen Sie genau, welcher Text sich zwischen zwei Versionen geändert hat, direkt im Browser; Dateien werden nie hochgeladen, keine Anmeldung nötig."}
+  },
+  "ocr": {
+    "ko": {"title": "OCR(문자 인식) — 무료·비공개 | Paper Tools", "description": "온라인에서 스캔한 PDF나 이미지의 글자를 인식하세요 — 무료이고 비공개입니다. 영어 또는 한국어 텍스트를 브라우저 안에서 바로 추출하며, 파일은 업로드되지 않습니다."},
+    "ja": {"title": "OCR(文字認識) — 無料・非公開 | Paper Tools", "description": "オンラインでスキャンしたPDFや画像から文字を認識 — 無料・非公開。英語または韓国語のテキストをブラウザ内で直接抽出します。ファイルはアップロードされません。"},
+    "zh": {"title": "OCR 文字识别 — 免费且私密 | Paper Tools", "description": "在线识别扫描版 PDF 或图片中的文字——免费且私密。直接在浏览器中提取英文或韩文文本；文件绝不上传。"},
+    "es": {"title": "OCR — extraer texto de escaneos, gratis y privado | Paper Tools", "description": "Reconoce texto en un PDF escaneado o una imagen en línea — gratis y privado. Extrae texto en inglés o coreano directamente en tu navegador; los archivos nunca se suben."},
+    "fr": {"title": "OCR — extraire le texte de scans, gratuit et privé | Paper Tools", "description": "Reconnaissez le texte d'un PDF scanné ou d'une image en ligne — gratuit et privé. Extrayez du texte en anglais ou en coréen directement dans votre navigateur ; les fichiers ne sont jamais envoyés."},
+    "de": {"title": "OCR — Text aus Scans erkennen, kostenlos & privat | Paper Tools", "description": "Text aus einem gescannten PDF oder Bild online erkennen — kostenlos & privat. Englischen oder koreanischen Text direkt im Browser extrahieren; Dateien werden nie hochgeladen."}
   }
 }

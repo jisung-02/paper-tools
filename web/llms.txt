@@ -2,7 +2,7 @@
 
 > Privacy-first PDF, image and document tools that run entirely in your browser. Files never leave your device — free, no signup, no installs.
 
-Paper Tools is a collection of 34 client-side file tools, live at https://papertools.dev . Every tool runs entirely in the tab and does all processing locally; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source.
+Paper Tools is a collection of 37 client-side file tools, live at https://papertools.dev . Every tool runs entirely in the tab and does all processing locally; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source.
 
 ## Tools
 
@@ -26,6 +26,7 @@ Paper Tools is a collection of 34 client-side file tools, live at https://papert
 - [Unlock](https://papertools.dev/unlock/): Remove a known password from a PDF.
 - [Image Convert](https://papertools.dev/imgconv/): Convert images between PNG, JPG and GIF.
 - [PDF → Text](https://papertools.dev/pdftext/): Extract selectable text from a PDF to a .txt file.
+- [OCR](https://papertools.dev/ocr/): Recognize text in a scanned PDF or image (English or Korean) and download a .txt file.
 - [PDF → Images](https://papertools.dev/pdf2img/): Render selected PDF pages as PNG or JPG images in a ZIP, with scale and JPG quality options.
 - [Extract Images](https://papertools.dev/pdfimages/): Pull embedded images out of a PDF into a ZIP.
 - [Text → PDF](https://papertools.dev/txt2pdf/): Turn text into a PDF, with Korean font support.
@@ -34,6 +35,8 @@ Paper Tools is a collection of 34 client-side file tools, live at https://papert
 - [Old Hangul → PDF](https://papertools.dev/hwp2pdf/): Convert old .hwp text into a PDF (text-focused).
 - [Word → Hangul](https://papertools.dev/docx2hwpx/): Convert .docx to .hwpx (text and paragraphs only).
 - [Hangul → Word](https://papertools.dev/hwpx2docx/): Convert .hwpx to .docx (text and paragraphs only).
+- [PDF → Word](https://papertools.dev/pdf2docx/): Convert a PDF's text into a .docx (text and paragraphs only).
+- [PDF → Hangul](https://papertools.dev/pdf2hwpx/): Convert a PDF's text into a .hwpx (text and paragraphs only).
 - [Markdown → PDF](https://papertools.dev/md2pdf/): Convert a Markdown (.md) file to PDF, with Korean font support.
 - [Excel → CSV](https://papertools.dev/xlsx2csv/): Convert an .xlsx workbook's sheets to CSV (or a ZIP of CSVs for multiple sheets).
 - [Image Resize](https://papertools.dev/imgresize/): Shrink an image to a maximum width/height; never upscales.
@@ -49,5 +52,7 @@ Paper Tools is a collection of 34 client-side file tools, live at https://papert
 - Open source: https://github.com/jisung-02/paper-tools
 - Password protection uses AES-256 (recommended) or AES-128 encryption.
 - Document-to-PDF conversions (Word, Hangul/HWPX, old Hangul/HWP, Markdown) are text-only — layout, tables and images are not preserved.
+- PDF → Word and PDF → Hangul are also text-only: the PDF's text is extracted and rebuilt as paragraphs, with no layout, images or tables preserved.
 - Excel → CSV keeps date cells as their raw Excel serial number, not a calendar date.
 - Compare PDFs compares extracted text only, not visual layout.
+- OCR supports English and Korean text and works best on clean, high-resolution scans; handwriting recognition is unreliable. Like every other tool, all processing (and loading of any supporting data) stays on papertools.dev — nothing is ever fetched from a third-party server.

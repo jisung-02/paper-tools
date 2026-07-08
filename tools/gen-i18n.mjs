@@ -16,7 +16,8 @@ const TOOL_SLUGS = [
   "crop", "resize", "nup", "img2pdf", "watermark", "pagenum", "compress",
   "flatten", "metadata", "info", "protect", "unlock", "imgconv", "pdftext", "pdfimages",
   "pdf2img", "txt2pdf", "docx2pdf", "hwpx2pdf", "hwp2pdf", "docx2hwpx", "hwpx2docx",
-  "md2pdf", "stamp", "imgresize", "xlsx2csv", "pdfdiff"
+  "pdf2docx", "pdf2hwpx",
+  "md2pdf", "stamp", "imgresize", "xlsx2csv", "pdfdiff", "ocr"
 ];
 
 let warningCount = 0;

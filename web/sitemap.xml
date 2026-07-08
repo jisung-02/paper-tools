@@ -361,6 +361,30 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/pdf2docx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2docx/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/pdf2hwpx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2hwpx/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/md2pdf/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
@@ -419,6 +443,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ocr/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
     <loc>https://papertools.dev/privacy/</loc>
@@ -793,6 +829,30 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/ko/pdf2docx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2docx/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ko/pdf2hwpx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2hwpx/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/ko/md2pdf/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
@@ -851,6 +911,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ko/ocr/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
     <loc>https://papertools.dev/ko/privacy/</loc>
@@ -1225,6 +1297,30 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/ja/pdf2docx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2docx/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ja/pdf2hwpx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2hwpx/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/ja/md2pdf/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
@@ -1283,6 +1379,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ja/ocr/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
     <loc>https://papertools.dev/ja/privacy/</loc>
@@ -1657,6 +1765,30 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/zh/pdf2docx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2docx/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/zh/pdf2hwpx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2hwpx/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/zh/md2pdf/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
@@ -1715,6 +1847,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/zh/ocr/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
     <loc>https://papertools.dev/zh/privacy/</loc>
@@ -2089,6 +2233,30 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/es/pdf2docx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2docx/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/es/pdf2hwpx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2hwpx/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/es/md2pdf/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
@@ -2147,6 +2315,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/es/ocr/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
     <loc>https://papertools.dev/es/privacy/</loc>
@@ -2521,6 +2701,30 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/fr/pdf2docx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2docx/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/fr/pdf2hwpx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2hwpx/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/fr/md2pdf/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
@@ -2579,6 +2783,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/fr/ocr/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
     <loc>https://papertools.dev/fr/privacy/</loc>
@@ -2953,6 +3169,30 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/hwpx2docx/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/de/pdf2docx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2docx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2docx/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/de/pdf2hwpx/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdf2hwpx/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdf2hwpx/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/de/md2pdf/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/md2pdf/"/>
@@ -3011,6 +3251,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/pdfdiff/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/pdfdiff/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/de/ocr/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/ocr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
     <loc>https://papertools.dev/de/privacy/</loc>
