@@ -592,4 +592,5 @@ window.I18N.fr = {
     "Yes. All 37 tools are free, with no account and no signup.": "Oui. Les 37 outils sont gratuits, sans compte ni inscription.",
     "38 file tools. No uploads, no installs — right here in this tab.": "38 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet.",
     "Yes. All 38 tools are free, with no account and no signup.": "Oui. Les 38 outils sont gratuits, sans compte ni inscription.",
+    "Click to choose a different file": "Cliquez pour choisir un autre fichier",
 };

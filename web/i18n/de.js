@@ -592,4 +592,5 @@ window.I18N.de = {
     "Yes. All 37 tools are free, with no account and no signup.": "Ja. Alle 37 Tools sind kostenlos, ohne Konto und ohne Registrierung.",
     "38 file tools. No uploads, no installs — right here in this tab.": "38 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab.",
     "Yes. All 38 tools are free, with no account and no signup.": "Ja. Alle 38 Tools sind kostenlos, ohne Konto und ohne Registrierung.",
+    "Click to choose a different file": "Klicken, um eine andere Datei auszuwählen",
 };

@@ -525,6 +525,10 @@ function dropzone(id, opts) {
   const el = document.getElementById(id);
   const input = el.querySelector("input[type=file]");
   const listEl = el.querySelector(".filelist");
+  // The static "drag/drop or click" prompt; not every dropzone markup has
+  // one, so this may be null.
+  const promptEl = el.querySelector(":scope > span[data-i18n]");
+  const promptOrig = promptEl ? { en: promptEl.dataset.en, ko: promptEl.dataset.ko } : null;
   let files = [];
 
   function render() {
@@ -538,10 +542,26 @@ function dropzone(id, opts) {
     }
   }
 
+  // Once files are picked, the drag/drop prompt no longer applies — swap it
+  // for a "replace" message. Updates data-en/data-ko too, so a language
+  // switch (which re-reads those attributes) doesn't revert the swap.
+  function updatePrompt() {
+    if (!promptEl) return;
+    if (files.length > 0) {
+      promptEl.dataset.en = "Click to choose a different file";
+      promptEl.dataset.ko = "클릭해서 다른 파일로 교체";
+    } else {
+      promptEl.dataset.en = promptOrig.en;
+      promptEl.dataset.ko = promptOrig.ko;
+    }
+    promptEl.textContent = t(promptEl.dataset.en, promptEl.dataset.ko);
+  }
+
   function setFiles(list) {
     const arr = Array.from(list);
     files = opts.multiple ? arr : arr.slice(0, 1);
     render();
+    updatePrompt();
     // Single funnel for every path that sets files (click-pick, drop): lets
     // page-specific enhancements (e.g. web/thumbs.js) react without this
     // file needing to know they exist.
