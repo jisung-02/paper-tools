@@ -457,6 +457,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/send/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/send/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/send/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/send/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/send/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/send/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/send/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/send/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/send/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/privacy/</loc>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/privacy/"/>
@@ -923,6 +935,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/ocr/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/ocr/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ko/send/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/send/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/send/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/send/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/send/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/send/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/send/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/send/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/send/"/>
   </url>
   <url>
     <loc>https://papertools.dev/ko/privacy/</loc>
@@ -1393,6 +1417,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/ja/send/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/send/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/send/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/send/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/send/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/send/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/send/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/send/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/send/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/ja/privacy/</loc>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/privacy/"/>
@@ -1859,6 +1895,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/ocr/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/ocr/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/zh/send/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/send/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/send/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/send/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/send/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/send/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/send/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/send/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/send/"/>
   </url>
   <url>
     <loc>https://papertools.dev/zh/privacy/</loc>
@@ -2329,6 +2377,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/es/send/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/send/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/send/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/send/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/send/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/send/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/send/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/send/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/send/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/es/privacy/</loc>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/privacy/"/>
@@ -2797,6 +2857,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/fr/send/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/send/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/send/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/send/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/send/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/send/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/send/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/send/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/send/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/fr/privacy/</loc>
     <priority>0.5</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/privacy/"/>
@@ -3263,6 +3335,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/ocr/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/ocr/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/ocr/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/de/send/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/send/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/send/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/send/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/send/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/send/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/send/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/send/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/send/"/>
   </url>
   <url>
     <loc>https://papertools.dev/de/privacy/</loc>

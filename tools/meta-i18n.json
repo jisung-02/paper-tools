@@ -310,5 +310,13 @@
     "es": {"title": "OCR — extraer texto de escaneos, gratis y privado | Paper Tools", "description": "Reconoce texto en un PDF escaneado o una imagen en línea — gratis y privado. Extrae texto en inglés o coreano directamente en tu navegador; los archivos nunca se suben."},
     "fr": {"title": "OCR — extraire le texte de scans, gratuit et privé | Paper Tools", "description": "Reconnaissez le texte d'un PDF scanné ou d'une image en ligne — gratuit et privé. Extrayez du texte en anglais ou en coréen directement dans votre navigateur ; les fichiers ne sont jamais envoyés."},
     "de": {"title": "OCR — Text aus Scans erkennen, kostenlos & privat | Paper Tools", "description": "Text aus einem gescannten PDF oder Bild online erkennen — kostenlos & privat. Englischen oder koreanischen Text direkt im Browser extrahieren; Dateien werden nie hochgeladen."}
+  },
+  "send": {
+    "ko": {"title": "다른 기기로 파일 전송 — 무료·비공개 | Paper Tools", "description": "다른 기기로 파일을 바로 보내세요 — 무료이고 비공개입니다. 파일은 두 기기 사이에서만 이동하며 어떤 서버에도 업로드되지 않고, 회원가입도 필요 없습니다."},
+    "ja": {"title": "他の端末に直接送信 — 無料・非公開 | Paper Tools", "description": "他の端末にファイルを直接送信 — 無料・非公開。ファイルは2台の端末の間だけを移動し、どのサーバーにもアップロードされず、登録も不要です。"},
+    "zh": {"title": "直接发送到其他设备 — 免费且私密 | Paper Tools", "description": "在线将文件直接发送到另一台设备——免费且私密。文件只在两台设备之间移动，绝不上传到任何服务器，也无需注册。"},
+    "es": {"title": "Enviar directamente a otro dispositivo — gratis y privado | Paper Tools", "description": "Envía un archivo directamente a otro dispositivo en línea — gratis y privado. El archivo se mueve solo entre los dos dispositivos y nunca se sube a ningún servidor; sin registro."},
+    "fr": {"title": "Envoyer directement vers un autre appareil — gratuit et privé | Paper Tools", "description": "Envoyez un fichier directement vers un autre appareil en ligne — gratuit et privé. Le fichier se déplace uniquement entre les deux appareils et n'est jamais envoyé à un serveur ; sans inscription."},
+    "de": {"title": "Direkt an ein anderes Gerät senden — kostenlos & privat | Paper Tools", "description": "Sende eine Datei online direkt an ein anderes Gerät — kostenlos & privat. Die Datei bewegt sich nur zwischen den beiden Geräten und wird niemals auf einen Server hochgeladen; keine Anmeldung nötig."}
   }
 }

@@ -17,7 +17,7 @@ const TOOL_SLUGS = [
   "flatten", "metadata", "info", "protect", "unlock", "imgconv", "pdftext", "pdfimages",
   "pdf2img", "txt2pdf", "docx2pdf", "hwpx2pdf", "hwp2pdf", "docx2hwpx", "hwpx2docx",
   "pdf2docx", "pdf2hwpx",
-  "md2pdf", "stamp", "imgresize", "xlsx2csv", "pdfdiff", "ocr"
+  "md2pdf", "stamp", "imgresize", "xlsx2csv", "pdfdiff", "ocr", "send"
 ];
 
 let warningCount = 0;
