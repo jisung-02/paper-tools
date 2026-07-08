@@ -1,0 +1,66 @@
+Vendored OCR engine + language data for the OCR tool (web/ocr/).
+Fetched: 2026-07-08
+
+## Engine: tesseract-wasm@0.11.0 (npm, via jsDelivr)
+
+Chosen over tesseract.js because tesseract.js ships no WebAssembly of its
+own — it dynamically loads the separate "tesseract.js-core" package, which
+publishes four wasm variants (core / core-lstm / core-simd / core-simd-lstm,
+~2.9-3.5MB each) plus matching base64-inlined ".wasm.js" fallbacks
+(~3.9-4.7MB each) and a worker bundle. Self-hosting it means vendoring and
+wiring corePath/workerPath/langPath for several MB more than tesseract-wasm,
+for the same OCR quality (both wrap the same Tesseract/Leptonica C++ core).
+tesseract-wasm is purpose-built for exactly this "self-hosted OCRClient in a
+Worker" use case: 4 runtime files, ESM on the main thread, a classic-script
+Worker, no bundler required — matching how /vendor/pdfjs/ is already vendored
+in this repo.
+
+Source: https://cdn.jsdelivr.net/npm/tesseract-wasm@0.11.0/
+License: BSD-2-Clause (see ./LICENSE, from the package's LICENSE.md;
+  the file's header comments individually credit Apache-2.0 code -- Google's
+  Comlink -- bundled inline by the package's own build).
+
+Files (from dist/):
+  lib.js                        95,394 bytes (97,684 on disk incl. no BOM)
+    sha256: ed6b39d775484081affa3d21bf491f705673c2a3fd616b2f7bce9020ed8eba1
+  tesseract-worker.js            93,353 bytes
+    sha256: a2773a8a09bd51ce066092980f8243a08cbda37277d7ad577e5cfda0435b656
+  tesseract-core.wasm         1,839,004 bytes  (SIMD build)
+    sha256: 3822dc6ee83d507f2bd2f83b97a3dd5dabf3ea71a9836d951602c9054615137
+  tesseract-core-fallback.wasm 1,808,229 bytes  (non-SIMD build; lib.js
+    feature-detects and picks whichever the browser supports)
+    sha256: 94d9ce820d31a75814d0b4e5d099405b8738b11633bcef8c0d078a53b2b1ded
+  LICENSE (package LICENSE.md)     1,334 bytes
+    sha256: 4b2021f2e93e321ff8bece6f84c221109dd0f72475eaeed37c5929cc5c0a11a
+
+Not vendored (TypeScript declaration files only, unused at runtime):
+  dist/index.d.ts, dist/ocr-client.d.ts, dist/ocr-engine.d.ts,
+  dist/tesseract-init.d.ts, dist/utils.d.ts, dist/worker.d.ts
+
+Verified: both .wasm files start with the \0asm magic (00 61 73 6d).
+
+## Language data: tessdata_fast (tesseract-ocr/tessdata_fast, main branch)
+
+Source:
+  https://github.com/tesseract-ocr/tessdata_fast/raw/main/eng.traineddata
+  https://github.com/tesseract-ocr/tessdata_fast/raw/main/kor.traineddata
+License: Apache-2.0 (see the tessdata_fast repo's own LICENSE; not mirrored
+  here — link above is authoritative).
+
+  eng.traineddata   4,113,088 bytes
+    sha256: 7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b
+  kor.traineddata   1,677,415 bytes
+    sha256: 6b85e11d9bbf07863b97b3523b1b112844c43e713df8b66418a081fd1060b3b
+
+Both files' leading bytes match the Tesseract combined-traineddata format
+(a little-endian section-count/name-table header, not a recognizable "magic
+number" format, but clearly binary and well over the 1MB corruption-detection
+floor — GitHub error pages are small HTML/JSON, not multi-MB binaries).
+
+## Loading
+
+Everything above is fetched lazily, same-origin, only on the first "Run"
+click on /ocr/ (see web/ocr/ocr.mjs) — never at page load, and never from a
+third-party CDN at runtime. The two language files are loaded on demand
+(only the one the user selects), same as pdf.js's cmaps/standard_fonts are
+loaded on demand by /pdf2img/ and friends.
