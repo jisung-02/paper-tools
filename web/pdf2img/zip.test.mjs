@@ -28,6 +28,14 @@ test("zipStore writes stored files with valid directory records", () => {
   assert.equal(firstName, "page-1.txt");
 });
 
+test("zipStore throws past the ZIP32 65535-entry limit", () => {
+  const files = Array.from({ length: 65536 }, (_, i) => ({
+    name: `f${i}`,
+    data: new Uint8Array(0),
+  }));
+  assert.throws(() => zipStore(files));
+});
+
 function readU16(bytes, offset) {
   return bytes[offset] | (bytes[offset + 1] << 8);
 }

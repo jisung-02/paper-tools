@@ -59,8 +59,8 @@
 <p id="status">Loading tool…</p>
 
 <div class="drop" id="fileDrop">
-  <span data-i18n data-en="Drag an image here, or click to choose" data-ko="이미지를 끌어다 놓거나 클릭해서 선택">Drag an image here, or click to choose</span>
-  <input type="file" accept="image/png,image/jpeg,image/gif">
+  <span data-i18n data-en="Drag images here, or click to choose" data-ko="이미지를 끌어다 놓거나 클릭해서 선택">Drag images here, or click to choose</span>
+  <input type="file" accept="image/png,image/jpeg,image/gif" multiple>
   <ul class="filelist"></ul>
 </div>
 
@@ -98,42 +98,76 @@
 
 <script src="../wasm_exec.js"></script>
 <script src="../app.js"></script>
+<script src="../zip.js"></script>
 <script>
 boot("./imgconv.wasm");
-const fileDz = dropzone("fileDrop", { multiple: false });
+const fileDz = dropzone("fileDrop", { multiple: true });
 const btn = document.getElementById("run");
 const err = document.getElementById("err");
 const fmt = document.getElementById("fmt");
 const quality = document.getElementById("quality");
 
+function formatInfo(value) {
+  switch (value) {
+    case "png":
+      return { ext: "png", mime: "image/png" };
+    case "jpeg":
+      return { ext: "jpg", mime: "image/jpeg" };
+    case "gif":
+      return { ext: "gif", mime: "image/gif" };
+    default:
+      return { ext: "converted", mime: "application/octet-stream" };
+  }
+}
+
+function convertedName(originalName, ext) {
+  return originalName.replace(/\.[^./]+$/, "") + "-converted." + ext;
+}
+
 btn.addEventListener("click", () => run(btn, async () => {
-  if (fileDz.files.length < 1) {
-    showErr(err, t("Select an image.", "이미지를 선택하세요."));
+  const inputFiles = fileDz.files;
+  if (inputFiles.length < 1) {
+    showErr(err, t("Select at least one image.", "이미지를 1개 이상 선택하세요."));
     return;
   }
-  const bytes = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(bytes, fmt.value, parseInt(quality.value, 10) || 85);
 
-  let ext, mime;
-  switch (fmt.value) {
-    case "png":
-      ext = "png";
-      mime = "image/png";
-      break;
-    case "jpeg":
-      ext = "jpg";
-      mime = "image/jpeg";
-      break;
-    case "gif":
-      ext = "gif";
-      mime = "image/gif";
-      break;
-    default:
-      ext = "converted";
-      mime = "application/octet-stream";
+  const { ext, mime } = formatInfo(fmt.value);
+  const outputs = [];
+  const usedNames = new Set();
+
+  for (let i = 0; i < inputFiles.length; i++) {
+    const inputFile = inputFiles[i];
+    if (inputFiles.length > 1) {
+      btn.textContent = t("Converting…", "변환 중…") + " (" + (i + 1) + "/" + inputFiles.length + ")";
+    }
+    const bytes = await fileBytes(inputFile);
+    const r = pdfRun(bytes, fmt.value, parseInt(quality.value, 10) || 85);
+    if (r.error) {
+      if (inputFiles.length === 1) {
+        showErr(err, r.error);
+        return;
+      }
+      throw new Error(inputFile.name + ": " + r.error);
+    }
+    if (!r.data) continue;
+    if (inputFiles.length === 1) {
+      outputs.push({ name: "converted." + ext, data: r.data });
+    } else {
+      let name = convertedName(inputFile.name, ext);
+      let n = 2;
+      while (usedNames.has(name)) name = convertedName(inputFile.name, ext).replace(new RegExp("\\." + ext + "$"), "-" + n++ + "." + ext);
+      usedNames.add(name);
+      outputs.push({ name, data: r.data });
+    }
   }
 
-  finish(r, "converted." + ext, err, mime);
+  if (outputs.length < 1) return;
+
+  if (outputs.length === 1) {
+    download(outputs[0].data, outputs[0].name, mime);
+  } else {
+    download(zipStore(outputs), "converted.zip", "application/zip");
+  }
 }));
 </script>
 </body>
