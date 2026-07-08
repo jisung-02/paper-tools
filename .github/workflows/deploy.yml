@@ -19,8 +19,19 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Install TinyGo
+        run: |
+          curl -fsSL -o /tmp/tinygo.deb https://github.com/tinygo-org/tinygo/releases/download/v0.41.1/tinygo_0.41.1_amd64.deb
+          sudo dpkg -i /tmp/tinygo.deb
+
+      - name: Install binaryen (wasm-opt)
+        run: sudo apt-get update && sudo apt-get install -y binaryen
+
       - name: Test
         run: go test ./...
+
+      - name: Test (TinyGo runtime)
+        run: tinygo test ./pdf ./xlsx ./imgconv
 
       - name: Build WebAssembly tools
         run: ./build.sh
