@@ -64,6 +64,8 @@
   <ul class="filelist"></ul>
 </div>
 
+<div class="thumbgrid" id="thumbGrid" hidden></div>
+
 <label for="ranges" data-i18n data-en="Pages (e.g. 1-3,7)" data-ko="페이지 (예: 1-3,7)">Pages (e.g. 1-3,7)</label>
 <input type="text" id="ranges" placeholder="1-3,7">
 <p class="hint" data-i18n data-en="e.g. 1-3,7 · for an open-ended range from the end, leave the end blank like 5-" data-ko="예: 1-3,7 · 뒤에서부터는 5- 처럼 끝을 비워두세요">e.g. 1-3,7 · for an open-ended range from the end, leave the end blank like 5-</p>
@@ -112,6 +114,10 @@ btn.addEventListener("click", () => run(btn, async () => {
   const r = pdfRun(file, ranges.value.trim());
   finish(r, "pages.pdf", err);
 }));
+</script>
+<script type="module">
+import { init as initThumbs } from "/thumbs.js";
+initThumbs({ mode: "split", dropzoneId: "fileDrop", input: ranges, container: document.getElementById("thumbGrid") });
 </script>
 </body>
 </html>

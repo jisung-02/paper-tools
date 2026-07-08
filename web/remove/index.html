@@ -64,6 +64,8 @@
   <ul class="filelist"></ul>
 </div>
 
+<div class="thumbgrid" id="thumbGrid" hidden></div>
+
 <label for="ranges" data-i18n data-en="Pages to remove" data-ko="삭제할 페이지">Pages to remove</label>
 <input type="text" id="ranges" placeholder="1-3,7">
 <p class="hint" data-i18n data-en="e.g. 1-3,7" data-ko="예: 1-3,7">e.g. 1-3,7</p>
@@ -112,6 +114,10 @@ btn.addEventListener("click", () => run(btn, async () => {
   const r = pdfRun(file, ranges.value.trim());
   finish(r, "removed.pdf", err);
 }));
+</script>
+<script type="module">
+import { init as initThumbs } from "/thumbs.js";
+initThumbs({ mode: "remove", dropzoneId: "fileDrop", input: ranges, container: document.getElementById("thumbGrid") });
 </script>
 </body>
 </html>

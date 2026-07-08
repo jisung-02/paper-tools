@@ -368,3 +368,49 @@ footer {
 .page-info ol { padding-left: 1.25rem; margin: 0; } .page-info li { margin: .35rem 0; }
 .page-info h3 { font-size: .95rem; font-weight: 600; margin: 1rem 0 .25rem; }
 .page-info p { margin: 0; color: var(--muted); }
+
+/* page-thumbnail grid (progressive enhancement — Reorder/Remove/Split) */
+.thumbgrid { margin: 1.25rem 0; }
+.thumbgrid .thumbhint,
+.thumbgrid .thumbnotice { margin: 0 0 .5rem; }
+.thumbcells {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: .6rem;
+}
+.thumbcell {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .35rem;
+  background: var(--bg);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color .12s, opacity .12s, box-shadow .12s;
+}
+.thumbcell:hover { border-color: var(--border-stronger); }
+.thumbcell canvas { display: block; width: 100%; height: auto; border-radius: 4px; }
+.thumbcell .thumbnum {
+  display: block;
+  text-align: center;
+  font-size: .75rem;
+  color: var(--muted);
+  margin-top: .3rem;
+}
+.thumbcell[draggable="true"] { cursor: grab; }
+.thumbcell.dragging { opacity: .4; }
+.thumbcell.dragover-before { box-shadow: -3px 0 0 var(--fg); }
+.thumbcell.dragover-after { box-shadow: 3px 0 0 var(--fg); }
+.thumbcell.removed { opacity: .35; }
+.thumbcell.removed::after {
+  content: "\2715";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  color: var(--err);
+  pointer-events: none;
+}
+.thumbcell.selected { border-color: var(--fg); box-shadow: 0 0 0 2px var(--fg) inset; }

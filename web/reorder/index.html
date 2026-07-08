@@ -64,6 +64,8 @@
   <ul class="filelist"></ul>
 </div>
 
+<div class="thumbgrid" id="thumbGrid" hidden></div>
+
 <label for="order" data-i18n data-en="New order (e.g. 3,1,2 — list every page number)" data-ko="새 순서 (예: 3,1,2 — 모든 페이지 번호를 나열)">New order (e.g. 3,1,2 — list every page number)</label>
 <input type="text" id="order" placeholder="3,1,2">
 <p class="hint" data-i18n data-en="List every page number once, in the new order" data-ko="모든 페이지 번호를 새 순서대로 한 번씩 나열하세요">List every page number once, in the new order</p>
@@ -112,6 +114,10 @@ btn.addEventListener("click", () => run(btn, async () => {
   const r = pdfRun(file, order.value.trim());
   finish(r, "reordered.pdf", err);
 }));
+</script>
+<script type="module">
+import { init as initThumbs } from "/thumbs.js";
+initThumbs({ mode: "reorder", dropzoneId: "fileDrop", input: order, container: document.getElementById("thumbGrid") });
 </script>
 </body>
 </html>
