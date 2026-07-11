@@ -24,7 +24,7 @@ Paper Tools is a collection of 41 client-side file tools, live at https://papert
 - [Compress](https://papertools.dev/compress/): Shrink PDF file size with compression presets, image quality, target image size and optional grayscale conversion.
 - [Metadata](https://papertools.dev/metadata/): Edit or remove a PDF's title, author and other metadata.
 - [PDF Info](https://papertools.dev/info/): See a PDF's page count, size and metadata.
-- [Protect](https://papertools.dev/protect/): Encrypt a PDF with an AES-128 password.
+- [Protect](https://papertools.dev/protect/): Encrypt a PDF with an AES-256 (recommended) or AES-128 password.
 - [Unlock](https://papertools.dev/unlock/): Remove a known password from a PDF.
 - [Image Convert](https://papertools.dev/imgconv/): Convert images between PNG, JPG and GIF.
 - [PDF → Text](https://papertools.dev/pdftext/): Extract selectable text from a PDF to a .txt file.
