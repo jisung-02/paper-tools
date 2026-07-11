@@ -101,7 +101,7 @@
     "zh": {"title": "图片转 PDF — 免费且私密 | Paper Tools", "description": "在线将图片转换为 PDF——免费且私密。可将 PNG 或 JPG 图片按页面大小、适配、边距和旋转选项转为 PDF;文件不会上传。"},
     "es": {"title": "Convertir imágenes a PDF — gratis y privado | Paper Tools", "description": "Convierte imágenes a PDF en línea — gratis y privado. Transforma imágenes PNG o JPG en PDF con opciones de tamaño, ajuste, margen y rotación; los archivos nunca se suben."},
     "fr": {"title": "Convertir des images en PDF — gratuit et privé | Paper Tools", "description": "Convertissez des images en PDF en ligne — gratuit et privé. Transformez des images PNG ou JPG en PDF avec options de taille, d'ajustement, de marge et de rotation; les fichiers ne sont jamais envoyés."},
-    "de": {"title": "Bilder in PDF umwandeln — kostenlos & privat | Paper Tools", "description": "Bilder online in PDF umwandeln — kostenlos & privat. PNG- oder JPG-Bilder mit Optionen für Größe, Anpassung, Rand und Drehung in PDF verwandeln; Dateien werden nie hochgeladen."}
+    "de": {"title": "Bild in PDF umwandeln — kostenlos & privat | Paper Tools", "description": "Bild oder Bilder kostenlos in PDF umwandeln — direkt im Browser & privat. PNG- oder JPG-Bilder mit Optionen für Größe, Anpassung, Rand und Drehung in PDF verwandeln; Dateien werden nie hochgeladen."}
   },
   "watermark": {
     "ko": {"title": "PDF 워터마크 추가 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF에 워터마크를 추가하세요 — 무료이고 비공개입니다. 브라우저에서 바로 모든 페이지에 대각선 텍스트를 새길 수 있으며, 업로드나 회원가입이 필요 없습니다."},
@@ -155,7 +155,7 @@
     "ko": {"title": "PDF 잠금 해제 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF 잠금을 해제하세요 — 무료이고 비공개입니다. 알고 있는 비밀번호를 브라우저에서 바로 제거할 수 있으며, 파일은 기기 밖으로 나가지 않고 업로드나 회원가입도 필요 없습니다."},
     "ja": {"title": "PDFロック解除 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFのロックを解除 — 無料・非公開。知っているパスワードをブラウザ内でそのまま削除でき、ファイルが端末の外に出ることはなく、アップロードも登録も不要です。"},
     "zh": {"title": "解锁 PDF — 免费且私密 | Paper Tools", "description": "在线解锁 PDF——免费且私密。在浏览器中直接移除您知道的密码;文件绝不离开您的设备,无需上传,无需注册。"},
-    "es": {"title": "Desbloquear PDF — gratis y privado | Paper Tools", "description": "Desbloquea un PDF en línea — gratis y privado. Elimina una contraseña que conoces directamente en tu navegador; los archivos nunca salen de tu dispositivo, sin subidas, sin registro."},
+    "es": {"title": "Desbloquear PDF — gratis y privado | Paper Tools", "description": "Desbloquea archivos PDF en línea — gratis y privado. Elimina una contraseña que conoces directamente en tu navegador; los archivos nunca salen de tu dispositivo, sin subidas, sin registro."},
     "fr": {"title": "Déverrouiller un PDF — gratuit et privé | Paper Tools", "description": "Déverrouillez un PDF en ligne — gratuit et privé. Supprimez un mot de passe que vous connaissez directement dans votre navigateur ; les fichiers ne quittent jamais votre appareil, sans envoi, sans inscription."},
     "de": {"title": "PDF entsperren — kostenlos & privat | Paper Tools", "description": "PDF online entsperren — kostenlos & privat. Ein dir bekanntes Passwort direkt im Browser entfernen; Dateien verlassen nie dein Gerät, kein Upload, keine Anmeldung."}
   },
@@ -177,7 +177,7 @@
   },
   "pdfimages": {
     "ko": {"title": "PDF에서 이미지 추출 — 무료·비공개 | Paper Tools", "description": "온라인에서 PDF에서 이미지를 추출하세요 — 무료이고 비공개입니다. 브라우저에서 바로 삽입된 이미지를 ZIP 파일로 뽑아낼 수 있으며, 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
-    "ja": {"title": "PDFから画像抽出 — 無料・非公開 | Paper Tools", "description": "オンラインでPDFから画像を抽出 — 無料・非公開。ブラウザ内で埋め込まれた画像をZIPとして取り出せ、ファイルはアップロードされず、登録も不要です。"},
+    "ja": {"title": "PDFから画像を抜き出し（抽出） — 無料・非公開 | Paper Tools", "description": "オンラインでPDFから画像を抜き出し（抽出） — 無料・非公開。ブラウザ内で埋め込まれた画像をZIPとして取り出せ、ファイルはアップロードされず、登録も不要です。"},
     "zh": {"title": "从 PDF 中提取图片 — 免费且私密 | Paper Tools", "description": "在线从 PDF 中提取图片——免费且私密。在浏览器中直接将嵌入的图片提取为 ZIP 文件;文件绝不上传,无需注册。"},
     "es": {"title": "Extraer imágenes de un PDF — gratis y privado | Paper Tools", "description": "Extrae las imágenes de un PDF en línea — gratis y privado. Saca las imágenes incrustadas en un archivo ZIP directamente en tu navegador; los archivos nunca se suben, sin registro."},
     "fr": {"title": "Extraire les images d'un PDF — gratuit et privé | Paper Tools", "description": "Extrayez les images d'un PDF en ligne — gratuit et privé. Récupérez les images intégrées dans un fichier ZIP directement dans votre navigateur ; les fichiers ne sont jamais envoyés, sans inscription."},
@@ -259,7 +259,7 @@
     "ko": {"title": "마크다운을 PDF로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 마크다운을 PDF로 변환하세요 — 무료이고 비공개이며 한글도 지원합니다. 브라우저에서 바로 .md 파일을 끌어다 놓을 수 있으며, 업로드나 회원가입이 필요 없습니다."},
     "ja": {"title": "MarkdownをPDFに変換 — 無料・非公開 | Paper Tools", "description": "オンラインでMarkdownをPDFに変換 — 無料・非公開、韓国語にも対応。ブラウザ内で.mdファイルをそのままドロップするだけ、アップロードも登録も不要です。"},
     "zh": {"title": "Markdown 转 PDF — 免费且私密 | Paper Tools", "description": "在线将 Markdown 转换为 PDF——免费且私密,支持韩文。在浏览器中直接拖入 .md 文件;无需上传,无需注册。"},
-    "es": {"title": "Markdown a PDF — gratis y privado | Paper Tools", "description": "Convierte Markdown a PDF en línea — gratis y privado, con soporte para coreano. Suelta un archivo .md directamente en tu navegador; sin subidas, sin registro."},
+    "es": {"title": "Convertir Markdown a PDF — gratis y privado | Paper Tools", "description": "Convierte Markdown a PDF en línea — gratis y privado, con soporte para coreano. Suelta un archivo .md directamente en tu navegador; sin subidas, sin registro."},
     "fr": {"title": "Markdown vers PDF — gratuit et privé | Paper Tools", "description": "Convertissez Markdown en PDF en ligne — gratuit et privé, avec prise en charge du coréen. Déposez un fichier .md directement dans votre navigateur ; sans envoi, sans inscription."},
     "de": {"title": "Markdown in PDF umwandeln — kostenlos & privat | Paper Tools", "description": "Markdown online in PDF umwandeln — kostenlos & privat, mit Unterstützung für Koreanisch. Eine .md-Datei direkt im Browser ablegen; kein Upload, keine Anmeldung."}
   },
