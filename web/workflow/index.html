@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="/manifest.webmanifest">
+<title>PDF Workflow — free & private | Paper Tools</title>
+<meta name="description" content="Build a private PDF workflow in your browser. Chain, preview and download multiple PDF operations without uploading files.">
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="/workflow/workflow.css">
+<!-- hreflang -->
+<link rel="alternate" hreflang="en" href="https://papertools.dev/workflow/">
+<link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/workflow/">
+<link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/workflow/">
+<link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/workflow/">
+<link rel="alternate" hreflang="es" href="https://papertools.dev/es/workflow/">
+<link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/workflow/">
+<link rel="alternate" hreflang="de" href="https://papertools.dev/de/workflow/">
+<link rel="alternate" hreflang="x-default" href="https://papertools.dev/workflow/">
+</head>
+<body>
+<header><a class="wordmark" href="../">Paper Tools</a><nav class="langtoggle"><button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button></nav></header>
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+<h1 data-i18n data-en="PDF Workflow" data-ko="PDF 작업 파이프라인">PDF Workflow</h1>
+<p class="desc" data-i18n data-en="Chain PDF operations without selecting the file again." data-ko="파일을 다시 선택하지 않고 여러 PDF 작업을 연속 실행합니다.">Chain PDF operations without selecting the file again.</p>
+<label for="workflowInput" data-i18n data-en="Input PDFs" data-ko="입력 PDF">Input PDFs</label>
+<div class="drop" id="workflowDrop"><span data-i18n data-en="Drag PDFs here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag PDFs here, or click to choose</span><input id="workflowInput" type="file" accept="application/pdf" multiple><ul class="filelist"></ul></div>
+<section class="workflow-builder" aria-labelledby="stepsTitle">
+<h2 id="stepsTitle" data-i18n data-en="Steps" data-ko="작업 단계">Steps</h2>
+<div class="workflow-add"><select id="operationSelect" aria-label="Operation"></select><button type="button" id="addStep" data-i18n data-en="Add step" data-ko="단계 추가">Add step</button></div>
+<ol id="steps"></ol>
+</section>
+<div class="workflow-actions">
+<button class="primary" type="button" id="runWorkflow" data-i18n data-en="Run workflow" data-ko="파이프라인 실행">Run workflow</button>
+<button type="button" id="cancelWorkflow" disabled data-i18n data-en="Cancel" data-ko="취소">Cancel</button>
+<button type="button" id="exportWorkflow" data-i18n data-en="Export settings" data-ko="설정 내보내기">Export settings</button>
+<label class="button-label"><span data-i18n data-en="Import settings" data-ko="설정 가져오기">Import settings</span><input id="importWorkflow" type="file" accept="application/json"></label>
+</div>
+<p id="status" role="status" aria-live="polite" hidden></p>
+<p class="err" id="err" role="alert"></p>
+<section id="workflowResult" hidden>
+<h2 data-i18n data-en="Result" data-ko="결과">Result</h2>
+<p id="resultSummary"></p>
+<iframe id="resultPreview" title="PDF result preview"></iframe>
+<button class="primary" type="button" id="downloadResult" data-i18n data-en="Download result" data-ko="결과 다운로드">Download result</button>
+</section>
+</main>
+<footer><span data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</span> · <a href="../privacy/">Privacy</a></footer>
+<script src="../app.js"></script>
+<script type="module" src="/workflow/workflow.mjs"></script>
+</body>
+</html>

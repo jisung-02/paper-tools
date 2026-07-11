@@ -20,9 +20,13 @@ type builder struct {
 	infoRef    Ref    // if set, written as /Info N 0 R in the trailer
 	id         String // if non-nil, written as /ID [<hex> <hex>] (same value twice)
 	encryptRef Ref    // if set, written as /Encrypt N 0 R in the trailer
+	finalized  bool
 }
 
 func (b *builder) alloc() Ref {
+	if b.finalized {
+		panic("pdf: allocation after finalization")
+	}
 	b.objs = append(b.objs, nil)
 	return Ref{Num: len(b.objs), Gen: 0}
 }
@@ -138,6 +142,69 @@ func translate(v any, m map[int]Ref) any {
 	}
 }
 
+var preservedCatalogKeys = map[Name]bool{
+	"Lang":              true,
+	"ViewerPreferences": true,
+	"Metadata":          true,
+	"OutputIntents":     true,
+}
+
+// page-dependent catalog entries are intentionally omitted when assembling a
+// new page tree; retaining them would leave references to removed pages.
+var pageDependentCatalogKeys = map[Name]bool{
+	"Pages": true, "AcroForm": true, "Outlines": true, "StructTreeRoot": true,
+	"PageLabels": true, "Names": true, "Dests": true,
+}
+
+func collectRefs(v any, out *[]int) {
+	switch t := v.(type) {
+	case Ref:
+		*out = append(*out, t.Num)
+	case Dict:
+		for _, vv := range t {
+			collectRefs(vv, out)
+		}
+	case Array:
+		for _, vv := range t {
+			collectRefs(vv, out)
+		}
+	case *Stream:
+		collectRefs(t.Dict, out)
+	}
+}
+
+func preservedCatalog(d *Doc, keepPageDependent ...bool) (Dict, []int) {
+	root, _ := d.R(d.trailer["Root"]).(Dict)
+	copy := Dict{}
+	var refs []int
+	keep := firstBool(keepPageDependent)
+	for k, v := range root {
+		if k == "Pages" || (!preservedCatalogKeys[k] && !(keep && pageDependentCatalogKeys[k])) {
+			continue
+		}
+		copy[k] = v
+		collectRefs(v, &refs)
+	}
+	return copy, refs
+}
+
+func firstBool(values []bool) bool {
+	return len(values) > 0 && values[0]
+}
+
+func preservesPageIdentity(d *Doc, order []pageSel) bool {
+	pages, err := d.Pages()
+	if err != nil || len(pages) != len(order) {
+		return false
+	}
+	for i, sel := range order {
+		if sel.doc != 0 || sel.pg.Num != pages[i].Num {
+			return false
+		}
+	}
+	return true
+}
+
 // pageMutator lets callers post-process an output page dict during buildDoc,
 // e.g. to append content-stream overlays.
 type pageMutator func(b *builder, pageIndex int, pd Dict, m map[int]Ref) error
@@ -146,6 +213,22 @@ type pageMutator func(b *builder, pageIndex int, pd Dict, m map[int]Ref) error
 type pageSel struct {
 	doc int
 	pg  Page
+}
+
+func materializeInheritedPageAttrs(d *Doc, page Page) error {
+	pd, ok := d.Get(page.Num).(Dict)
+	if !ok {
+		return fmt.Errorf("page object %d is not a dictionary", page.Num)
+	}
+	for _, key := range inheritable {
+		if _, exists := pd[key]; exists {
+			continue
+		}
+		if value, inherited := page.Attrs[key]; inherited {
+			pd[key] = value
+		}
+	}
+	return nil
 }
 
 // buildOrdered assembles a new document containing exactly the pages in
@@ -159,7 +242,19 @@ func buildOrdered(docs []*Doc, order []pageSel, mut pageMutator) (*builder, Ref,
 
 	roots := make([][]int, len(docs))
 	for _, sel := range order {
+		if err := materializeInheritedPageAttrs(docs[sel.doc], sel.pg); err != nil {
+			return nil, Ref{}, err
+		}
 		roots[sel.doc] = append(roots[sel.doc], sel.pg.Num)
+	}
+	var catalog Dict
+	if len(docs) > 0 {
+		var extra []int
+		catalog, extra = preservedCatalog(docs[0], preservesPageIdentity(docs[0], order))
+		roots[0] = append(roots[0], extra...)
+		if info, ok := docs[0].trailer["Info"].(Ref); ok {
+			roots[0] = append(roots[0], info.Num)
+		}
 	}
 	maps := make([]map[int]Ref, len(docs))
 	for i, d := range docs {
@@ -211,6 +306,21 @@ func buildOrdered(docs []*Doc, order []pageSel, mut pageMutator) (*builder, Ref,
 		"Type":  Name("Catalog"),
 		"Pages": pagesRef,
 	}
+	if len(catalog) > 0 && maps[0] != nil {
+		outCatalog := b.objs[catalogRef.Num-1].(Dict)
+		for k, v := range catalog {
+			if copied := translate(v, maps[0]); copied != nil {
+				outCatalog[k] = copied
+			}
+		}
+	}
+	if len(docs) > 0 && maps[0] != nil {
+		if info, ok := docs[0].trailer["Info"].(Ref); ok {
+			if mapped, ok := maps[0][info.Num]; ok {
+				b.infoRef = mapped
+			}
+		}
+	}
 
 	return b, catalogRef, nil
 }
@@ -240,10 +350,18 @@ func buildWith(docs []*Doc, selections [][]Page, mut pageMutator) ([]byte, error
 	if err != nil {
 		return nil, err
 	}
-	return b.bytes(root), nil
+	return b.bytes(root)
 }
 
-func (b *builder) bytes(root Ref) []byte {
+func (b *builder) bytes(root Ref) ([]byte, error) {
+	root, err := b.finalize(root)
+	if err != nil {
+		return nil, err
+	}
+	return b.writeBytes(root), nil
+}
+
+func (b *builder) writeBytes(root Ref) []byte {
 	var buf bytes.Buffer
 	buf.WriteString("%PDF-1.7\n%\xe2\xe3\xcf\xd3\n")
 

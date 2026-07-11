@@ -81,18 +81,14 @@ func (b *builder) ensureResources(pd Dict) Dict {
 // ownedSub does the same one level deeper for Resources subdicts like Font,
 // ExtGState, XObject.
 func (b *builder) ownedSub(res Dict, key Name) Dict {
-	sub, ok := res[key].(Dict)
-	if !ok {
-		if shared, isShared := b.rv(res[key]).(Dict); isShared {
-			sub = make(Dict, len(shared))
-			for k, v := range shared {
-				sub[k] = v
-			}
-		} else {
-			sub = Dict{}
+	sub := Dict{}
+	if existing, ok := b.rv(res[key]).(Dict); ok {
+		sub = make(Dict, len(existing))
+		for k, v := range existing {
+			sub[k] = v
 		}
-		res[key] = sub
 	}
+	res[key] = sub
 	return sub
 }
 
@@ -114,7 +110,15 @@ func (b *builder) wrapContent(pd Dict, pre, post []byte) {
 	case nil:
 		contents = Array{preRef, postRef}
 	case Ref:
-		contents = Array{preRef, c, postRef}
+		switch resolved := b.rv(c).(type) {
+		case Array:
+			contents = append(Array{preRef}, resolved...)
+			contents = append(contents, postRef)
+		case *Stream:
+			contents = Array{preRef, c, postRef}
+		default:
+			contents = Array{preRef, postRef}
+		}
 	case Array:
 		contents = append(Array{preRef}, c...)
 		contents = append(contents, postRef)

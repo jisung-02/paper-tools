@@ -120,12 +120,37 @@ func StampImage(pdfData, imgData []byte, opts StampOpts) ([]byte, error) {
 
 		drawW := widthPct / 100 * pageW
 		drawH := drawW * float64(imgH) / float64(imgW)
-		x, y := anchorXY(pos, x0, y0, x1, y1, drawW, drawH, margin)
+		g := pageVisualGeometry{x0: x0, y0: y0, x1: x1, y1: y1, width: x1 - x0, height: y1 - y0}
+		if rv, ok := rnum(pd["Rotate"]); ok {
+			g.rotate = ((int(rv) % 360) + 360) % 360
+		}
+		if g.rotate == 90 || g.rotate == 270 {
+			g.width, g.height = g.height, g.width
+		}
+		x, y := anchorXY(pos, 0, 0, g.width, g.height, drawW, drawH, margin)
 
 		res := b.ensureResources(pd)
-		b.ownedSub(res, "XObject")["StIm0"] = xobjRef
-		b.ownedSub(res, "ExtGState")["GSSt0"] = b.gstateRef(opacity)
-		ops := fmt.Sprintf("/GSSt0 gs %.2f 0 0 %.2f %.2f %.2f cm /StIm0 Do", drawW, drawH, x, y)
+		nextImage, nextState := 0, 0
+		imageName := uniqueResourceName(b.ownedSub(res, "XObject"), "StIm", &nextImage)
+		stateName := uniqueResourceName(b.ownedSub(res, "ExtGState"), "GSSt", &nextState)
+		b.ownedSub(res, "XObject")[imageName] = xobjRef
+		b.ownedSub(res, "ExtGState")[stateName] = b.gstateRef(opacity)
+		a, bb, c, dd, e, f := drawW, 0.0, 0.0, drawH, x, y
+		if g.rotate == 90 {
+			a, bb, c, dd, e, f = 0, drawW, -drawH, 0, x0+y1-y, y0+x
+		}
+		if g.rotate == 180 {
+			a, bb, c, dd, e, f = -drawW, 0, 0, -drawH, x1-x, y1-y
+		}
+		if g.rotate == 270 {
+			a, bb, c, dd, e, f = 0, -drawW, drawH, 0, x0+y, y1-x
+		}
+		var ops string
+		if g.rotate == 0 {
+			ops = fmt.Sprintf("/%s gs %.2f 0 0 %.2f %.2f %.2f cm /%s Do", stateName, drawW, drawH, x, y, imageName)
+		} else {
+			ops = fmt.Sprintf("/%s gs %.2f %.2f %.2f %.2f %.2f %.2f cm /%s Do", stateName, a, bb, c, dd, e, f, imageName)
+		}
 		b.appendContent(pd, []byte(ops))
 		return nil
 	}
@@ -213,10 +238,21 @@ func StampText(pdfData []byte, opts StampTextOpts) ([]byte, error) {
 		if !ok {
 			x0, y0, x1, y1 = 0, 0, 612, 792
 		}
-		x, y := anchorXY(pos, x0, y0, x1, y1, width, fontSize, margin)
+		g := pageVisualGeometry{x0: x0, y0: y0, x1: x1, y1: y1, width: x1 - x0, height: y1 - y0}
+		if rv, ok := rnum(pd["Rotate"]); ok {
+			g.rotate = ((int(rv) % 360) + 360) % 360
+		}
+		if g.rotate == 90 || g.rotate == 270 {
+			g.width, g.height = g.height, g.width
+		}
+		x, y := anchorXY(pos, 0, 0, g.width, g.height, width, fontSize, margin)
+		x, y = g.visualPoint(x, y)
 
 		res := b.ensureResources(pd)
-		b.ownedSub(res, "ExtGState")["GSStT0"] = b.gstateRef(opacity)
+		nextState, nextFont := 0, 0
+		stateName := uniqueResourceName(b.ownedSub(res, "ExtGState"), "GSStT", &nextState)
+		fontName := uniqueResourceName(b.ownedSub(res, "Font"), "FStT", &nextFont)
+		b.ownedSub(res, "ExtGState")[stateName] = b.gstateRef(opacity)
 
 		var ops string
 		if f != nil {
@@ -228,12 +264,14 @@ func StampText(pdfData []byte, opts StampTextOpts) ([]byte, error) {
 				}
 				embedded = true
 			}
-			b.ownedSub(res, "Font")["FStT0"] = type0Ref
-			ops = fmt.Sprintf("/GSStT0 gs BT /FStT0 %.2f Tf 0 g 1 0 0 1 %.2f %.2f Tm <%X> Tj ET",
+			b.ownedSub(res, "Font")[fontName] = type0Ref
+			ops = fmt.Sprintf("/%s gs BT /%s %.2f Tf 0 g 1 0 0 1 %.2f %.2f Tm <%X> Tj ET",
+				stateName, fontName,
 				fontSize, x, y, f.encode(text))
 		} else {
-			b.ownedSub(res, "Font")["FStT0"] = b.helveticaRef()
-			ops = fmt.Sprintf("/GSStT0 gs BT /FStT0 %.2f Tf 0 g 1 0 0 1 %.2f %.2f Tm (%s) Tj ET",
+			b.ownedSub(res, "Font")[fontName] = b.helveticaRef()
+			ops = fmt.Sprintf("/%s gs BT /%s %.2f Tf 0 g 1 0 0 1 %.2f %.2f Tm (%s) Tj ET",
+				stateName, fontName,
 				fontSize, x, y, esc)
 		}
 		b.appendContent(pd, []byte(ops))

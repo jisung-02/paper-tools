@@ -101,9 +101,18 @@ func SetMetadata(file []byte, info DocInfo, stripAll bool) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if stripAll {
+		b.infoRef = Ref{}
+		if catalog, ok := b.objs[catalogRef.Num-1].(Dict); ok {
+			delete(catalog, "Metadata")
+		}
+	}
 
 	if !stripAll {
 		merged := Dict{}
+		for key, value := range existing {
+			merged[key] = value
+		}
 		for _, key := range infoKeys {
 			val := infoField(info, key)
 			if val == "" {
@@ -120,7 +129,7 @@ func SetMetadata(file []byte, info DocInfo, stripAll bool) ([]byte, error) {
 		b.infoRef = infoRef
 	}
 
-	return b.bytes(catalogRef), nil
+	return b.bytes(catalogRef)
 }
 
 // GetInfo returns document facts as a JSON-encodable map. Never writes.

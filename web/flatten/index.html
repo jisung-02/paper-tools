@@ -106,7 +106,7 @@ btn.addEventListener("click", () => run(btn, async () => {
   }
   const pdfFile = fileDz.files[0];
   const file = await fileBytes(pdfFile);
-  const r = pdfRun(file);
+  const r = await runWasm(file);
   finish(r, baseName(pdfFile.name) + "-flattened.pdf", err);
 }));
 </script>

@@ -110,7 +110,7 @@ const fileDz = dropzone("fileDrop", { multiple: false });
 btn.addEventListener("click", () => run(btn, async () => {
   if (fileDz.files.length < 1) { showErr(err, t("Select a file.", "파일을 선택하세요.")); return; }
   const fileBuf = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(fileBuf, fontBytes);
+  const r = await runWasm(fileBuf, fontBytes);
   finish(r, "converted.pdf", err);
 }));
 </script>

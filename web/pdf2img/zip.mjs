@@ -10,3 +10,4 @@ import "../zip.js";
 const globalTarget = typeof window !== "undefined" ? window : globalThis;
 
 export const zipStore = globalTarget.zipStore;
+export const zipStoreStream = globalTarget.zipStoreStream;

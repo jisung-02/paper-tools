@@ -122,7 +122,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     return;
   }
   const file = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(file, title.value, author.value, subject.value, keywords.value, strip.checked);
+  const r = await runWasm(file, title.value, author.value, subject.value, keywords.value, strip.checked);
   finish(r, "metadata.pdf", err);
 }));
 </script>

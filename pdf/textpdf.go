@@ -119,7 +119,7 @@ func TextToPDF(text string, fontTTF []byte, opts TextPDFOpts) ([]byte, error) {
 
 	b.objs[pagesRef.Num-1] = Dict{"Type": Name("Pages"), "Kids": kids, "Count": len(kids)}
 	b.objs[catalogRef.Num-1] = Dict{"Type": Name("Catalog"), "Pages": pagesRef}
-	return b.bytes(catalogRef), nil
+	return b.bytes(catalogRef)
 }
 
 // ponytail: greedy per-rune wrap, space-preferred for latin; no real line-breaking/hyphenation.

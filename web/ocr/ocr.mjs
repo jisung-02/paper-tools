@@ -1,4 +1,6 @@
 import * as pdfjsLib from "/vendor/pdfjs/pdf.mjs";
+import { normalizeTextBoxes } from "./boxes.mjs";
+import { OCRBudget, renderGeometry, validateOCRSelection } from "./budget.mjs";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/vendor/pdfjs/pdf.worker.mjs";
 
@@ -20,7 +22,9 @@ const err = document.getElementById("err");
 const langSel = document.getElementById("lang");
 const statusEl = document.getElementById("status");
 const output = document.getElementById("output");
+const outputType = document.getElementById("outputType");
 
+let searchableRuntime;
 if (statusEl) statusEl.hidden = true;
 btn.disabled = false;
 
@@ -32,6 +36,38 @@ function setStatus(msg) {
   if (!statusEl) return;
   statusEl.hidden = false;
   statusEl.textContent = msg;
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error(window.t("Failed to load PDF runtime.", "PDF 런타임을 불러오지 못했습니다.")));
+    document.head.appendChild(script);
+  });
+}
+
+function loadSearchableRuntime() {
+  if (!searchableRuntime) {
+    const pending = (async () => {
+      const fontPromise = fetch("/NanumGothic-Regular.ttf").then(async (response) => {
+        if (!response.ok) throw new Error(window.t("Failed to load font.", "폰트를 불러오지 못했습니다."));
+        return new Uint8Array(await response.arrayBuffer());
+      });
+      const [, fontBytes] = await Promise.all([
+        typeof window.Go === "function" ? Promise.resolve() : loadScript("/wasm_exec.js?v=2"),
+        fontPromise,
+      ]);
+      await window.boot("/ocrpdf/ocrpdf.wasm");
+      return fontBytes;
+    })();
+    searchableRuntime = pending.catch((error) => {
+      searchableRuntime = undefined;
+      throw error;
+    });
+  }
+  return searchableRuntime;
 }
 
 btn.addEventListener("click", () => window.run(btn, async () => {
@@ -50,13 +86,27 @@ btn.addEventListener("click", () => window.run(btn, async () => {
     ));
     return;
   }
+  const searchablePDF = outputType.value === "pdf";
+  validateOCRSelection(files, pdfCount === 1 ? 1 : files.length);
 
   let doc;
   let task;
   let client;
+  const releasePDF = async () => {
+    const currentDoc = doc;
+    const currentTask = task;
+    doc = undefined;
+    task = undefined;
+    try {
+      if (currentDoc && typeof currentDoc.cleanup === "function") await currentDoc.cleanup();
+    } finally {
+      if (currentTask && typeof currentTask.destroy === "function") await currentTask.destroy();
+    }
+  };
   try {
     let totalPages;
     let getPageBitmap;
+    let budget;
 
     if (pdfCount === 1) {
       const bytes = await window.fileBytes(files[0]);
@@ -72,9 +122,20 @@ btn.addEventListener("click", () => window.run(btn, async () => {
         throw friendlyPdfError(e);
       }
       totalPages = doc.numPages;
-      getPageBitmap = (i) => renderPdfPage(doc, i + 1);
+      validateOCRSelection(files, totalPages);
+      budget = new OCRBudget(totalPages);
+      const geometries = [];
+      for (let i = 0; i < totalPages; i++) {
+        const page = await doc.getPage(i + 1);
+        const base = page.getViewport({ scale: 1 });
+        const geometry = renderGeometry(base.width, base.height, RENDER_SCALE);
+        budget.reservePage(i, geometry.width, geometry.height);
+        geometries.push(geometry);
+      }
+      getPageBitmap = (i) => renderPdfPage(doc, i + 1, geometries[i]);
     } else {
       totalPages = files.length;
+      budget = new OCRBudget(totalPages);
       getPageBitmap = async (i) => {
         try {
           return await createImageBitmap(files[i]);
@@ -97,47 +158,84 @@ btn.addEventListener("click", () => window.run(btn, async () => {
     await client.loadModel(await modelRes.arrayBuffer());
 
     const pageTexts = [];
+    const ocrPages = [];
     for (let i = 0; i < totalPages; i++) {
       btn.textContent = window.t("Recognizing…", "인식 중…") + " (" + (i + 1) + "/" + totalPages + ")";
       const bitmap = await getPageBitmap(i);
+      const width = bitmap.width;
+      const height = bitmap.height;
       try {
+        if (pdfCount === 0) budget.reservePage(i, width, height);
         await client.loadImage(bitmap);
       } finally {
         if (bitmap.close) bitmap.close();
       }
-      const text = await client.getText();
-      pageTexts.push(text.trim());
+      let words = [];
+      if (searchablePDF) {
+        const boxes = await client.getTextBoxes("word");
+        words = normalizeTextBoxes(boxes, width, height);
+        ocrPages.push({ words });
+      }
+      const text = (await client.getText()).trim();
+      budget.addRecognition(i, words, text);
+      pageTexts.push(text);
     }
+    const completedClient = client;
+    client = undefined;
+    await completedClient.destroy();
 
     setStatus("");
     if (statusEl) statusEl.hidden = true;
 
     const finalText = pageTexts.join("\n\n");
     output.value = finalText;
-    window.download(new TextEncoder().encode(finalText), "ocr-text.txt", "text/plain;charset=utf-8");
+    if (!searchablePDF) {
+      window.download(new TextEncoder().encode(finalText), "ocr-text.txt", "text/plain;charset=utf-8");
+      return;
+    }
+
+    if (pdfCount === 1) await releasePDF();
+    const fontBytes = await loadSearchableRuntime();
+    const source = pdfCount === 1
+      ? await window.fileBytes(files[0])
+      : [];
+    if (pdfCount === 0) {
+      for (const file of files) source.push(await window.fileBytes(file));
+    }
+    const sourceKind = pdfCount === 1 ? "pdf" : "images";
+    const pagesJSON = JSON.stringify(ocrPages);
+    budget.assertSerialized(pagesJSON);
+    const result = await window.runWasm(source, fontBytes, pagesJSON, sourceKind, 0);
+    window.finish(result, searchablePDFName(files[0]), err);
   } finally {
     if (client) await client.destroy();
-    if (doc && typeof doc.cleanup === "function") await doc.cleanup();
-    if (task && typeof task.destroy === "function") await task.destroy();
+    await releasePDF();
     if (statusEl) statusEl.hidden = true;
   }
 }));
 
-async function renderPdfPage(doc, pageNumber) {
+function searchablePDFName(file) {
+  const stem = String(file?.name || "ocr").replace(/\.[^.]+$/, "") || "ocr";
+  return `${stem}-searchable.pdf`;
+}
+
+async function renderPdfPage(doc, pageNumber, geometry) {
   const page = await doc.getPage(pageNumber);
-  const viewport = page.getViewport({ scale: RENDER_SCALE });
+  const viewport = page.getViewport({ scale: geometry.scale });
   const canvas = document.createElement("canvas");
-  canvas.width = Math.ceil(viewport.width);
-  canvas.height = Math.ceil(viewport.height);
+  canvas.width = geometry.width;
+  canvas.height = geometry.height;
   const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) throw new Error("Canvas is not available.");
   ctx.fillStyle = "#fff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  await page.render({ canvasContext: ctx, viewport }).promise;
-  const bitmap = await createImageBitmap(canvas);
-  canvas.width = 0;
-  canvas.height = 0;
-  return bitmap;
+  try {
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    return await createImageBitmap(canvas);
+  } finally {
+    canvas.width = 0;
+    canvas.height = 0;
+  }
 }
 
 function friendlyPdfError(e) {

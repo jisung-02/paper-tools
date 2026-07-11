@@ -104,7 +104,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     return;
   }
   const file = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(file, password.value);
+  const r = await runWasm(file, password.value);
   finish(r, "unlocked.pdf", err);
 }));
 </script>

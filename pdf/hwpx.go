@@ -9,6 +9,7 @@ import (
 	"io"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -22,6 +23,9 @@ func HwpxText(data []byte) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("hwpx: invalid zip file: %v", err)
 	}
+	if err := validateOfficeZIP(zr, "hwpx"); err != nil {
+		return "", err
+	}
 
 	// Collect all section*.xml entries.
 	var sectionEntries []*zip.File
@@ -34,20 +38,26 @@ func HwpxText(data []byte) (string, error) {
 		return "", errors.New("유효한 hwpx 파일이 아닙니다")
 	}
 
-	// Sort by Name.
+	// HWPX section names use a numeric suffix; lexical ordering would place
+	// section10 before section2.
 	sort.Slice(sectionEntries, func(i, j int) bool {
-		return sectionEntries[i].Name < sectionEntries[j].Name
+		return hwpxSectionNumber(sectionEntries[i].Name) < hwpxSectionNumber(sectionEntries[j].Name)
 	})
 
 	var allText strings.Builder
 	for _, f := range sectionEntries {
-		rc, err := f.Open()
+		sectionBytes, err := readOfficeEntry(f, "hwpx")
 		if err != nil {
-			continue
+			return "", err
 		}
-		sectionText := extractSectionText(rc)
+		sectionText, err := extractSectionText(bytes.NewReader(sectionBytes))
+		if err != nil {
+			return "", fmt.Errorf("hwpx: parse %q: %w", f.Name, err)
+		}
 		allText.WriteString(sectionText)
-		rc.Close()
+		if allText.Len() > int(officeParseLimits.maxTextBytes) {
+			return "", errors.New("hwpx: extracted text too large")
+		}
 	}
 
 	// Collapse 3+ consecutive newlines to exactly 2.
@@ -58,9 +68,18 @@ func HwpxText(data []byte) (string, error) {
 	return result, nil
 }
 
+func hwpxSectionNumber(name string) int {
+	base := strings.TrimSuffix(strings.TrimPrefix(name, "Contents/section"), ".xml")
+	n, err := strconv.Atoi(base)
+	if err != nil || n < 0 {
+		return int(^uint(0) >> 1)
+	}
+	return n
+}
+
 // extractSectionText uses an XML Decoder to stream-parse a section file,
 // extracting text from t, p, and tab elements.
-func extractSectionText(r io.Reader) string {
+func extractSectionText(r io.Reader) (string, error) {
 	var text strings.Builder
 	dec := xml.NewDecoder(r)
 
@@ -71,7 +90,10 @@ func extractSectionText(r io.Reader) string {
 	for {
 		tok, err := dec.Token()
 		if err != nil {
-			break
+			if err == io.EOF {
+				break
+			}
+			return "", err
 		}
 		switch t := tok.(type) {
 		case xml.StartElement:
@@ -94,7 +116,7 @@ func extractSectionText(r io.Reader) string {
 			}
 		}
 	}
-	return text.String()
+	return text.String(), nil
 }
 
 // HwpxToPDF converts a .hwpx file to a PDF by extracting text and rendering it.

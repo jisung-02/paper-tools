@@ -8,7 +8,18 @@
 // only runs the pure codec functions below.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { buildAnswerLink, decodeSdp, encodeSdp, parseHash } from "./send.mjs";
+import {
+  buildAnswerLink,
+  decodeSdp,
+  encodeSdp,
+  MAX_IN_MEMORY_TRANSFER_BYTES,
+  MAX_SDP_BYTES,
+  parseHash,
+  parseResumeOfferInput,
+  ReceiveState,
+  SenderResumeState,
+  validateTransferMetadata,
+} from "./send.mjs";
 
 const SAMPLE_SDP =
   "v=0\r\no=- 4611731400430051336 2 IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\n" +
@@ -67,6 +78,59 @@ test("encodeSdp: rejects non-string input", async () => {
   await assert.rejects(() => encodeSdp(undefined));
 });
 
+test("SDP codec rejects oversized input", async () => {
+  await assert.rejects(() => encodeSdp("x".repeat(MAX_SDP_BYTES + 1)));
+});
+
+test("decodeSdp stops streaming decompression at the decoded byte limit", async () => {
+  const original = globalThis.DecompressionStream;
+  let pulls = 0;
+  class StreamingBomb {
+    constructor() {
+      this.writable = new WritableStream({ write() {} });
+      this.readable = new ReadableStream({
+        pull(controller) {
+          pulls++;
+          if (pulls === 1) controller.enqueue(new Uint8Array(MAX_SDP_BYTES));
+          else if (pulls === 2) controller.enqueue(new Uint8Array(1));
+          else controller.error(new Error("decoder read past the byte limit"));
+        },
+      }, { highWaterMark: 0 });
+    }
+  }
+  globalThis.DecompressionStream = StreamingBomb;
+  try {
+    await assert.rejects(() => decodeSdp("cAA"), /SDP is too large/);
+    assert.equal(pulls, 2);
+  } finally {
+    globalThis.DecompressionStream = original;
+  }
+});
+
+test("receiver validates metadata, chunks, done, and exact byte count", () => {
+  const state = new ReceiveState();
+  state.metadata(validateTransferMetadata({ name: "a.bin", size: 3, type: "x/test" }));
+  state.chunk(new Uint8Array([1, 2]));
+  assert.throws(() => state.finish());
+  state.chunk(new Uint8Array([3]));
+  const blob = state.finish();
+  assert.equal(blob.size, 3);
+  assert.throws(() => state.chunk(new Uint8Array([4])));
+});
+
+test("receiver rejects early, extra, and malformed metadata", () => {
+  const state = new ReceiveState();
+  assert.throws(() => state.chunk(new Uint8Array([1])));
+  assert.throws(() => state.metadata({ name: "x", size: -1, type: "" }));
+  state.metadata({ name: "x", size: 1, type: "" });
+  assert.throws(() => state.chunk(new Uint8Array([1, 2])));
+});
+
+test("receiver rejects metadata beyond in-memory and name limits", () => {
+  assert.throws(() => validateTransferMetadata({ name: "x", size: MAX_IN_MEMORY_TRANSFER_BYTES + 1, type: "application/octet-stream" }));
+  assert.throws(() => validateTransferMetadata({ name: "x".repeat(256), size: 1, type: "application/octet-stream" }));
+});
+
 test("decodeSdp: rejects an empty or too-short code", async () => {
   await assert.rejects(() => decodeSdp(""));
   await assert.rejects(() => decodeSdp("c"));
@@ -112,4 +176,35 @@ test("parseHash: returns null for a trailing '.' with nothing after it, or a has
   assert.equal(parseHash("#a=cAbC123."), null);
   assert.equal(parseHash(""), null);
   assert.equal(parseHash("#foo=bar"), null);
+});
+
+test("SenderResumeState keeps one transfer id across replacement offers and clears it for new files or abort", () => {
+  const ids = ["transfer-a", "transfer-b"];
+  const state = new SenderResumeState(() => ids.shift());
+  const firstFile = { name: "a.txt" };
+  const secondFile = { name: "b.txt" };
+
+  const first = state.select([firstFile]);
+  assert.equal(first.transferId, "transfer-a");
+  assert.deepEqual(state.resume(), first);
+  assert.equal(state.canResume, true);
+
+  const second = state.select([secondFile]);
+  assert.equal(second.transferId, "transfer-b");
+  assert.deepEqual(second.files, [secondFile]);
+  assert.equal(state.resume().transferId, "transfer-b");
+
+  state.clear();
+  assert.equal(state.canResume, false);
+  assert.equal(state.resume(), null);
+});
+
+test("parseResumeOfferInput accepts a same-tab offer link, hash, or raw code and requires a session id", () => {
+  const expected = { kind: "r", code: "cOffer123", sid: "deadbeef" };
+  assert.deepEqual(parseResumeOfferInput("https://papertools.dev/send/#r=cOffer123.deadbeef"), expected);
+  assert.deepEqual(parseResumeOfferInput("#r=cOffer123.deadbeef"), expected);
+  assert.deepEqual(parseResumeOfferInput("cOffer123.deadbeef"), expected);
+  assert.equal(parseResumeOfferInput("#a=cAnswer123.deadbeef"), null);
+  assert.equal(parseResumeOfferInput("cOffer123"), null);
+  assert.equal(parseResumeOfferInput(""), null);
 });

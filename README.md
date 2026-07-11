@@ -2,6 +2,9 @@
 
 **English** | [한국어](README.ko.md)
 
+Released under the [MIT License](LICENSE). Vendored assets retain their
+respective licenses in `web/vendor/`.
+
 Privacy-first PDF & file tools that run **entirely in your browser**. Files
 are never uploaded — every conversion happens locally on your device.
 
@@ -14,7 +17,7 @@ are never uploaded — every conversion happens locally on your device.
 
 ## What it is
 
-38 client-side tools for PDFs, images, and office documents. Open a tool,
+41 client-side tools for PDFs, images, and office documents. Open a tool,
 drop a file, get a result — nothing leaves the browser tab. No server, no
 uploads, no account.
 
@@ -22,9 +25,10 @@ uploads, no account.
 
 | Group | Tools |
 |-------|-------|
+| **Automate** | PDF Workflow · Batch Automation |
 | **Organize** | Merge · Interleave · Split & Extract · Remove Pages · Reorder · Insert Blank |
 | **Transform** | Rotate · Crop · Resize · N-up |
-| **Content** | Images → PDF · Watermark · Page Numbers · Stamp / Signature (draw or upload) / Text · Flatten PDF |
+| **Content** | Images → PDF · Watermark · Page Numbers · Stamp / Signature (draw or upload) / Text · Flatten PDF · Permanent Redaction |
 | **Convert** | Image Convert (PNG/JPG/GIF) · Image Resize · PDF → Text · OCR (scanned PDFs/images, English/Korean) · PDF → Images (page ranges, PNG/JPG quality, ZIP) · Extract Images (ZIP) · Text → PDF · Markdown → PDF · Word → PDF · Hangul(.hwpx) → PDF · Old Hangul(.hwp) → PDF · Word ↔ Hangul · PDF → Word · PDF → Hangul · Excel → CSV |
 | **Document** | Compress (quality/DPI/grayscale) · Metadata · PDF Info · Protect (AES-256/AES-128) · Unlock · Compare PDFs · Direct Send (device-to-device, never uploaded) |
 
@@ -45,8 +49,9 @@ uploads, no account.
 - **Visual page management.** `Reorder`, `Remove Pages` and `Split &
   Extract` show clickable page thumbnails — drag to reorder, click to
   select — while the text inputs keep working as before.
-- **Batch processing.** `Compress` and `Image Convert` accept multiple
-  files at once and download the results as a single ZIP.
+- **Automation without duplicate intermediates.** Workflow chains compatible
+  PDF operations, while Batch Automation processes supported files one at a
+  time and streams the results into a ZIP.
 - **Private by default.** No tracking scripts load unless you opt in
   (EthicalAds / Cloudflare Web Analytics are gated behind config flags).
 
@@ -65,12 +70,9 @@ CI on every deploy.
 
 ## Performance
 
-Each tool ships as its own WebAssembly binary, compiled with **TinyGo** and
-post-optimized with Binaryen's `wasm-opt -Oz`. A per-tool binary is
-~0.4–0.8 MB on disk — down from ~4 MB with the standard Go toolchain, an
-~84% reduction (~24 MB total across all 35 Go-backed tools, down from
-~144 MB). Over the wire, Brotli compression on the CDN brings a typical
-tool down to roughly 130–250 KB.
+Each Go-backed tool ships as its own WebAssembly binary, compiled with
+**TinyGo** and post-optimized with Binaryen's `wasm-opt -Oz`. CI builds all
+37 binaries and enforces a 2 MiB per-file and 30 MiB combined size budget.
 
 Measured against the previous production deploy (standard Go toolchain,
 same CDN): **raw binary size −83.5%**, **over-the-wire (Brotli) size
@@ -89,8 +91,8 @@ Open http://localhost:8000.
 
 ## Deploy
 
-`web/` is fully static. It's hosted on **Cloudflare Pages**, and CI
-auto-deploys on every push to `main` (see `.github/workflows/deploy.yml`):
+`web/` is fully static. It's hosted on **Cloudflare Pages**, and deploy runs
+after the `main` CI workflow succeeds (see `.github/workflows/deploy.yml`):
 GitHub Actions sets up Go, runs `./build.sh`, then `wrangler pages deploy`.
 
 For CI to deploy, add two repository secrets (Settings → Secrets and
@@ -106,8 +108,24 @@ enable brotli/gzip.
 ## Tests
 
 ```sh
-go test ./pdf ./imgconv
+go test ./...
+go test -race ./...
+go vet ./...
+node --test
+npm run test:e2e
+node tools/verify-vendor.mjs
+go test -run '^$' -bench . -benchmem ./pdf
+./build.sh
 ```
+
+`tools/verify-vendor.mjs` checks the SHA-256 manifest for every vendored
+Tesseract runtime and language asset. Run it after replacing any file under
+`web/vendor/tesseract/`.
+
+CI also runs deterministic PDF benchmarks (`go test -run '^$' -bench . -benchmem
+./pdf`). Deploy stages `web/` with `tools/stage-assets.mjs`; same-filesystem
+hard links keep the staging tree from doubling physical storage. No Go module
+dependencies are used.
 
 ## Limitations
 
@@ -126,8 +144,11 @@ go test ./pdf ./imgconv
   inline bold/italic/link markers are flattened to plain text.
 - `Excel → CSV` copies date cells as their raw Excel serial number (e.g.
   `45000`), not a calendar date.
-- `Compare PDFs` diffs each file's extracted text only; visual layout,
-  images and formatting differences aren't detected.
+- `Compare PDFs` offers both an extracted-text report and a bounded visual
+  comparison with page alignment, heatmaps and JSON/PNG export.
+- `Permanent Redaction` intentionally rasterizes every output page. This
+  removes hidden source objects but also removes selectable text and vector
+  content from the result.
 - `Image Resize` (and `Image Convert`) only read/write the first frame of an
   animated GIF; animation isn't preserved.
 - `OCR` supports English and Korean text and works best on clean,

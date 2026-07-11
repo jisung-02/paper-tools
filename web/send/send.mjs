@@ -10,6 +10,10 @@
 // confined to main(), which only runs when `document` exists (i.e. in a
 // real browser tab).
 
+import { createReceiverSession, createSenderSession } from "./transfer.mjs";
+import { MAX_FILES, MAX_TOTAL_BYTES } from "./protocol.mjs";
+import { createReceiveSink } from "./storage.mjs";
+
 /* ------------------------------------------------------------- codec --- */
 
 // Compressed SDP blobs are prefixed "c", the plain-base64url fallback (used
@@ -17,6 +21,45 @@
 // Both are safe to put after a URL "#" fragment and inside a QR code.
 
 const B64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+export const MAX_SDP_BYTES = 256 * 1024;
+export const MAX_IN_MEMORY_TRANSFER_BYTES = 256 * 1024 * 1024;
+
+function newTransferId() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return [...bytes].map((value) => value.toString(16).padStart(2, "0")).join("");
+}
+
+export class SenderResumeState {
+  constructor(transferIdFactory = newTransferId) {
+    if (typeof transferIdFactory !== "function") throw new TypeError("transfer id factory is required");
+    this.transferIdFactory = transferIdFactory;
+    this.current = null;
+  }
+
+  select(files) {
+    const selected = Array.from(files || []);
+    if (selected.length === 0) throw new Error("at least one file is required");
+    const transferId = this.transferIdFactory();
+    if (typeof transferId !== "string" || transferId.length < 1 || transferId.length > 128) {
+      throw new Error("invalid transfer id");
+    }
+    this.current = Object.freeze({ files: Object.freeze(selected), transferId });
+    return this.current;
+  }
+
+  resume() {
+    return this.current;
+  }
+
+  clear() {
+    this.current = null;
+  }
+
+  get canResume() {
+    return this.current !== null;
+  }
+}
 
 function bytesToBase64Url(bytes) {
   let out = "";
@@ -68,13 +111,24 @@ function concatUint8Arrays(chunks) {
 // Pipes bytes through a TransformStream (Compression/DecompressionStream)
 // and collects the output. Standard MDN idiom: write+close without waiting
 // for them, then drain the readable side.
-async function pipeBytes(bytes, transform) {
+async function pipeBytes(bytes, transform, maxOutputBytes = Number.MAX_SAFE_INTEGER, limitMessage = "stream output is too large") {
   const writer = transform.writable.getWriter();
-  writer.write(bytes);
-  writer.close();
+  const writing = writer.write(bytes).then(() => writer.close());
   const chunks = [];
-  for await (const chunk of transform.readable) {
-    chunks.push(chunk);
+  let total = 0;
+  try {
+    for await (const chunk of transform.readable) {
+      if (!Number.isSafeInteger(total + chunk.byteLength) || total + chunk.byteLength > maxOutputBytes) {
+        throw new Error(limitMessage);
+      }
+      chunks.push(chunk);
+      total += chunk.byteLength;
+    }
+    await writing;
+  } catch (error) {
+    try { await writer.abort(error); } catch {}
+    try { await writing; } catch {}
+    throw error;
   }
   return concatUint8Arrays(chunks);
 }
@@ -86,6 +140,7 @@ export async function encodeSdp(sdp) {
     throw new Error("cannot encode an empty SDP");
   }
   const utf8 = new TextEncoder().encode(sdp);
+  if (utf8.byteLength > MAX_SDP_BYTES) throw new Error("SDP is too large");
   if (typeof CompressionStream === "function") {
     const compressed = await pipeBytes(utf8, new CompressionStream("deflate-raw"));
     return "c" + bytesToBase64Url(compressed);
@@ -100,17 +155,57 @@ export async function decodeSdp(code) {
   }
   const prefix = code.charAt(0);
   const payload = code.slice(1);
+  if (payload.length > Math.ceil(MAX_SDP_BYTES * 2)) throw new Error("code is too large");
   if (prefix === "c") {
     if (typeof DecompressionStream !== "function") {
       throw new Error("this code needs a browser feature that isn't available here");
     }
-    const raw = await pipeBytes(base64UrlToBytes(payload), new DecompressionStream("deflate-raw"));
+    const compressed = base64UrlToBytes(payload);
+    if (compressed.byteLength > MAX_SDP_BYTES) throw new Error("code is too large");
+    const raw = await pipeBytes(
+      compressed,
+      new DecompressionStream("deflate-raw"),
+      MAX_SDP_BYTES,
+      "SDP is too large",
+    );
     return new TextDecoder().decode(raw);
   }
   if (prefix === "u") {
-    return new TextDecoder().decode(base64UrlToBytes(payload));
+    const raw = base64UrlToBytes(payload);
+    if (raw.byteLength > MAX_SDP_BYTES) throw new Error("SDP is too large");
+    return new TextDecoder().decode(raw);
   }
   throw new Error("invalid code");
+}
+
+export function validateTransferMetadata(meta) {
+  if (!meta || typeof meta !== "object" || typeof meta.name !== "string" ||
+      typeof meta.size !== "number" || !Number.isSafeInteger(meta.size) || meta.size < 0 ||
+      meta.size > MAX_IN_MEMORY_TRANSFER_BYTES || typeof meta.type !== "string" ||
+      new TextEncoder().encode(meta.name).byteLength > 255 || meta.type.length > 128) {
+    throw new Error("invalid transfer metadata");
+  }
+  return { name: meta.name, size: meta.size, type: meta.type || "application/octet-stream" };
+}
+
+export class ReceiveState {
+  constructor() { this.meta = null; this.chunks = []; this.received = 0; this.done = false; }
+  metadata(value) {
+    if (this.meta || this.received) throw new Error("metadata out of order");
+    this.meta = validateTransferMetadata(value);
+  }
+  chunk(value) {
+    if (!this.meta || this.done || !(value instanceof Uint8Array)) throw new Error("chunk out of order");
+    if (this.received + value.byteLength > this.meta.size) throw new Error("chunk exceeds declared size");
+    this.chunks.push(value); this.received += value.byteLength;
+  }
+  finish() {
+    if (!this.meta || this.done || this.received !== this.meta.size) throw new Error("incomplete transfer");
+    this.done = true;
+    const blob = new Blob(this.chunks, { type: this.meta.type });
+    this.chunks = [];
+    return blob;
+  }
 }
 
 // buildAnswerLink(origin, pathname, code, sid) -> the reply link shown to
@@ -160,6 +255,20 @@ export function parseHash(hash) {
   return null;
 }
 
+export function parseResumeOfferInput(value) {
+  if (typeof value !== "string" || !value.trim()) return null;
+  const input = value.trim();
+  let hash;
+  if (input.startsWith("#")) hash = input;
+  else if (input.startsWith("r=")) hash = `#${input}`;
+  else if (input.includes("#")) {
+    try { hash = new URL(input, "https://local.invalid/").hash; }
+    catch { return null; }
+  } else hash = `#r=${input}`;
+  const parsed = parseHash(hash);
+  return parsed?.kind === "r" && parsed.sid ? parsed : null;
+}
+
 /* ------------------------------------------------------- page wiring --- */
 // Everything below touches the DOM/window/RTCPeerConnection and only runs
 // in a real browser tab (guarded so send.test.mjs can import the codec
@@ -170,9 +279,6 @@ if (typeof document !== "undefined") {
 }
 
 function main() {
-  const CHUNK_SIZE = 64 * 1024;
-  const BUFFERED_LOW_THRESHOLD = 1_000_000; // 1MB
-  const BUFFERED_HIGH_WATERMARK = 8_000_000; // 8MB
   const ICE_GATHERING_TIMEOUT_MS = 3000;
   const CONNECT_TIMEOUT_MS = 30000;
 
@@ -196,6 +302,9 @@ function main() {
   const sendProgressWrap = document.getElementById("sendProgressWrap");
   const sendProgressBar = document.getElementById("sendProgressBar");
   const sendProgressText = document.getElementById("sendProgressText");
+  const sendResumePanel = document.getElementById("sendResumePanel");
+  const resumeSendBtn = document.getElementById("resumeSendBtn");
+  const cancelSendBtn = document.getElementById("cancelSendBtn");
 
   const recvStatus = document.getElementById("recvStatus");
   const replyLinkOut = document.getElementById("replyLinkOut");
@@ -206,7 +315,49 @@ function main() {
   const recvProgressWrap = document.getElementById("recvProgressWrap");
   const recvProgressBar = document.getElementById("recvProgressBar");
   const recvProgressText = document.getElementById("recvProgressText");
-  const downloadBtn = document.getElementById("downloadBtn");
+  let chooseFolderBtn = document.getElementById("chooseFolderBtn");
+  let receiveDestination = document.getElementById("receiveDestination");
+  let receivedFiles = document.getElementById("receivedFiles");
+  let receivedFilesList = document.getElementById("receivedFilesList");
+  const receiveResumePanel = document.getElementById("receiveResumePanel");
+  const resumeOfferInput = document.getElementById("resumeOfferInput");
+  const applyResumeOfferBtn = document.getElementById("applyResumeOfferBtn");
+  const abortReceiveBtn = document.getElementById("abortReceiveBtn");
+  // Keep a newly deployed module usable with an older cached/localized page.
+  if (!chooseFolderBtn) {
+    chooseFolderBtn = document.createElement("button");
+    chooseFolderBtn.id = "chooseFolderBtn";
+    chooseFolderBtn.type = "button";
+    chooseFolderBtn.className = "secondary";
+    chooseFolderBtn.hidden = true;
+    chooseFolderBtn.textContent = window.t("Save directly to a folder", "폴더에 바로 저장");
+    receiverView.prepend(chooseFolderBtn);
+  }
+  if (!receiveDestination) {
+    receiveDestination = document.createElement("p");
+    receiveDestination.id = "receiveDestination";
+    receiveDestination.className = "hint";
+    receiveDestination.setAttribute("role", "status");
+    receiveDestination.setAttribute("aria-live", "polite");
+    receiveDestination.textContent = window.t(
+      "Without a selected folder, files use private browser storage when available.",
+      "폴더를 선택하지 않으면 가능한 경우 브라우저 전용 저장소를 사용합니다.",
+    );
+    chooseFolderBtn.after(receiveDestination);
+  }
+  if (!receivedFiles || !receivedFilesList) {
+    receivedFiles = document.createElement("section");
+    receivedFiles.id = "receivedFiles";
+    receivedFiles.hidden = true;
+    const heading = document.createElement("h2");
+    heading.textContent = window.t("Received files", "받은 파일");
+    receivedFilesList = document.createElement("ul");
+    receivedFilesList.id = "receivedFilesList";
+    receivedFiles.append(heading, receivedFilesList);
+    receiverView.appendChild(receivedFiles);
+  }
+  const oldDownloadBtn = document.getElementById("downloadBtn");
+  if (oldDownloadBtn) oldDownloadBtn.hidden = true;
 
   const relayView = document.getElementById("relayView");
   const relayStatus = document.getElementById("relayStatus");
@@ -308,7 +459,7 @@ function main() {
   // Wires oniceconnectionstatechange to a status paragraph, in the active
   // language, and returns a helper to arm a 30s "still not connected"
   // failure timeout (started once this side's answer has been applied).
-  function wireConnectionState(pc, statusEl2, onFail) {
+  function wireConnectionState(pc, statusEl2, onFail, isCurrent = () => true) {
     let timeoutId = null;
     let failed = false;
 
@@ -320,13 +471,17 @@ function main() {
     }
 
     function fail() {
-      if (failed) return;
+      if (failed || !isCurrent()) return;
       failed = true;
       clearTimer();
       onFail();
     }
 
     function update() {
+      if (!isCurrent()) {
+        clearTimer();
+        return;
+      }
       const state = pc.iceConnectionState;
       if (state === "checking" || state === "new") {
         if (statusEl2) statusEl2.textContent = window.t("Connecting…", "연결 중…");
@@ -345,6 +500,7 @@ function main() {
       startConnectTimeout() {
         clearTimer();
         timeoutId = setTimeout(() => {
+          if (!isCurrent()) return;
           const state = pc.iceConnectionState;
           if (state !== "connected" && state !== "completed") fail();
         }, CONNECT_TIMEOUT_MS);
@@ -356,8 +512,19 @@ function main() {
 
   let senderPc = null;
   let senderChannel = null;
+  let senderTransfer = null;
+  let senderGeneration = 0;
+  const senderResumeState = new SenderResumeState();
 
-  function resetSender() {
+  function showSenderResume(generation, error = null) {
+    if (generation !== senderGeneration || !senderResumeState.canResume) return;
+    if (error) window.showErr(errEl, error?.message || String(error));
+    else showFailure();
+    sendResumePanel.hidden = false;
+  }
+
+  function resetSender({ clearIdentity = false } = {}) {
+    senderGeneration++;
     if (senderPc) {
       try {
         senderPc.close();
@@ -374,16 +541,24 @@ function main() {
       }
       senderChannel = null;
     }
+    if (senderTransfer) {
+      senderTransfer.dispose();
+      senderTransfer = null;
+    }
+    if (clearIdentity) senderResumeState.clear();
     senderPanel.hidden = true;
+    sendResumePanel.hidden = true;
     sendProgressWrap.hidden = true;
     sendProgressBar.value = 0;
     answerCodeInput.value = "";
     offerStatus.textContent = "";
   }
 
-  async function startSender(file) {
+  async function startSender(selection) {
     clearErr();
     resetSender();
+    const generation = senderGeneration;
+    const { files, transferId } = selection;
     senderPanel.hidden = false;
 
     let pc;
@@ -391,13 +566,19 @@ function main() {
       pc = new RTCPeerConnection({ iceServers: [] });
       senderPc = pc;
       const dc = pc.createDataChannel("file");
-      wireSendChannel(dc, file);
+      wireSendChannel(dc, files, transferId, generation);
 
-      const conn = wireConnectionState(pc, offerStatus, showFailure);
+      const conn = wireConnectionState(
+        pc,
+        offerStatus,
+        () => showSenderResume(generation),
+        () => generation === senderGeneration,
+      );
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       await waitIceGatheringComplete(pc);
+      if (generation !== senderGeneration) return;
 
       const sid = genSessionId();
       const code = await encodeSdp(pc.localDescription.sdp);
@@ -412,7 +593,7 @@ function main() {
       // failure path (showFailure) on a malformed code or a
       // setRemoteDescription rejection.
       async function applyAnswer(answerCode) {
-        if (answered) return;
+        if (answered || generation !== senderGeneration) return;
         try {
           const answerSdp = await decodeSdp(answerCode);
           await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
@@ -427,7 +608,7 @@ function main() {
             }
           }
         } catch (e) {
-          showFailure();
+          showSenderResume(generation);
         }
       }
 
@@ -447,87 +628,169 @@ function main() {
         };
       }
     } catch (e) {
-      showFailure();
+      showSenderResume(generation, e);
     }
   }
 
-  function wireSendChannel(dc, file) {
+  function wireSendChannel(dc, files, transferId, generation) {
     dc.binaryType = "arraybuffer";
-    dc.bufferedAmountLowThreshold = BUFFERED_LOW_THRESHOLD;
 
     let sent = false;
     let closed = false;
+    const transfer = createSenderSession(dc, files, {
+      transferId,
+      onProgress(progress) {
+        sendProgressWrap.hidden = false;
+        const total = progress.total || 0;
+        sendProgressBar.value = total === 0 ? 100 : Math.floor((progress.sent / total) * 100);
+        sendProgressText.textContent = formatBytes(progress.sent) + " / " + formatBytes(total);
+      },
+    });
+    senderTransfer = transfer;
 
     dc.onopen = async () => {
       try {
         sendProgressWrap.hidden = false;
-        dc.send(JSON.stringify({ name: file.name, size: file.size, type: file.type || "application/octet-stream" }));
-
-        let offset = 0;
-        while (offset < file.size) {
-          if (dc.bufferedAmount > BUFFERED_HIGH_WATERMARK) {
-            await new Promise((resolve) => {
-              dc.addEventListener("bufferedamountlow", resolve, { once: true });
-              dc.addEventListener("close", resolve, { once: true });
-            });
-            if (closed) return;
-          }
-          const slice = file.slice(offset, offset + CHUNK_SIZE);
-          const buf = await slice.arrayBuffer();
-          dc.send(buf);
-          offset += buf.byteLength;
-          sendProgressBar.value = Math.floor((offset / file.size) * 100);
-          sendProgressText.textContent = formatBytes(offset) + " / " + formatBytes(file.size);
-        }
-
-        dc.send("done");
-        while (dc.bufferedAmount > 0) {
-          if (closed) return;
-          await new Promise((resolve) => setTimeout(resolve, 50));
-        }
+        const result = await transfer.start();
+        if (closed) return;
         sent = true;
+        senderResumeState.clear();
+        sendResumePanel.hidden = true;
         sendProgressBar.value = 100;
-        sendProgressText.textContent = window.t("Sent", "전송 완료");
+        sendProgressText.textContent = window.t(
+          result.files === 1 ? "Sent 1 file" : `Sent ${result.files} files`,
+          result.files === 1 ? "파일 1개 전송 완료" : `파일 ${result.files}개 전송 완료`,
+        );
       } catch (e) {
-        if (!closed) showFailure();
+        showSenderResume(generation, e);
       }
     };
-    dc.onerror = () => showFailure();
+    dc.onerror = () => showSenderResume(generation);
     dc.onclose = () => {
       closed = true;
-      if (!sent) showFailure();
+      if (!sent) showSenderResume(generation);
     };
   }
 
+  resumeSendBtn.addEventListener("click", () => {
+    const selection = senderResumeState.resume();
+    if (selection) startSender(selection);
+  });
+
+  cancelSendBtn.addEventListener("click", () => {
+    clearErr();
+    resetSender({ clearIdentity: true });
+  });
+
   document.getElementById("fileDrop").addEventListener("dz:files", (e) => {
-    const files = e.detail.files;
+    const files = Array.from(e.detail.files || []);
     if (files.length === 0) return;
-    if (files.length > 1) {
+    const total = files.reduce((sum, file) => sum + file.size, 0);
+    if (files.length > MAX_FILES || !Number.isSafeInteger(total) || total > MAX_TOTAL_BYTES) {
       pickHint.hidden = false;
-      resetSender();
+      resetSender({ clearIdentity: true });
       return;
     }
     pickHint.hidden = true;
-    startSender(files[0]);
+    startSender(senderResumeState.select(files));
   });
 
   /* ------------------------------------------------------- receiver --- */
 
   let receiverPc = null;
+  let receiverDataChannel = null;
   let recvFinished = false;
-  let recvObjectUrl = null;
+  let receiverTransfer = null;
+  let receiverGeneration = 0;
+  let receiverHasContext = false;
+  let receiveDirectory = null;
+  const recvObjectUrls = new Set();
+  const recvTempFiles = [];
 
-  function revokeRecvUrl() {
-    if (recvObjectUrl) {
-      URL.revokeObjectURL(recvObjectUrl);
-      recvObjectUrl = null;
-    }
+  function cleanupReceivedFiles() {
+    for (const url of recvObjectUrls) URL.revokeObjectURL(url);
+    recvObjectUrls.clear();
+    for (const { sink, file } of recvTempFiles.splice(0)) sink.release(file).catch(() => {});
   }
 
-  async function startReceiver(offerCode, sid) {
+  function showReceiverResume(generation, error = null) {
+    if (generation !== receiverGeneration || recvFinished) return;
+    if (error) window.showErr(errEl, error?.message || String(error));
+    else showFailure();
+    receiveResumePanel.hidden = false;
+  }
+
+  if (typeof window.showDirectoryPicker === "function") {
+    chooseFolderBtn.hidden = false;
+    chooseFolderBtn.addEventListener("click", async () => {
+      clearErr();
+      try {
+        receiveDirectory = await window.showDirectoryPicker({ mode: "readwrite" });
+        receiveDestination.textContent = window.t(
+          "Files will be saved directly to the selected folder.",
+          "파일을 선택한 폴더에 바로 저장합니다.",
+        );
+      } catch (error) {
+        if (error?.name !== "AbortError") window.showErr(errEl, error?.message || String(error));
+      }
+    });
+  }
+
+  async function addReceivedFile(file, value, sink) {
+    receivedFiles.hidden = false;
+    const item = document.createElement("li");
+    if (sink?.kind === "directory") {
+      item.textContent = file.name + " — " + window.t("Saved", "저장됨");
+      receivedFilesList.appendChild(item);
+      return;
+    }
+    const blob = value instanceof Blob ? value : await value.getFile();
+    if (sink?.kind === "opfs" && typeof sink.release === "function") recvTempFiles.push({ sink, file });
+    const url = URL.createObjectURL(blob);
+    recvObjectUrls.add(url);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "secondary";
+    button.textContent = window.t("Download ", "다운로드: ") + file.name;
+    button.addEventListener("click", () => {
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = file.name;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    });
+    item.appendChild(button);
+    receivedFilesList.appendChild(item);
+  }
+
+  async function startReceiver(offerCode, sid, { preserveTransfer = false } = {}) {
+    const generation = ++receiverGeneration;
+    const previousPc = receiverPc;
+    const previousChannel = receiverDataChannel;
+    const previousTransfer = receiverTransfer;
+    receiverPc = null;
+    receiverDataChannel = null;
+    receiverTransfer = null;
+    try { previousChannel?.close(); } catch {}
+    try { previousPc?.close(); } catch {}
+    if (previousTransfer) {
+      await previousTransfer.done.catch(() => {});
+      previousTransfer.dispose();
+    }
+    if (generation !== receiverGeneration) return;
+
     senderView.hidden = true;
     receiverView.hidden = false;
+    relayView.hidden = true;
     clearErr();
+    recvFinished = false;
+    if (!preserveTransfer) {
+      cleanupReceivedFiles();
+      receivedFiles.hidden = true;
+      receivedFilesList.innerHTML = "";
+      chooseFolderBtn.disabled = false;
+    }
 
     let pc;
     try {
@@ -535,17 +798,27 @@ function main() {
       // generates includes one) — treat it the same as an invalid code.
       if (!sid) throw new Error("invalid code");
       const offerSdp = await decodeSdp(offerCode);
+      if (generation !== receiverGeneration) return;
       pc = new RTCPeerConnection({ iceServers: [] });
       receiverPc = pc;
 
-      const conn = wireConnectionState(pc, recvStatus, showFailure);
+      const conn = wireConnectionState(
+        pc,
+        recvStatus,
+        () => showReceiverResume(generation),
+        () => generation === receiverGeneration,
+      );
 
-      pc.ondatachannel = (ev) => wireRecvChannel(ev.channel);
+      pc.ondatachannel = (ev) => wireRecvChannel(ev.channel, generation);
 
       await pc.setRemoteDescription({ type: "offer", sdp: offerSdp });
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       await waitIceGatheringComplete(pc);
+      if (generation !== receiverGeneration) {
+        pc.close();
+        return;
+      }
 
       const code = await encodeSdp(pc.localDescription.sdp);
       const link = buildAnswerLink(location.origin, location.pathname, code, sid);
@@ -554,10 +827,12 @@ function main() {
       // the sender side is unchanged — applyAnswer only ever takes a code.
       replyCodeOut.value = code;
       renderQr(qrReply, link);
+      receiveResumePanel.hidden = true;
+      resumeOfferInput.value = "";
 
       conn.startConnectTimeout();
     } catch (e) {
-      showFailure();
+      showReceiverResume(generation, e);
     }
   }
 
@@ -616,66 +891,108 @@ function main() {
     }, RELAY_ACK_TIMEOUT_MS);
   }
 
-  function wireRecvChannel(dc) {
+  function wireRecvChannel(dc, generation) {
+    if (generation !== receiverGeneration) {
+      dc.close();
+      return;
+    }
     dc.binaryType = "arraybuffer";
-    let meta = null;
-    let received = 0;
-    const chunks = [];
-
+    receiverDataChannel = dc;
     recvProgressWrap.hidden = false;
-
-    dc.onmessage = (ev) => {
-      if (typeof ev.data === "string") {
-        if (!meta) {
-          try {
-            meta = JSON.parse(ev.data);
-          } catch (e) {
-            // ignore a malformed metadata frame; a well-formed one may
-            // still arrive, and the binary chunks are buffered regardless
-          }
-          return;
-        }
-        if (ev.data === "done") finalizeDownload(chunks, meta);
-        return;
-      }
-
-      chunks.push(new Uint8Array(ev.data));
-      received += ev.data.byteLength;
-      const total = meta && meta.size ? meta.size : received;
-      recvProgressBar.value = Math.floor((received / total) * 100);
-      recvProgressText.textContent = formatBytes(received) + " / " + formatBytes(total);
-      if (meta && received >= meta.size) finalizeDownload(chunks, meta);
-    };
-    dc.onerror = () => showFailure();
-    dc.onclose = () => {
-      if (!recvFinished) showFailure();
-    };
+    const transfer = createReceiverSession(dc, {
+      async sinkFactory(manifest) {
+        return createReceiveSink({
+          directory: receiveDirectory,
+          storage: navigator.storage,
+          maxMemoryBytes: Math.min(MAX_IN_MEMORY_TRANSFER_BYTES, manifest.totalSize),
+        });
+      },
+      onSink(sink) {
+        if (generation !== receiverGeneration) return;
+        chooseFolderBtn.disabled = true;
+        receiveDestination.textContent = sink.kind === "directory"
+          ? window.t("Saving directly to the selected folder.", "선택한 폴더에 바로 저장 중입니다.")
+          : sink.kind === "opfs"
+            ? window.t("Receiving to private browser storage.", "브라우저 전용 저장소로 수신 중입니다.")
+            : window.t("Receiving in memory.", "메모리로 수신 중입니다.");
+      },
+      onProgress(progress) {
+        if (generation !== receiverGeneration) return;
+        const total = progress.total || 0;
+        recvProgressBar.value = total === 0 ? 100 : Math.floor((progress.received / total) * 100);
+        recvProgressText.textContent = formatBytes(progress.received) + " / " + formatBytes(total);
+      },
+      async onFile(file, value, sink) {
+        if (generation === receiverGeneration) await addReceivedFile(file, value, sink);
+      },
+      onComplete(result) {
+        if (generation !== receiverGeneration) return;
+        recvFinished = true;
+        receiveResumePanel.hidden = true;
+        recvProgressBar.value = 100;
+        recvProgressText.textContent = window.t(
+          result.files === 1 ? "Received 1 file" : `Received ${result.files} files`,
+          result.files === 1 ? "파일 1개 수신 완료" : `파일 ${result.files}개 수신 완료`,
+        );
+      },
+      onError(error) {
+        showReceiverResume(generation, error);
+      },
+    });
+    receiverTransfer = transfer;
+    transfer.done.catch(() => {});
+    dc.onerror = () => showReceiverResume(generation);
   }
 
-  function finalizeDownload(chunks, meta) {
-    if (recvFinished) return;
-    recvFinished = true;
-
-    const blob = new Blob(chunks, { type: (meta && meta.type) || "application/octet-stream" });
-    revokeRecvUrl();
-    recvObjectUrl = URL.createObjectURL(blob);
-
-    recvProgressBar.value = 100;
-    recvProgressText.textContent = window.t("Received", "수신 완료");
-
-    downloadBtn.hidden = false;
-    downloadBtn.onclick = () => {
-      const a = document.createElement("a");
-      a.href = recvObjectUrl;
-      a.download = (meta && meta.name) || "download";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    };
+  function applyReceiverOffer(parsed) {
+    const preserveTransfer = receiverHasContext;
+    receiverHasContext = true;
+    startReceiver(parsed.code, parsed.sid, { preserveTransfer });
   }
+
+  applyResumeOfferBtn.addEventListener("click", () => {
+    clearErr();
+    const parsed = parseResumeOfferInput(resumeOfferInput.value);
+    if (!parsed) {
+      window.showErr(errEl, window.t("Paste a valid sender link or offer code.", "올바른 보내는 쪽 링크나 제안 코드를 붙여 넣으세요."));
+      return;
+    }
+    const nextHash = `#r=${parsed.code}.${parsed.sid}`;
+    if (location.hash === nextHash) applyReceiverOffer(parsed);
+    else location.hash = nextHash;
+  });
+
+  abortReceiveBtn.addEventListener("click", async () => {
+    const transfer = receiverTransfer;
+    const channel = receiverDataChannel;
+    const pc = receiverPc;
+    receiverGeneration++;
+    receiverTransfer = null;
+    receiverDataChannel = null;
+    receiverPc = null;
+    try { await transfer?.abort(); } catch {}
+    transfer?.dispose();
+    try { channel?.close(); } catch {}
+    try { pc?.close(); } catch {}
+    receiverHasContext = false;
+    recvFinished = false;
+    receiveResumePanel.hidden = true;
+    cleanupReceivedFiles();
+    receivedFiles.hidden = true;
+    receivedFilesList.innerHTML = "";
+    recvProgressWrap.hidden = true;
+    replyLinkOut.value = "";
+    replyCodeOut.value = "";
+    chooseFolderBtn.disabled = false;
+    recvStatus.textContent = window.t("Transfer cancelled", "전송 취소됨");
+    clearErr();
+  });
 
   window.addEventListener("pagehide", () => {
-    revokeRecvUrl();
+    cleanupReceivedFiles();
+    senderTransfer?.dispose();
+    if (!recvFinished) receiverTransfer?.abort().catch(() => {});
+    receiverTransfer?.dispose();
     if (senderPc) {
       try {
         senderPc.close();
@@ -729,10 +1046,14 @@ function main() {
 
   /* ------------------------------------------------------------- boot --- */
 
-  const parsed = parseHash(location.hash || "");
-  if (parsed && parsed.kind === "r") {
-    startReceiver(parsed.code, parsed.sid);
-  } else if (parsed && parsed.kind === "a") {
-    startRelay(parsed.code, parsed.sid);
+  function handleHashChange() {
+    const parsed = parseHash(location.hash || "");
+    if (parsed && parsed.kind === "r") {
+      applyReceiverOffer(parsed);
+    } else if (parsed && parsed.kind === "a") {
+      startRelay(parsed.code, parsed.sid);
+    }
   }
+  window.addEventListener("hashchange", handleHashChange);
+  handleHashChange();
 }

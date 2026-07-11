@@ -1,7 +1,9 @@
 name: Deploy to Cloudflare Pages
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -10,28 +12,38 @@ permissions:
 
 env:
   TINYGO_VERSION: 0.41.1
+  TINYGO_AMD64_SHA256: 901fbccffc61adb111656d1f907dfc21b6c499ca841b115866a0d6de2d835fbe
 
 jobs:
   deploy:
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
           go-version-file: go.mod
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
 
       - name: Install TinyGo
         run: |
           curl -fsSL -o /tmp/tinygo.deb https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/tinygo_${TINYGO_VERSION}_amd64.deb
+          echo "${TINYGO_AMD64_SHA256}  /tmp/tinygo.deb" | sha256sum -c -
           sudo dpkg -i /tmp/tinygo.deb
 
       - name: Install binaryen (wasm-opt)
         run: sudo apt-get update && sudo apt-get install -y binaryen
 
       - name: Cache Go/TinyGo build cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cache/go-build
@@ -42,19 +54,22 @@ jobs:
             tinygo-build-${{ env.TINYGO_VERSION }}-
 
       - name: Test
-        run: go test ./...
+        run: |
+          go test ./...
+          node --test
+          node tools/verify-vendor.mjs
 
       - name: Test (TinyGo runtime)
         run: tinygo test ./pdf ./xlsx ./imgconv
 
       - name: Cache built wasm artifacts
         id: wasm-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             web/*/*.wasm
             web/wasm_exec.js
-          key: wasm-tinygo${{ env.TINYGO_VERSION }}-${{ hashFiles('go.mod', 'go.sum', 'build.sh', '**/*.go') }}
+          key: wasm-tinygo${{ env.TINYGO_VERSION }}-${{ hashFiles('go.mod', 'go.sum', 'build.sh', 'tools/operation-catalog.json', '**/*.go') }}
 
       - name: Build WebAssembly tools
         if: ${{ steps.wasm-cache.outputs.cache-hit != 'true' }}
@@ -62,11 +77,19 @@ jobs:
 
       - name: Generate localized pages
         if: ${{ steps.wasm-cache.outputs.cache-hit == 'true' }}
-        run: node tools/gen-i18n.mjs
+        run: |
+          cp tools/operation-catalog.json web/operation-catalog.json
+          node tools/gen-i18n.mjs
+
+      - name: Check WebAssembly size budget
+        run: node tools/check-wasm-size.mjs web
+
+      - name: Stage static assets without duplication
+        run: node tools/stage-assets.mjs --hash web .staging/web
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v4
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy web --project-name=paper-tools --branch=main --commit-dirty=true
+          command: pages deploy .staging/web --project-name=paper-tools --branch=main --commit-dirty=true

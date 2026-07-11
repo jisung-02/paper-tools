@@ -161,7 +161,11 @@ func jpegPDFWithSoftMask(t *testing.T) []byte {
 	}
 	b.objs[pagesRef.Num-1] = Dict{"Type": Name("Pages"), "Kids": Array{pageRef}, "Count": 1}
 	b.objs[catalogRef.Num-1] = Dict{"Type": Name("Catalog"), "Pages": pagesRef}
-	return b.bytes(catalogRef)
+	out, err := b.bytes(catalogRef)
+	if err != nil {
+		t.Fatalf("bytes: %v", err)
+	}
+	return out
 }
 
 func TestCompressKeepsSoftMaskedJPEGDimensions(t *testing.T) {
@@ -212,7 +216,11 @@ func rawPDFWithBigStream() []byte {
 	}
 	b.objs[pagesRef.Num-1] = Dict{"Type": Name("Pages"), "Kids": Array{pageRef}, "Count": 1}
 	b.objs[catalogRef.Num-1] = Dict{"Type": Name("Catalog"), "Pages": pagesRef}
-	return b.bytes(catalogRef)
+	out, err := b.bytes(catalogRef)
+	if err != nil {
+		panic(err)
+	}
+	return out
 }
 
 func TestCompressReflates(t *testing.T) {

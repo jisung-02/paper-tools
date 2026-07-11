@@ -127,7 +127,7 @@ func MarkdownToPDF(md []byte, fontTTF []byte, opts MarkdownPDFOpts) ([]byte, err
 
 	b.objs[pagesRef.Num-1] = Dict{"Type": Name("Pages"), "Kids": kids, "Count": len(kids)}
 	b.objs[catalogRef.Num-1] = Dict{"Type": Name("Catalog"), "Pages": pagesRef}
-	return b.bytes(catalogRef), nil
+	return b.bytes(catalogRef)
 }
 
 // ------------------------------------------------------------- block model ---

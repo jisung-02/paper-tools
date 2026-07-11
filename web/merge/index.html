@@ -101,7 +101,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     return;
   }
   const files = await allFiles(filesDz.files);
-  const r = pdfRun(files);
+  const r = await runWasm(files);
   finish(r, "merged.pdf", err);
 }));
 </script>

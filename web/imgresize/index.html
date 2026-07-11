@@ -136,7 +136,7 @@ btn.addEventListener("click", () => run(btn, async () => {
   }
   const file = fileDz.files[0];
   const bytes = await fileBytes(file);
-  const r = pdfRun(bytes, w, h, parseInt(quality.value, 10) || 85);
+  const r = await runWasm(bytes, w, h, parseInt(quality.value, 10) || 85);
   const { ext, mime } = extAndMime(file.name);
   finish(r, baseName(file.name) + "-resized." + ext, err, mime);
 }));

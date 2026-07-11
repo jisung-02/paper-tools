@@ -268,21 +268,21 @@ btn.addEventListener("click", () => run(btn, async () => {
       return;
     }
     await fontReady;
-    r = pdfRun(pdfBytes, "text", stampText.value, fontBytes, position.value, Math.min(200, Math.max(4, parseFloat(fontSize.value) || 24)), Math.min(1, Math.max(0.05, parseFloat(opacity.value) || 1)), pages.value.trim());
+    r = await runWasm(pdfBytes, "text", stampText.value, fontBytes, position.value, Math.min(200, Math.max(4, parseFloat(fontSize.value) || 24)), Math.min(1, Math.max(0.05, parseFloat(opacity.value) || 1)), pages.value.trim());
   } else if (mode.value === "draw") {
     if (!signHasInk) {
       showErr(err, t("Draw a signature first.", "먼저 서명을 그려주세요."));
       return;
     }
     const imgBytes = await signatureBytes();
-    r = pdfRun(pdfBytes, "image", imgBytes, position.value, Math.min(100, Math.max(1, parseFloat(widthPct.value) || 20)), Math.min(1, Math.max(0.05, parseFloat(opacity.value) || 1)), pages.value.trim());
+    r = await runWasm(pdfBytes, "image", imgBytes, position.value, Math.min(100, Math.max(1, parseFloat(widthPct.value) || 20)), Math.min(1, Math.max(0.05, parseFloat(opacity.value) || 1)), pages.value.trim());
   } else {
     if (imgDz.files.length < 1) {
       showErr(err, t("Select a stamp image.", "도장 이미지를 선택하세요."));
       return;
     }
     const imgBytes = await fileBytes(imgDz.files[0]);
-    r = pdfRun(pdfBytes, "image", imgBytes, position.value, Math.min(100, Math.max(1, parseFloat(widthPct.value) || 20)), Math.min(1, Math.max(0.05, parseFloat(opacity.value) || 1)), pages.value.trim());
+    r = await runWasm(pdfBytes, "image", imgBytes, position.value, Math.min(100, Math.max(1, parseFloat(widthPct.value) || 20)), Math.min(1, Math.max(0.05, parseFloat(opacity.value) || 1)), pages.value.trim());
   }
   finish(r, baseName(pdfFile.name) + "-stamped.pdf", err);
 }));

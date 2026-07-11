@@ -809,73 +809,21 @@ func (d *Doc) loadObjStm(container int) {
 // decodeStreamWith decodes s using resolve to follow indirect references,
 // letting callers other than Doc (e.g. the builder, via b.rv) decode too.
 func decodeStreamWith(resolve func(any) any, s *Stream) ([]byte, error) {
-	filter := resolve(s.Dict["Filter"])
-	if filter == nil {
-		return s.Data, nil
-	}
-	var name Name
-	switch f := filter.(type) {
-	case Name:
-		name = f
-	case Array:
-		if len(f) != 1 {
-			return nil, fmt.Errorf("unsupported filter")
-		}
-		nm, ok := f[0].(Name)
-		if !ok {
-			return nil, fmt.Errorf("unsupported filter")
-		}
-		name = nm
-	default:
-		return nil, fmt.Errorf("unsupported filter")
-	}
-	if name != "FlateDecode" {
-		return nil, fmt.Errorf("unsupported filter")
-	}
-	raw, err := inflate(s.Data)
-	if err != nil {
-		return nil, err
-	}
-
-	dp := resolve(s.Dict["DecodeParms"])
-	if dp == nil {
-		dp = resolve(s.Dict["DP"])
-	}
-	if arr, ok := dp.(Array); ok {
-		if len(arr) > 0 {
-			dp = resolve(arr[0])
-		} else {
-			dp = nil
-		}
-	}
-	parms, ok := dp.(Dict)
-	if !ok {
-		return raw, nil
-	}
-	predictor := 1
-	columns := 1
-	colors := 1
-	bpc := 8
-	if v, ok := resolve(parms["Predictor"]).(int); ok {
-		predictor = v
-	}
-	if v, ok := resolve(parms["Columns"]).(int); ok {
-		columns = v
-	}
-	if v, ok := resolve(parms["Colors"]).(int); ok {
-		colors = v
-	}
-	if v, ok := resolve(parms["BitsPerComponent"]).(int); ok {
-		bpc = v
-	}
-	return unpredict(raw, predictor, columns, colors, bpc)
+	return decodeStreamWithLimit(resolve, s, maxInflateBytes)
 }
 
 func (d *Doc) decodeStream(s *Stream) ([]byte, error) { return decodeStreamWith(d.R, s) }
 
 func inflate(data []byte) ([]byte, error) {
+	return inflateWithLimit(data, maxInflateBytes)
+}
+
+func inflateWithLimit(data []byte, limit int) ([]byte, error) {
+	if limit <= 0 {
+		return nil, errInflateTooLarge
+	}
 	if zr, err := zlib.NewReader(bytes.NewReader(data)); err == nil {
-		out, err2 := readAllInflateLimited(zr)
+		out, err2 := readAllInflateLimitedLimit(zr, limit)
 		zr.Close()
 		if err2 == nil {
 			return out, nil
@@ -886,7 +834,7 @@ func inflate(data []byte) ([]byte, error) {
 	}
 	// Some files omit the zlib header; fall back to raw deflate.
 	fr := flate.NewReader(bytes.NewReader(data))
-	out, err := readAllInflateLimited(fr)
+	out, err := readAllInflateLimitedLimit(fr, limit)
 	fr.Close()
 	if err != nil {
 		return nil, fmt.Errorf("inflate: %w", err)
@@ -895,13 +843,17 @@ func inflate(data []byte) ([]byte, error) {
 }
 
 func readAllInflateLimited(r io.Reader) ([]byte, error) {
-	lr := &io.LimitedReader{R: r, N: maxInflateBytes + 1}
+	return readAllInflateLimitedLimit(r, maxInflateBytes)
+}
+
+func readAllInflateLimitedLimit(r io.Reader, limit int) ([]byte, error) {
+	lr := &io.LimitedReader{R: r, N: int64(limit) + 1}
 	out, err := io.ReadAll(lr)
 	if err != nil {
 		return nil, err
 	}
 	if len(out) > maxInflateBytes {
-		return nil, fmt.Errorf("%w: limit %d bytes", errInflateTooLarge, maxInflateBytes)
+		return nil, fmt.Errorf("%w: limit %d bytes", errInflateTooLarge, limit)
 	}
 	return out, nil
 }

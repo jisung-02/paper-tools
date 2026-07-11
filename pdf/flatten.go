@@ -72,7 +72,18 @@ func Flatten(file []byte) ([]byte, error) {
 		return nil
 	}
 
-	return buildWith([]*Doc{d}, [][]Page{pages}, mut)
+	b, root, err := buildDoc([]*Doc{d}, [][]Page{pages}, mut)
+	if err != nil {
+		return nil, err
+	}
+	if catalog, ok := b.objs[root.Num-1].(Dict); ok {
+		// Flatten removes page annotations/widgets; all catalog structures that
+		// index page objects must be dropped as well to avoid stale references.
+		for _, key := range []Name{"AcroForm", "Outlines", "Names", "Dests", "PageLabels", "StructTreeRoot"} {
+			delete(catalog, key)
+		}
+	}
+	return b.bytes(root)
 }
 
 func uniqueResourceName(resources Dict, prefix string, next *int) Name {

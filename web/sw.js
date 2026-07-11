@@ -1,6 +1,6 @@
 // Service worker for offline support. Bump CACHE to invalidate old entries
 // on the next deploy.
-const CACHE = "pt-v2";
+const CACHE = "pt-v3";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -25,7 +25,7 @@ self.addEventListener("fetch", (event) => {
       fetch(req)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
+          event.waitUntil(caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {}));
           return res;
         })
         .catch(() => caches.match(req)),
@@ -43,7 +43,7 @@ self.addEventListener("fetch", (event) => {
       .then((res) => {
         if (res.ok) {
           const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
+          event.waitUntil(caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {}));
         }
         return res;
       })

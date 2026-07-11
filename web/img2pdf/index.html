@@ -150,7 +150,7 @@ btn.addEventListener("click", () => run(btn, async () => {
   }
   const images = await allFiles(filesDz.files);
   const marginPt = Math.max(0, Number(margin.value) || 0) * 72 / 25.4;
-  const r = pdfRun(images, {
+  const r = await runWasm(images, {
     pageSize: pageSize.value,
     orientation: orientation.value,
     fit: fit.value,

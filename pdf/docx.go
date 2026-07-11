@@ -19,6 +19,9 @@ func DocxText(data []byte) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("유효한 docx 파일이 아닙니다")
 	}
+	if err := validateOfficeZIP(r, "docx"); err != nil {
+		return "", err
+	}
 
 	var docFile *zip.File
 	for _, f := range r.File {
@@ -31,14 +34,13 @@ func DocxText(data []byte) (string, error) {
 		return "", errors.New("유효한 docx 파일이 아닙니다")
 	}
 
-	rc, err := docFile.Open()
+	docBytes, err := readOfficeEntry(docFile, "docx")
 	if err != nil {
-		return "", fmt.Errorf("유효한 docx 파일이 아닙니다")
+		return "", err
 	}
-	defer rc.Close()
 
 	var sb strings.Builder
-	decoder := xml.NewDecoder(rc)
+	decoder := xml.NewDecoder(bytes.NewReader(docBytes))
 	for {
 		tok, err := decoder.Token()
 		if err != nil {
@@ -65,6 +67,9 @@ func DocxText(data []byte) (string, error) {
 					switch t2 := tok.(type) {
 					case xml.CharData:
 						sb.WriteString(string(t2))
+						if sb.Len() > int(officeParseLimits.maxTextBytes) {
+							return "", errors.New("docx: extracted text too large")
+						}
 					case xml.EndElement:
 						if t2.Name.Local == "t" {
 							break readText
@@ -79,6 +84,9 @@ func DocxText(data []byte) (string, error) {
 		case xml.EndElement:
 			if t.Name.Local == "p" {
 				sb.WriteString("\n")
+				if sb.Len() > int(officeParseLimits.maxTextBytes) {
+					return "", errors.New("docx: extracted text too large")
+				}
 			}
 		}
 	}

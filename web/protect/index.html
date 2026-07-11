@@ -120,7 +120,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     return;
   }
   const file = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(file, userPw.value, ownerPw.value, cipher.value);
+  const r = await runWasm(file, userPw.value, ownerPw.value, cipher.value);
   finish(r, "protected.pdf", err);
 }));
 </script>

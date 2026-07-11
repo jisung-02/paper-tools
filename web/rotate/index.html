@@ -112,7 +112,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     return;
   }
   const file = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(file, ranges.value.trim(), parseInt(degrees.value, 10));
+  const r = await runWasm(file, ranges.value.trim(), parseInt(degrees.value, 10));
   finish(r, "rotated.pdf", err);
 }));
 </script>

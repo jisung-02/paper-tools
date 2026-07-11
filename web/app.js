@@ -111,25 +111,29 @@ function ensureDict(lang) {
 function setLang(lang) {
   const sanitized = sanitizeLang(lang);
   storeSet("lang", sanitized);
+  const url = new URL(location.href);
 
   if (FIXED) {
     if (sanitized === FIXED) {
       LANG = sanitized;
       applyLang();
-      return;
+      return false;
     }
     const rest = location.pathname.slice(("/" + FIXED).length) || "/";
-    location.href = sanitized === "en" ? rest : "/" + sanitized + rest;
-    return;
+    url.pathname = sanitized === "en" ? rest : "/" + sanitized + rest;
+    location.href = url.href;
+    return true;
   }
 
   if (sanitized !== "en") {
-    location.href = "/" + sanitized + location.pathname;
-    return;
+    url.pathname = "/" + sanitized + location.pathname;
+    location.href = url.href;
+    return true;
   }
 
   LANG = sanitized;
   applyLang();
+  return false;
 }
 
 window.t = t;
@@ -142,7 +146,12 @@ window.setLang = setLang;
 // whether by this function or by the language dropdown, and skips straight
 // past it.
 function detectBrowserLang() {
-  if (storeGet("lang")) return;
+  const stored = storeGet("lang");
+  if (FIXED) {
+    if (!stored) storeSet("lang", FIXED);
+    return false;
+  }
+  if (stored) return false;
 
   const langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "en"];
   const prefix = String(langs[0] || "en").toLowerCase().slice(0, 2);
@@ -151,7 +160,7 @@ function detectBrowserLang() {
   storeSet("lang", detected); // persisted first: loop guard
 
   const current = FIXED || "en";
-  if (detected !== current) setLang(detected);
+  return detected !== current && setLang(detected);
 }
 
 // Replace the plain EN/KO toggle markup with a <select> covering all 7
@@ -273,6 +282,15 @@ function initFavicon() {
   document.head.appendChild(link);
 }
 
+function initPreviewStyles() {
+  if (document.querySelector('link[data-paper-preview="true"]')) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "/preview.css";
+  link.dataset.paperPreview = "true";
+  document.head.appendChild(link);
+}
+
 /* ---------------------------------------------------------------- ads --- */
 
 // initAds() is a no-op while AD_PUBLISHER is empty: no external script
@@ -318,15 +336,22 @@ function initAnalytics() {
   document.head.appendChild(script);
 }
 
-detectBrowserLang();
-initLangSelector();
-initThemeToggle();
-ensureDict(LANG);
-applyLang();
-initFavicon();
-initAds();
-initAnalytics();
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
+const languageRedirected = detectBrowserLang();
+if (!languageRedirected) {
+  initLangSelector();
+  initThemeToggle();
+  ensureDict(LANG);
+  applyLang();
+  initFavicon();
+  initPreviewStyles();
+  initAds();
+  initAnalytics();
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => prewarmPreviewWhenControlled())
+      .catch(() => {});
+  }
+}
 
 /* ------------------------------------------------ PWA file-handler launch --- */
 
@@ -431,8 +456,12 @@ function showLaunchChooser() {
   });
   const box = document.createElement("div");
   box.className = "launch-box";
+  box.setAttribute("role", "dialog");
+  box.setAttribute("aria-modal", "true");
+  box.setAttribute("aria-labelledby", "launch-title");
   const h2 = document.createElement("h2");
   h2.textContent = t("Open with which tool?", "어떤 도구로 열까요?");
+  h2.id = "launch-title";
   box.appendChild(h2);
   const list = document.createElement("div");
   list.className = "launch-list";
@@ -452,6 +481,17 @@ function showLaunchChooser() {
   box.appendChild(cancel);
   overlay.appendChild(box);
   document.body.appendChild(overlay);
+  cancel.focus();
+  const onKey = (e) => {
+    if (e.key === "Escape") { overlay.remove(); document.removeEventListener("keydown", onKey); }
+    if (e.key !== "Tab") return;
+    const focusable = [...box.querySelectorAll("a,button")];
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+  document.addEventListener("keydown", onKey);
 }
 
 // Fires on a File Handling API launch (Windows/Chrome PWA "Open with…").
@@ -478,29 +518,66 @@ if ("launchQueue" in window) {
 
 /* ---------------------------------------------------------- boot / wasm --- */
 
-// boot(wasmFile) instantiates the page's wasm binary, flips #status from
-// "Loading tool…" to hidden once ready, and enables every [data-needs-wasm]
-// control. Returns a promise that resolves once the module is running.
+// boot(wasmFile) prepares a worker-backed client and enables every
+// [data-needs-wasm] control. The main-thread runtime is loaded only if the
+// worker is unavailable or fails, avoiding two resident Go heaps.
 function boot(wasmFile) {
   const statusEl = document.getElementById("status");
+  if (statusEl) {
+    statusEl.setAttribute("role", "status");
+    statusEl.setAttribute("aria-live", "polite");
+    statusEl.setAttribute("aria-atomic", "true");
+  }
   const setStatus = (msg) => {
     if (statusEl) statusEl.textContent = msg;
   };
   setStatus(t("Loading tool…", "도구 준비 중…"));
+  let mainRuntimeReady;
+  let proxy;
+  const ensureMainRuntime = () => {
+    if (mainRuntimeReady) return mainRuntimeReady;
+    mainRuntimeReady = (async () => {
+      const go = new Go();
+      let result;
+      try {
+        result = await WebAssembly.instantiateStreaming(fetch(wasmFile), go.importObject);
+      } catch {
+        const response = await fetch(wasmFile);
+        if (!response.ok) throw new Error("WASM binary unavailable");
+        result = await WebAssembly.instantiate(await response.arrayBuffer(), go.importObject);
+      }
+      go.run(result.instance);
+      if (typeof window.pdfRun !== "function" || window.pdfRun === proxy) {
+        throw new Error("WASM tool did not initialize");
+      }
+      window.__syncPdfRun = window.pdfRun;
+      window.pdfRun = proxy;
+    })();
+    return mainRuntimeReady;
+  };
 
-  const go = new Go();
-  const ready = (async () => {
-    let result;
-    try {
-      result = await WebAssembly.instantiateStreaming(fetch(wasmFile), go.importObject);
-    } catch (e) {
-      // Some static hosts serve .wasm with the wrong MIME type, which
-      // breaks instantiateStreaming. Fall back to fetch + arrayBuffer.
-      const resp = await fetch(wasmFile);
-      const buf = await resp.arrayBuffer();
-      result = await WebAssembly.instantiate(buf, go.importObject);
-    }
-    go.run(result.instance);
+  let ready;
+  window.runWasm = (...args) => ready.then(() => window.__wasmClient.run(...args));
+  proxy = (...args) => window.runWasm(...args);
+  ready = (async () => {
+    const { createWasmClient } = await import("/wasm-client.mjs");
+    window.__wasmWasmFile = wasmFile;
+    window.__wasmClient = createWasmClient(async (...args) => {
+      await ensureMainRuntime();
+      return window.__syncPdfRun(...args);
+    }, {
+      worker: typeof Worker === "undefined" ? null : {
+        host: "/wasm-worker.js",
+        wasm: new URL(wasmFile, location.href).href,
+        onProgress: (phase) => {
+          if (phase === "loading") setStatus(t("Loading tool…", "도구 준비 중…"));
+          else if (phase === "running") setStatus(t("Working…", "처리 중…"));
+          else if (phase === "done") setStatus(t("Done", "완료"));
+        },
+      },
+    });
+    window.addEventListener("pagehide", () => window.__wasmClient?.dispose(), { once: true });
+    window.pdfRun = proxy;
     setStatus("");
     if (statusEl) statusEl.hidden = true;
     document.querySelectorAll("[data-needs-wasm]").forEach((el) => {
@@ -551,6 +628,9 @@ function dropzone(id, opts) {
   function setFiles(list) {
     const arr = Array.from(list);
     files = opts.multiple ? arr : arr.slice(0, 1);
+    el.__paperFiles = files;
+    el.__paperRevision = (el.__paperRevision || 0) + 1;
+    markResultStale();
     render();
     updatePrompt();
     // Single funnel for every path that sets files (click-pick, drop): lets
@@ -561,6 +641,10 @@ function dropzone(id, opts) {
 
   el.setAttribute("role", "button");
   if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "0");
+  if (!el.hasAttribute("aria-label")) {
+    const label = document.querySelector('label[for="' + input.id + '"]');
+    if (label) el.setAttribute("aria-label", label.textContent.trim());
+  }
 
   el.addEventListener("click", () => input.click());
   el.addEventListener("keydown", (e) => {
@@ -657,7 +741,11 @@ function mapError(msg) {
 }
 
 function showErr(el, msg) {
-  if (el) el.textContent = mapError(String(msg));
+  if (el) {
+    el.setAttribute("role", "alert");
+    el.setAttribute("aria-live", "assertive");
+    el.textContent = mapError(String(msg));
+  }
 }
 
 /* ----------------------------------------------------------------- run --- */
@@ -667,34 +755,85 @@ function showErr(el, msg) {
 // paints before any heavy synchronous wasm call, and routes thrown errors
 // to #err.
 async function run(btn, fn) {
+  const operationMutationRevision = previewMutationRevision;
   const original = btn.textContent;
   const errEl = document.getElementById("err");
   if (errEl) errEl.textContent = "";
+  const statusEl = document.getElementById("status");
+  if (statusEl) {
+    statusEl.hidden = false;
+    statusEl.setAttribute("role", "status");
+    statusEl.setAttribute("aria-live", "polite");
+    statusEl.textContent = t("Working…", "처리 중…");
+  }
   btn.disabled = true;
   btn.textContent = t("Working…", "처리 중…");
   await new Promise((resolve) => setTimeout(resolve, 0));
+  let snapshot = null;
+  try {
+    snapshot = await beginResultSnapshot(operationMutationRevision);
+  } catch {}
+  const previousSnapshot = activeRunSnapshot;
+  const previousMutationRevision = activeRunMutationRevision;
+  const previousPresentation = pendingResultPresentation;
+  activeRunSnapshot = snapshot;
+  activeRunMutationRevision = operationMutationRevision;
   try {
     await fn();
+    if (pendingResultPresentation !== previousPresentation) await pendingResultPresentation;
   } catch (e) {
     showErr(errEl, e && e.message ? e.message : String(e));
   } finally {
+    activeRunSnapshot = previousSnapshot;
+    activeRunMutationRevision = previousMutationRevision;
     btn.disabled = false;
     btn.textContent = original;
+    if (statusEl) statusEl.hidden = true;
   }
 }
 
 /* -------------------------------------------------------------- results --- */
 
-// finish(r, filename, errEl, mime) handles the {data|json|error} shape every
-// pdfRun call returns: downloads on data, returns the parsed object on
-// json, shows the (translated) message on error. mime defaults to "application/pdf".
+// finish(r, filename, errEl, mime) keeps the legacy call shape used by every
+// tool page. Binary output is normalized once, committed as one Artifact, and
+// shared by preview and explicit download. JSON remains a synchronous return.
 function finish(r, filename, errEl, mime) {
   if (r.error) {
     showErr(errEl, r.error);
     return null;
   }
-  if (r.data) {
-    download(r.data, filename, mime);
+  if (r.data != null) {
+    const resultMime = mime || "application/pdf";
+    const outputBlob = r.data instanceof Blob ? r.data : new Blob([r.data], { type: resultMime });
+    cancelPendingResultPresentation();
+    const generation = ++resultPresentationGeneration;
+    const runSnapshot = activeRunSnapshot;
+    const snapshotRevision = activeRunMutationRevision ?? runSnapshot?.mutationRevision ?? previewMutationRevision;
+    const controller = new AbortController();
+    const presentation = { generation, controller };
+    activeResultPresentation = presentation;
+    pendingResultPresentation = presentResult(
+      outputBlob,
+      filename,
+      resultMime,
+      generation,
+      runSnapshot,
+      snapshotRevision,
+      controller.signal,
+    )
+      .catch((error) => {
+        if (generation !== resultPresentationGeneration) return;
+        if (controller.signal.aborted || error?.name === "AbortError") return;
+        if (snapshotRevision !== previewMutationRevision) return;
+        try {
+          downloadBlobDirect(outputBlob, filename);
+        } catch (downloadError) {
+          showErr(errEl, downloadError?.message || error?.message || downloadError || error);
+        }
+      })
+      .finally(() => {
+        if (activeResultPresentation === presentation) activeResultPresentation = null;
+      });
     return null;
   }
   if (r.json) {
@@ -703,9 +842,236 @@ function finish(r, filename, errEl, mime) {
   return null;
 }
 
+let currentResultPreview = null;
+let resultController = null;
+let resultModulesPromise = null;
+let sharedPdfRendererPromise = null;
+let pendingResultPresentation = Promise.resolve();
+let resultPresentationGeneration = 0;
+let outputRevision = 0;
+let previewMutationRevision = 0;
+let activeRunSnapshot = null;
+let activeRunMutationRevision = null;
+let previewPrewarmPromise = null;
+let resultModuleAttempt = 0;
+let pdfRendererAttempt = 0;
+let activeResultPresentation = null;
+
+function cancelPendingResultPresentation() {
+  activeResultPresentation?.controller.abort();
+  activeResultPresentation = null;
+}
+
+function retryModuleURL(path, attempt) {
+  return attempt === 0 ? path : `${path}?preview-retry=${attempt}`;
+}
+
+function loadResultModules() {
+  if (!resultModulesPromise) {
+    const attempt = resultModuleAttempt++;
+    const pending = Promise.all([
+      import(retryModuleURL("/preview-controller.mjs", attempt)),
+      import(retryModuleURL("/preview-elements.mjs", attempt)),
+      import(retryModuleURL("/operation-catalog.mjs", attempt)),
+    ]).then(([controller, elements, catalog]) => ({ controller, elements, catalog }));
+    const retryable = pending.catch((error) => {
+      if (resultModulesPromise === retryable) resultModulesPromise = null;
+      throw error;
+    });
+    resultModulesPromise = retryable;
+  }
+  return resultModulesPromise;
+}
+
+function getSharedPdfRenderer() {
+  if (!sharedPdfRendererPromise) {
+    const attempt = pdfRendererAttempt++;
+    const pending = Promise.all([
+      import(retryModuleURL("/vendor/pdfjs/pdf.mjs", attempt)),
+      import(retryModuleURL("/pdf-renderer.mjs", attempt)),
+    ]).then(([pdfjs, renderer]) => {
+      pdfjs.GlobalWorkerOptions.workerSrc = "/vendor/pdfjs/pdf.worker.mjs";
+      return renderer.createPdfRenderer(pdfjs);
+    });
+    const retryable = pending.catch((error) => {
+      if (sharedPdfRendererPromise === retryable) sharedPdfRendererPromise = null;
+      throw error;
+    });
+    sharedPdfRendererPromise = retryable;
+  }
+  return sharedPdfRendererPromise;
+}
+
+function prewarmPreviewAssets() {
+  if (previewPrewarmPromise) return previewPrewarmPromise;
+  const pending = (async () => {
+    await loadResultModules();
+    const urls = [
+      "/preview.css",
+      "/pdf-renderer.mjs",
+      "/text-fingerprint.mjs",
+      "/vendor/pdfjs/pdf.mjs",
+      "/vendor/pdfjs/pdf.worker.mjs",
+    ];
+    await Promise.all(urls.map(async (url) => {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`preview asset unavailable: ${url}`);
+    }));
+  })();
+  const retryable = pending.catch((error) => {
+    if (previewPrewarmPromise === retryable) previewPrewarmPromise = null;
+    throw error;
+  });
+  previewPrewarmPromise = retryable;
+  return retryable;
+}
+
+function prewarmPreviewWhenControlled() {
+  const schedule = () => queueMicrotask(() => { void prewarmPreviewAssets().catch(() => {}); });
+  if (navigator.serviceWorker.controller) {
+    schedule();
+    return;
+  }
+  const onController = () => {
+    navigator.serviceWorker.removeEventListener("controllerchange", onController);
+    schedule();
+  };
+  navigator.serviceWorker.addEventListener("controllerchange", onController);
+  if (navigator.serviceWorker.controller) onController();
+}
+
+function markResultStale() {
+  previewMutationRevision++;
+  cancelPendingResultPresentation();
+  if (resultController?.markStale()) currentResultPreview?.setStale(true);
+}
+
+async function beginResultSnapshot(mutationRevision = previewMutationRevision) {
+  const modules = await loadResultModules();
+  const root = document.querySelector("main") || document;
+  const operationId = currentToolSlug();
+  return Object.freeze({
+    modules,
+    mutationRevision,
+    params: Object.freeze({
+      operationId,
+      settings: modules.controller.snapshotFormSettings(root),
+    }),
+    sources: modules.controller.snapshotInputSources(root),
+  });
+}
+
+document.addEventListener("input", (event) => {
+  if (event.target.closest?.(".result-preview")) return;
+  if (document.querySelector("main")?.contains(event.target)) markResultStale();
+});
+document.addEventListener("change", (event) => {
+  if (event.target.closest?.(".result-preview")) return;
+  if (document.querySelector("main")?.contains(event.target)) markResultStale();
+});
+
+async function presentResult(data, filename, mime, generation, runSnapshot, snapshotRevision, signal) {
+  signal?.throwIfAborted();
+  const modules = runSnapshot?.modules || await loadResultModules();
+  signal?.throwIfAborted();
+  const operationId = runSnapshot?.params.operationId || currentToolSlug();
+  const operation = modules.catalog.operationsById.get(operationId) || null;
+  const normalizedOutput = modules.controller.normalizeOperationOutput(data, {
+    id: `${operationId || "result"}-output`,
+    revision: ++outputRevision,
+    name: filename,
+    mime: mime || "application/pdf",
+  });
+  const root = document.querySelector("main") || document;
+  const params = runSnapshot?.params || Object.freeze({
+    operationId,
+    settings: modules.controller.snapshotFormSettings(root),
+  });
+  const inputs = await modules.controller.captureInputArtifacts(root, {
+    sources: runSnapshot?.sources,
+  });
+  signal?.throwIfAborted();
+  if (generation !== resultPresentationGeneration) return;
+
+  resultController ||= new modules.controller.PreviewController();
+  resultController.commit(inputs, params, normalizedOutput);
+  const output = resultController.cached(inputs, params);
+  if (!output) throw new Error("result cache was invalidated before presentation");
+  const previewArtifacts = [inputs[0], output].filter(Boolean);
+  const modes = modules.elements.previewModesForArtifacts(operation, previewArtifacts);
+  let pdfRenderer = null;
+  if (modes.includes("pdf")) pdfRenderer = await getSharedPdfRenderer().catch(() => null);
+  signal?.throwIfAborted();
+  const view = await modules.elements.createPreviewComparison({
+    before: inputs[0] || null,
+    after: output,
+    operation,
+    pdfRenderer,
+    labels: {
+      title: t("Review result", "결과 확인"),
+      before: t("Before", "작업 전"),
+      after: t("After", "작업 후"),
+      previous: t("Previous page", "이전 페이지"),
+      next: t("Next page", "다음 페이지"),
+      page: t("Page", "페이지"),
+      stale: t(
+        "Inputs or settings changed. Run the operation again to refresh this result.",
+        "입력 또는 설정이 변경되었습니다. 작업을 다시 실행해 결과를 갱신하세요.",
+      ),
+      renderError: t("Page preview failed:", "페이지 미리보기에 실패했습니다:"),
+      download: t("Download result", "결과 다운로드"),
+      close: t("Close", "닫기"),
+      summary: {
+        encryptedPDF: t("Encrypted PDF", "암호화된 PDF"),
+        richUnavailable: t("Rich preview unavailable", "상세 미리보기 사용 불가"),
+        zipArchive: t("ZIP archive", "ZIP 압축 파일"),
+        entryCountUnavailable: t("entry count unavailable", "항목 수를 확인할 수 없음"),
+        officeDocument: t("Office document", "Office 문서"),
+        officeStructure: t("document structure is preserved in the download", "다운로드 파일에는 문서 구조가 보존됩니다"),
+        entry: t("entry", "항목"),
+        entries: t("entries", "항목"),
+      },
+    },
+    onDownload: (artifact) => modules.controller.downloadArtifact(artifact),
+    onClose: () => {
+      if (currentResultPreview === view) currentResultPreview = null;
+    },
+    signal,
+  });
+  if (generation !== resultPresentationGeneration) {
+    await view.dispose();
+    return;
+  }
+  if (currentResultPreview) await currentResultPreview.dispose();
+  currentResultPreview = view;
+  const anchor = document.getElementById("err") || document.querySelector("main button.primary:last-of-type");
+  (anchor?.parentNode || root || document.body).insertBefore(view.element, anchor?.nextSibling || null);
+  if (snapshotRevision !== previewMutationRevision) {
+    resultController.markStale();
+    view.setStale(true);
+  }
+  view.element.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+window.addEventListener("pagehide", () => {
+  cancelPendingResultPresentation();
+  resultPresentationGeneration++;
+  resultController?.cancel();
+  void currentResultPreview?.dispose();
+  if (sharedPdfRendererPromise) void sharedPdfRendererPromise.then((renderer) => renderer.destroy()).catch(() => {});
+});
+
 function download(u8, name, mime) {
+  if (activeRunMutationRevision != null) {
+    finish({ data: u8 }, name, document.getElementById("err"), mime);
+    return;
+  }
   mime = mime || "application/pdf";
-  const blob = new Blob([u8], { type: mime });
+  const blob = u8 instanceof Blob ? u8 : new Blob([u8], { type: mime });
+  downloadBlobDirect(blob, name);
+}
+
+function downloadBlobDirect(blob, name) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

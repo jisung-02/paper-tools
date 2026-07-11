@@ -50,7 +50,7 @@ func Interleave(a, b []byte, reverseB bool) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return bld.bytes(root), nil
+	return bld.bytes(root)
 }
 
 // Resize scales the selected pages ("" = all) to fit inside w x h points,
@@ -279,7 +279,7 @@ func NUp(file []byte, per int) ([]byte, error) {
 	b.objs[pagesRef.Num-1] = Dict{"Type": Name("Pages"), "Kids": kids, "Count": len(kids)}
 	b.objs[catalogRef.Num-1] = Dict{"Type": Name("Catalog"), "Pages": pagesRef}
 
-	return b.bytes(catalogRef), nil
+	return b.bytes(catalogRef)
 }
 
 // rotateMatrix returns the Form XObject /Matrix that bakes a page's
@@ -377,5 +377,5 @@ func InsertBlank(file []byte, after, count int) ([]byte, error) {
 	pagesDict["Kids"] = newKids
 	pagesDict["Count"] = len(newKids)
 
-	return b.bytes(catalogRef), nil
+	return b.bytes(catalogRef)
 }

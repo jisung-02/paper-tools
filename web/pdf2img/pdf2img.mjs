@@ -1,8 +1,12 @@
 import * as pdfjsLib from "/vendor/pdfjs/pdf.mjs";
+import { createPdfRenderer } from "../pdf-renderer.mjs";
 import { imageFileName, imageMime, jpegQuality, pageNumbers, renderScale } from "./names.mjs";
 import { zipStore } from "./zip.mjs";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/vendor/pdfjs/pdf.worker.mjs";
+const pdfRenderer = createPdfRenderer(pdfjsLib, {
+  createCanvas: () => document.createElement("canvas"),
+});
 
 const fileDz = window.dropzone("fileDrop", { multiple: false });
 const btn = document.getElementById("run");
@@ -27,48 +31,35 @@ btn.addEventListener("click", () => window.run(btn, async () => {
 }));
 
 async function renderPdfToZip(bytes, format, scaleValue, pageRange, qualityValue) {
-  let doc;
-  let task;
+  let session;
+  let canvas;
   try {
-    task = pdfjsLib.getDocument({
-      data: bytes,
-      cMapUrl: "/vendor/pdfjs/cmaps/",
-      cMapPacked: true,
-      standardFontDataUrl: "/vendor/pdfjs/standard_fonts/",
-    });
-    doc = await task.promise;
+    session = await pdfRenderer.open(bytes);
   } catch (e) {
     throw friendlyPdfError(e);
   }
 
   try {
     const files = [];
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d", { alpha: false });
-    if (!ctx) throw new Error("Canvas is not available.");
+    canvas = document.createElement("canvas");
 
-    for (const pageNumber of pageNumbers(pageRange, doc.numPages)) {
-      const page = await doc.getPage(pageNumber);
-      const viewport = page.getViewport({ scale: scaleValue });
-      canvas.width = Math.ceil(viewport.width);
-      canvas.height = Math.ceil(viewport.height);
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      await page.render({ canvasContext: ctx, viewport }).promise;
+    for (const pageNumber of pageNumbers(pageRange, session.numPages)) {
+      await session.renderPage(pageNumber, { canvas, scale: scaleValue });
       files.push({
         name: imageFileName(pageNumber, format),
         data: await canvasBytes(canvas, imageMime(format), qualityValue),
       });
     }
 
-    canvas.width = 0;
-    canvas.height = 0;
     return zipStore(files);
   } catch (e) {
     throw friendlyPdfError(e);
   } finally {
-    if (doc && typeof doc.cleanup === "function") await doc.cleanup();
-    if (task && typeof task.destroy === "function") await task.destroy();
+    if (canvas) {
+      canvas.width = 0;
+      canvas.height = 0;
+    }
+    await session?.destroy();
   }
 }
 

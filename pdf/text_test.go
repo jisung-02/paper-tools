@@ -2,9 +2,13 @@ package pdf
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"os"
+	"os/exec"
 	"strings"
 	"testing"
+	"time"
 )
 
 // textPDF builds a minimal single-page PDF with a classic xref table: a
@@ -95,5 +99,81 @@ end`
 func TestExtractTextEncrypted(t *testing.T) {
 	if _, err := ExtractText(encryptedPDF()); err != ErrEncrypted {
 		t.Fatalf("expected ErrEncrypted, got %v", err)
+	}
+}
+
+func TestExtractTextRejectsOversizedToUnicodeRange(t *testing.T) {
+	if os.Getenv("PDF_CMAP_RANGE_HELPER") == "1" {
+		_, _ = ExtractText(textPDF("BT /F1 12 Tf (A) Tj ET", `
+1 beginbfrange
+<FFFFFFFE> <FFFFFFFF> <0041>
+endbfrange`))
+		return
+	}
+
+	cmd := exec.Command(os.Args[0], "-test.run=^TestExtractTextRejectsOversizedToUnicodeRange$")
+	cmd.Env = append(os.Environ(), "PDF_CMAP_RANGE_HELPER=1")
+	if err := cmd.Start(); err != nil {
+		t.Fatalf("start helper: %v", err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- cmd.Wait() }()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("helper failed unexpectedly: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		_ = cmd.Process.Kill()
+		<-done
+		t.Fatal("ExtractText did not reject an oversized ToUnicode range")
+	}
+}
+
+func TestExtractTextRejectsToUnicodeMappingBudget(t *testing.T) {
+	var cmap strings.Builder
+	cmap.WriteString("70000 beginbfchar\n")
+	for i := 0; i < 70000; i++ {
+		cmap.WriteString("<41> <0041>\n")
+	}
+	cmap.WriteString("endbfchar\n")
+
+	_, err := ExtractText(textPDF("BT /F1 12 Tf (A) Tj ET", cmap.String()))
+	if err == nil {
+		t.Fatal("ExtractText accepted a ToUnicode CMap over the mapping budget")
+	}
+}
+
+func TestParseToUnicodeCMapHonorsCodeWidth(t *testing.T) {
+	_, err := parseToUnicodeCMap([]byte(`
+1 beginbfrange
+<0100> <0101> <0041>
+endbfrange`), 1)
+	if !errors.Is(err, ErrToUnicodeCMapCode) {
+		t.Fatalf("parseToUnicodeCMap error = %v, want ErrToUnicodeCMapCode", err)
+	}
+
+	m, err := parseToUnicodeCMap([]byte(`
+1 beginbfrange
+<0100> <0101> <0041>
+endbfrange`), 2)
+	if err != nil {
+		t.Fatalf("parseToUnicodeCMap two-byte code: %v", err)
+	}
+	if m[0x100] != "A" || m[0x101] != "B" {
+		t.Fatalf("two-byte mappings = %#v, want 0x100=A and 0x101=B", m)
+	}
+}
+
+func TestParseToUnicodeCMapAcceptsMaximumTwoByteRange(t *testing.T) {
+	m, err := parseToUnicodeCMap([]byte(`
+1 beginbfrange
+<0000> <FFFF> <0041>
+endbfrange`), 2)
+	if err != nil {
+		t.Fatalf("parseToUnicodeCMap: %v", err)
+	}
+	if len(m) != maxToUnicodeMappings {
+		t.Fatalf("mapping count = %d, want %d", len(m), maxToUnicodeMappings)
 	}
 }

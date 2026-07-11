@@ -1,9 +1,31 @@
 package pdf
 
 import (
+	"encoding/binary"
 	"os"
 	"testing"
 )
+
+func TestParseCmapFormat12RejectsOversizedUnicodeRange(t *testing.T) {
+	data := make([]byte, 28)
+	binary.BigEndian.PutUint32(data[12:16], 1)
+	binary.BigEndian.PutUint32(data[16:20], 0)
+	binary.BigEndian.PutUint32(data[20:24], 1_300_000)
+	binary.BigEndian.PutUint32(data[24:28], 1)
+	if got := parseCmapFormat12(data, 0); got != nil {
+		t.Fatalf("oversized cmap produced %d mappings", len(got))
+	}
+}
+
+func TestEmbedToUnicodeRejectsAmbiguousGlyphMapping(t *testing.T) {
+	font := &ttfFont{runeToGID: map[rune]uint16{
+		'A': 42,
+		'B': 42,
+	}}
+	if _, err := embedToUnicode(&builder{}, font, []rune{'A', 'B'}); err == nil {
+		t.Fatal("embedToUnicode accepted two Unicode runes for the same glyph ID")
+	}
+}
 
 func TestTTFSubsetRoundTrip(t *testing.T) {
 	data, err := os.ReadFile("../web/NanumGothic-Regular.ttf")

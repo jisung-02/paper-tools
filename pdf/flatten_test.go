@@ -91,6 +91,11 @@ func TestFlattenDrawsAnnotationAppearanceAndRemovesAnnots(t *testing.T) {
 	if len(pages) != 1 {
 		t.Fatalf("expected 1 page, got %d", len(pages))
 	}
+	if cat, ok := d.R(d.trailer["Root"]).(Dict); ok {
+		if _, stale := cat["AcroForm"]; stale {
+			t.Fatal("flattened catalog retains stale AcroForm")
+		}
+	}
 	pd := d.Get(pages[0].Num).(Dict)
 	if _, ok := pd["Annots"]; ok {
 		t.Fatalf("flattened page still has Annots: %v", pd["Annots"])

@@ -116,7 +116,7 @@ btn.addEventListener("click", () => run(btn, async () => {
   }
   const a = await fileBytes(frontDz.files[0]);
   const b = await fileBytes(backDz.files[0]);
-  const r = pdfRun(a, b, reverseB.checked);
+  const r = await runWasm(a, b, reverseB.checked);
   finish(r, "interleaved.pdf", err);
 }));
 </script>

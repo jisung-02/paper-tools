@@ -206,7 +206,10 @@ func Watermark(file []byte, opts WatermarkOpts) ([]byte, error) {
 		ty := cy - w/2*s
 
 		res := b.ensureResources(pd)
-		b.ownedSub(res, "ExtGState")["GSW0"] = b.gstateRef(opts.Opacity)
+		nextState, nextFont := 0, 0
+		stateName := uniqueResourceName(b.ownedSub(res, "ExtGState"), "GSW", &nextState)
+		fontName := uniqueResourceName(b.ownedSub(res, "Font"), "FUW", &nextFont)
+		b.ownedSub(res, "ExtGState")[stateName] = b.gstateRef(opts.Opacity)
 
 		var ops string
 		if f != nil {
@@ -218,12 +221,14 @@ func Watermark(file []byte, opts WatermarkOpts) ([]byte, error) {
 				}
 				embedded = true
 			}
-			b.ownedSub(res, "Font")["FUW0"] = type0Ref
-			ops = fmt.Sprintf("/GSW0 gs BT /FUW0 %.2f Tf 0.5 g %.2f %.2f %.2f %.2f %.2f %.2f Tm <%X> Tj ET",
+			b.ownedSub(res, "Font")[fontName] = type0Ref
+			ops = fmt.Sprintf("/%s gs BT /%s %.2f Tf 0.5 g %.2f %.2f %.2f %.2f %.2f %.2f Tm <%X> Tj ET",
+				stateName, fontName,
 				opts.FontSize, c, s, -s, c, e, ty, f.encode(opts.Text))
 		} else {
-			b.ownedSub(res, "Font")["FUW0"] = b.helveticaRef()
-			ops = fmt.Sprintf("/GSW0 gs BT /FUW0 %.2f Tf 0.5 g %.2f %.2f %.2f %.2f %.2f %.2f Tm (%s) Tj ET",
+			b.ownedSub(res, "Font")[fontName] = b.helveticaRef()
+			ops = fmt.Sprintf("/%s gs BT /%s %.2f Tf 0.5 g %.2f %.2f %.2f %.2f %.2f %.2f Tm (%s) Tj ET",
+				stateName, fontName,
 				opts.FontSize, c, s, -s, c, e, ty, esc)
 		}
 		b.appendContent(pd, []byte(ops))
@@ -257,14 +262,21 @@ func AddPageNumbers(file []byte, opts PageNumOpts) ([]byte, error) {
 	total := strconv.Itoa(len(pages))
 
 	mut := func(b *builder, pageIndex int, pd Dict, m map[int]Ref) error {
-		x0, y0, x1, _, ok := b.rect(pd["CropBox"])
+		x0, y0, x1, y1, ok := b.rect(pd["CropBox"])
 		if !ok {
-			x0, y0, x1, _, ok = b.rect(pd["MediaBox"])
+			x0, y0, x1, y1, ok = b.rect(pd["MediaBox"])
 		}
 		if !ok {
-			x0, y0, x1 = 0, 0, 612
+			x0, y0, x1, y1 = 0, 0, 612, 792
 		}
-		cx := (x0 + x1) / 2
+		g := pageVisualGeometry{x0: x0, y0: y0, x1: x1, y1: y1, width: x1 - x0, height: y1 - y0}
+		if rv, ok := rnum(pd["Rotate"]); ok {
+			g.rotate = ((int(rv) % 360) + 360) % 360
+		}
+		if g.rotate == 90 || g.rotate == 270 {
+			g.width, g.height = g.height, g.width
+		}
+		cx, _ := g.visualPoint(g.width/2, g.height/2)
 
 		label := strings.ReplaceAll(opts.Format, "N", total)
 		label = strings.ReplaceAll(label, "n", strconv.Itoa(pageIndex+1))
@@ -273,11 +285,12 @@ func AddPageNumbers(file []byte, opts PageNumOpts) ([]byte, error) {
 			return err
 		}
 		x := cx - 0.5*opts.FontSize*float64(len(label))/2
-		y := y0 + 30
-		ops := fmt.Sprintf("BT /FUW0 %.2f Tf 0 g 1 0 0 1 %.2f %.2f Tm (%s) Tj ET", opts.FontSize, x, y, esc)
-
+		_, y := g.visualPoint(g.width/2, 30)
 		res := b.ensureResources(pd)
-		b.ownedSub(res, "Font")["FUW0"] = b.helveticaRef()
+		nextFont := 0
+		fontName := uniqueResourceName(b.ownedSub(res, "Font"), "FUW", &nextFont)
+		b.ownedSub(res, "Font")[fontName] = b.helveticaRef()
+		ops := fmt.Sprintf("BT /%s %.2f Tf 0 g 1 0 0 1 %.2f %.2f Tm (%s) Tj ET", fontName, opts.FontSize, x, y, esc)
 		b.appendContent(pd, []byte(ops))
 		return nil
 	}
