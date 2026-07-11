@@ -37,6 +37,7 @@ test("automatic language redirect does not cause a page error", async ({ browser
 
 test("service worker cache survives a browser restart for offline use", async () => {
   test.skip(test.info().project.name !== "chromium", "persistent offline coverage uses Chromium");
+  test.setTimeout(60_000);
   const profile = await mkdtemp(join(tmpdir(), "papertools-e2e-"));
   try {
     let context = await chromium.launchPersistentContext(profile, chromiumLaunchOptions());
@@ -50,7 +51,9 @@ test("service worker cache survives a browser restart for offline use", async ()
     await context.setOffline(true);
     page = context.pages()[0] || (await context.newPage());
     await page.goto("/txt2pdf/");
-    await expect(page.locator("#run")).toBeEnabled();
+    // Cold browser launch + offline wasm instantiation from the SW cache can
+    // exceed the default 5s expect timeout under parallel CI load.
+    await expect(page.locator("#run")).toBeEnabled({ timeout: 20_000 });
     await context.close();
   } finally {
     await rm(profile, { force: true, recursive: true });
