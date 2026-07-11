@@ -1,0 +1,14 @@
+.visual-controls { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; margin:1rem 0 }
+.visual-stage { display:grid; gap:1rem; overflow:auto; align-items:start }
+.visual-stage canvas { max-width:100%; height:auto; background:#fff; box-shadow:0 0 0 1px color-mix(in srgb, currentColor 18%, transparent) }
+.visual-results[data-mode="side"] .visual-stage { grid-template-columns:minmax(0, 1fr) minmax(0, 1fr) }
+.visual-results[data-mode="side"] #visualHeatmap { display:none }
+.visual-results:not([data-mode="side"]) .visual-stage canvas { grid-area:1 / 1 }
+.visual-results:not([data-mode="side"]) #visualA,
+.visual-results:not([data-mode="side"]) #visualB { width:var(--visual-page-width, 100%); max-width:none }
+.visual-results[data-mode="slider"] #visualHeatmap,
+.visual-results[data-mode="blink"] #visualHeatmap { display:none }
+.visual-results[data-mode="heatmap"] #visualA,
+.visual-results[data-mode="heatmap"] #visualB { display:none }
+#visualNotice:empty { display:none }
+@media (max-width:700px) { .visual-results[data-mode="side"] .visual-stage { grid-template-columns:1fr } }
