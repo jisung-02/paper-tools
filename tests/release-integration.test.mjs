@@ -83,7 +83,7 @@ test("tool-local scripts and styles use locale-safe absolute paths", async () =>
   }
 });
 
-test("CI builds optimized TinyGo WASM before running browser E2E", async () => {
+test("CI builds deployment WASM once and deploy consumes that exact run artifact", async () => {
   const [ci, deploy] = await Promise.all([
     readFile(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8"),
     readFile(new URL("../.github/workflows/deploy.yml", import.meta.url), "utf8"),
@@ -95,7 +95,18 @@ test("CI builds optimized TinyGo WASM before running browser E2E", async () => {
   assert.match(ci, /binaryen/);
   assert.match(ci, /check-wasm-size/);
   assert.match(ci, /go test -race \.\/\.\.\./);
-  assert.match(deploy, /hashFiles\([^\n]*tools\/operation-catalog\.json/);
+  assert.doesNotMatch(ci, /JOBS=2 \.\/build\.sh/);
+  assert.match(ci, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/);
+  assert.match(ci, /name: deployment-wasm/);
+  assert.match(ci, /web\/\*\/\*\.wasm/);
+  assert.match(ci, /web\/wasm_exec\.js/);
+  assert.match(deploy, /actions:\s*read/);
+  assert.match(deploy, /actions\/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c/);
+  assert.match(deploy, /github-token: \$\{\{ secrets\.GITHUB_TOKEN \}\}/);
+  assert.match(deploy, /run-id: \$\{\{ github\.event\.workflow_run\.id \}\}/);
+  assert.match(deploy, /name: Install TinyGo\n\s+if: github\.event_name == 'workflow_dispatch'/);
+  assert.match(deploy, /name: Test \(TinyGo runtime\)\n\s+if: github\.event_name == 'workflow_dispatch'/);
+  assert.match(deploy, /if: github\.event_name == 'workflow_dispatch'[\s\S]*run: \.\/build\.sh/);
   assert.match(deploy, /cp tools\/operation-catalog\.json web\/operation-catalog\.json/);
   assert.ok(
     deploy.indexOf("node --test") > deploy.indexOf("cp tools/operation-catalog.json web/operation-catalog.json"),

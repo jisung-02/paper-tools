@@ -20,7 +20,8 @@ test("Direct Send exposes mutable status and limit messages as live regions", as
   await expect(page.locator("#err")).toHaveAttribute("aria-live", "assertive");
 });
 
-test("Direct Send OPFS storage worker writes and releases a real file", async ({ page }) => {
+test("Direct Send OPFS storage worker writes and releases a real file", async ({ page, browserName }) => {
+  test.skip(browserName === "webkit", "WebKit does not provide reliable native OPFS handles");
   await page.goto("/send/");
   const result = await page.evaluate(async () => {
     const { createReceiveSink } = await import("/send/storage.mjs");

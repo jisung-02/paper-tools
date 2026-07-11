@@ -36,8 +36,18 @@ jobs:
       - run: tinygo test ./pdf ./xlsx ./imgconv
       - run: GOOS=js GOARCH=wasm go build ./wasm/...
       - name: Build deployment WebAssembly
-        run: JOBS=2 ./build.sh
+        run: ./build.sh
       - run: node tools/check-wasm-size.mjs web
+      - name: Upload deployment WebAssembly
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: deployment-wasm
+          path: |
+            web/*/*.wasm
+            web/wasm_exec.js
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
       - run: node --test
       - run: npm ci
       - run: npx playwright install --with-deps chromium firefox webkit

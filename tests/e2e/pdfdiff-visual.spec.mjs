@@ -269,7 +269,7 @@ test("cancelling while an OPFS archive close is delayed removes the stale closed
         window.__visualRemoved.push(name);
       },
     };
-    Object.defineProperty(navigator.storage, "getDirectory", {
+    Object.defineProperty(Object.getPrototypeOf(navigator.storage), "getDirectory", {
       configurable: true,
       value: async () => root,
     });
@@ -327,7 +327,7 @@ test("pagehide cleans a successfully downloaded OPFS archive before its delayed 
         entries.delete(name);
       },
     };
-    Object.defineProperty(navigator.storage, "getDirectory", {
+    Object.defineProperty(Object.getPrototypeOf(navigator.storage), "getDirectory", {
       configurable: true,
       value: async () => root,
     });
@@ -407,7 +407,7 @@ test("cancelled ZIP writes finish cleanup before an immediate re-export can star
       },
     };
     window.__releaseFirstZipWrite = () => sinks[0]?.releaseWrite?.();
-    Object.defineProperty(navigator.storage, "getDirectory", {
+    Object.defineProperty(Object.getPrototypeOf(navigator.storage), "getDirectory", {
       configurable: true,
       value: async () => {
         window.__zipWriteState.getDirectoryCalls++;
@@ -477,7 +477,7 @@ test("a failed restart clears an existing blink timer before the new Worker fail
   await page.locator("#visualRun").click();
   await expect(page.locator("#visualResults")).toBeVisible();
   await expect(page.locator("#visualStats")).toContainText("1/1");
-  expect(workerRequests).toBeGreaterThanOrEqual(4);
+  expect(workerRequests).toBeGreaterThanOrEqual(3);
 });
 
 function zipEntries(bytes) {

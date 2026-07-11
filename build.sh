@@ -11,7 +11,25 @@ WASM_EXEC="$(tinygo env TINYGOROOT)/targets/wasm_exec.js"
 cp "$WASM_EXEC" web/
 cp tools/operation-catalog.json web/operation-catalog.json
 
-TOOLS="$(node -e 'const c=require("./tools/operation-catalog.json"); process.stdout.write(c.filter(x=>x.engine==="wasm").map(x=>x.id).join(" "))')"
+ALL_TOOLS="$(node -e 'const c=require("./tools/operation-catalog.json"); process.stdout.write(c.filter(x=>x.engine==="wasm").map(x=>x.id).join(" "))')"
+if [ "$#" -gt 0 ]; then
+  TOOLS=""
+  for t in "$@"; do
+    case " $ALL_TOOLS " in
+      *" $t "*) ;;
+      *)
+        echo "error: unknown WASM tool: $t" >&2
+        exit 1
+        ;;
+    esac
+    case " $TOOLS " in
+      *" $t "*) ;;
+      *) TOOLS="${TOOLS:+$TOOLS }$t" ;;
+    esac
+  done
+else
+  TOOLS="$ALL_TOOLS"
+fi
 
 JOBS="${JOBS:-$(command -v nproc >/dev/null 2>&1 && nproc || sysctl -n hw.ncpu)}"
 echo "building with ${JOBS} parallel jobs..."

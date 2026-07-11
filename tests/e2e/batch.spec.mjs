@@ -68,7 +68,8 @@ test("independent batch downloads streamed successes and a failure manifest", as
   });
 });
 
-test("cleanup for a downloaded OPFS archive does not remove the next batch archive", async ({ page }) => {
+test("cleanup for a downloaded OPFS archive does not remove the next batch archive", async ({ page, browserName }) => {
+  test.skip(browserName === "webkit", "WebKit does not provide reliable native OPFS handles");
   await page.addInitScript(() => {
     const removeEntry = FileSystemDirectoryHandle.prototype.removeEntry;
     const getFileHandle = FileSystemDirectoryHandle.prototype.getFileHandle;
@@ -122,7 +123,8 @@ test("cleanup for a downloaded OPFS archive does not remove the next batch archi
   expect(archives).toHaveLength(1);
 });
 
-test("pagehide cleans a downloaded OPFS archive before its delayed cleanup timer", async ({ page }) => {
+test("pagehide cleans a downloaded OPFS archive before its delayed cleanup timer", async ({ page, browserName }) => {
+  test.skip(browserName === "webkit", "WebKit does not provide reliable native OPFS handles");
   await page.goto("/batch/");
   await page.locator("#batchOperation").selectOption("rotate");
   await page.locator("#batchRetries").selectOption("0");

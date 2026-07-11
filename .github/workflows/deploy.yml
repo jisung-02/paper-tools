@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   TINYGO_VERSION: 0.41.1
@@ -34,15 +35,18 @@ jobs:
           node-version: 22
 
       - name: Install TinyGo
+        if: github.event_name == 'workflow_dispatch'
         run: |
           curl -fsSL -o /tmp/tinygo.deb https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/tinygo_${TINYGO_VERSION}_amd64.deb
           echo "${TINYGO_AMD64_SHA256}  /tmp/tinygo.deb" | sha256sum -c -
           sudo dpkg -i /tmp/tinygo.deb
 
       - name: Install binaryen (wasm-opt)
+        if: github.event_name == 'workflow_dispatch'
         run: sudo apt-get update && sudo apt-get install -y binaryen
 
       - name: Cache Go/TinyGo build cache
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
@@ -59,23 +63,23 @@ jobs:
           node tools/verify-vendor.mjs
 
       - name: Test (TinyGo runtime)
+        if: github.event_name == 'workflow_dispatch'
         run: tinygo test ./pdf ./xlsx ./imgconv
 
-      - name: Cache built wasm artifacts
-        id: wasm-cache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      - name: Download deployment WebAssembly from CI
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          path: |
-            web/*/*.wasm
-            web/wasm_exec.js
-          key: wasm-tinygo${{ env.TINYGO_VERSION }}-${{ hashFiles('go.mod', 'go.sum', 'build.sh', 'tools/operation-catalog.json', '**/*.go') }}
+          name: deployment-wasm
+          path: web
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
 
-      - name: Build WebAssembly tools
-        if: ${{ steps.wasm-cache.outputs.cache-hit != 'true' }}
+      - name: Build WebAssembly tools for manual deployment
+        if: github.event_name == 'workflow_dispatch'
         run: ./build.sh
 
       - name: Generate localized pages
-        if: ${{ steps.wasm-cache.outputs.cache-hit == 'true' }}
         run: |
           cp tools/operation-catalog.json web/operation-catalog.json
           node tools/gen-i18n.mjs
