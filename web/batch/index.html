@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="/manifest.webmanifest"><title>Batch PDF Automation — free & private | Paper Tools</title>
+<meta name="description" content="Apply the same private PDF operation to many files in your browser and download the results together.">
+<script src="/theme.js"></script><link rel="stylesheet" href="../style.css"><link rel="stylesheet" href="/batch/batch.css">
+<!-- hreflang -->
+<link rel="alternate" hreflang="en" href="https://papertools.dev/batch/">
+<link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/batch/">
+<link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/batch/">
+<link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/batch/">
+<link rel="alternate" hreflang="es" href="https://papertools.dev/es/batch/">
+<link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/batch/">
+<link rel="alternate" hreflang="de" href="https://papertools.dev/de/batch/">
+<link rel="alternate" hreflang="x-default" href="https://papertools.dev/batch/">
+</head><body>
+<header><a class="wordmark" href="../">Paper Tools</a><nav class="langtoggle"><button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button></nav></header>
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+<h1 data-i18n data-en="Batch PDF Automation" data-ko="PDF 일괄 자동화">Batch PDF Automation</h1>
+<p class="desc" data-i18n data-en="Apply one operation to many PDFs, or group images into one PDF, with isolated failures." data-ko="여러 PDF에 같은 작업을 적용하거나 여러 이미지를 하나의 PDF로 만들고 실패 파일만 분리합니다.">Apply one operation to many PDFs, or group images into one PDF, with isolated failures.</p>
+<label for="batchInput" data-i18n data-en="Input files" data-ko="입력 파일">Input files</label>
+<div class="drop" id="batchDrop"><span data-i18n data-en="Drag files here, or click to choose" data-ko="파일을 끌어다 놓거나 클릭해서 선택">Drag files here, or click to choose</span><input id="batchInput" type="file" accept="application/pdf" multiple><ul class="filelist"></ul></div>
+<div class="batch-options"><label>Operation <select id="batchOperation"></select></label><label>Mode <select id="batchMode"><option value="independent" selected>Independent</option><option value="grouped">Grouped</option></select></label><label>Retry <select id="batchRetries"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option></select></label></div>
+<label for="batchParams" data-i18n data-en="Parameters (JSON)" data-ko="매개변수(JSON)">Parameters (JSON)</label><textarea id="batchParams">{}</textarea>
+<div class="batch-actions"><button class="primary" id="batchRun" type="button" data-i18n data-en="Run batch" data-ko="일괄 실행">Run batch</button><button id="batchCancel" type="button" disabled data-i18n data-en="Cancel" data-ko="취소">Cancel</button><button id="batchFolder" type="button" data-i18n data-en="Choose output folder" data-ko="출력 폴더 선택">Choose output folder</button></div>
+<p id="status" role="status" aria-live="polite" hidden></p><p class="err" id="err" role="alert"></p>
+<section id="batchResult" hidden><h2 data-i18n data-en="Results" data-ko="결과">Results</h2><p id="batchSummary"></p><ul id="batchFailures"></ul><button class="primary" id="batchDownload" type="button" data-i18n data-en="Download ZIP" data-ko="ZIP 다운로드">Download ZIP</button></section>
+</main>
+<footer><span data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</span> · <a href="../privacy/">Privacy</a></footer>
+<script src="../app.js"></script><script type="module" src="/batch/batch-page.mjs"></script>
+</body></html>
