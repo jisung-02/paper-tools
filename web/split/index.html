@@ -111,7 +111,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     return;
   }
   const file = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(file, ranges.value.trim());
+  const r = await runWasm(file, ranges.value.trim());
   finish(r, "pages.pdf", err);
 }));
 </script>

@@ -108,7 +108,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     return;
   }
   const file = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(file, parseInt(after.value, 10) || 0, parseInt(count.value, 10) || 1);
+  const r = await runWasm(file, parseInt(after.value, 10) || 0, parseInt(count.value, 10) || 1);
   finish(r, "blank-added.pdf", err);
 }));
 </script>

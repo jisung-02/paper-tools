@@ -2,10 +2,12 @@
 
 > Privacy-first PDF, image and document tools that run entirely in your browser. Files never leave your device — free, no signup, no installs.
 
-Paper Tools is a collection of 38 client-side file tools, live at https://papertools.dev . Every tool runs entirely in the tab and does all processing locally; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source.
+Paper Tools is a collection of 41 client-side file tools, live at https://papertools.dev . Every tool runs entirely in the tab and does all processing locally; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source.
 
 ## Tools
 
+- [PDF Workflow](https://papertools.dev/workflow/): Chain compatible PDF operations without downloading or duplicating intermediate files.
+- [Batch Automation](https://papertools.dev/batch/): Process supported files sequentially and stream the results into one ZIP.
 - [Merge](https://papertools.dev/merge/): Combine several PDFs into one, in order.
 - [Interleave](https://papertools.dev/interleave/): Merge front and back scans into correct page order.
 - [Split & Extract](https://papertools.dev/split/): Pull out just the pages you need into a new PDF.
@@ -26,7 +28,7 @@ Paper Tools is a collection of 38 client-side file tools, live at https://papert
 - [Unlock](https://papertools.dev/unlock/): Remove a known password from a PDF.
 - [Image Convert](https://papertools.dev/imgconv/): Convert images between PNG, JPG and GIF.
 - [PDF → Text](https://papertools.dev/pdftext/): Extract selectable text from a PDF to a .txt file.
-- [OCR](https://papertools.dev/ocr/): Recognize text in a scanned PDF or image (English or Korean) and download a .txt file.
+- [OCR](https://papertools.dev/ocr/): Recognize English or Korean in a scanned PDF or image and download TXT or a searchable PDF.
 - [PDF → Images](https://papertools.dev/pdf2img/): Render selected PDF pages as PNG or JPG images in a ZIP, with scale and JPG quality options.
 - [Extract Images](https://papertools.dev/pdfimages/): Pull embedded images out of a PDF into a ZIP.
 - [Text → PDF](https://papertools.dev/txt2pdf/): Turn text into a PDF, with Korean font support.
@@ -42,8 +44,9 @@ Paper Tools is a collection of 38 client-side file tools, live at https://papert
 - [Image Resize](https://papertools.dev/imgresize/): Shrink an image to a maximum width/height; never upscales.
 - [Stamp / Signature](https://papertools.dev/stamp/): Overlay a stamp or signature image onto PDF pages at a chosen position, size and opacity.
 - [Flatten PDF](https://papertools.dev/flatten/): Make visible annotation and form appearances part of the page content.
-- [Compare PDFs](https://papertools.dev/pdfdiff/): Compare the extracted text of two PDFs and download a diff report.
-- [Direct Send](https://papertools.dev/send/): Send a file straight from one device to another; the file moves only between the two devices and is never uploaded anywhere.
+- [Permanent Redaction](https://papertools.dev/redact/): Rasterize pages with selected areas removed so source text, annotations and metadata are not retained.
+- [Compare PDFs](https://papertools.dev/pdfdiff/): Compare extracted text or render a bounded visual diff with heatmaps and JSON/PNG export.
+- [Direct Send](https://papertools.dev/send/): Send multiple files directly between two devices with integrity checks and same-tab resume; files are never uploaded anywhere.
 
 ## Key facts
 
@@ -55,6 +58,6 @@ Paper Tools is a collection of 38 client-side file tools, live at https://papert
 - Document-to-PDF conversions (Word, Hangul/HWPX, old Hangul/HWP, Markdown) are text-only — layout, tables and images are not preserved.
 - PDF → Word and PDF → Hangul are also text-only: the PDF's text is extracted and rebuilt as paragraphs, with no layout, images or tables preserved.
 - Excel → CSV keeps date cells as their raw Excel serial number, not a calendar date.
-- Compare PDFs compares extracted text only, not visual layout.
+- Compare PDFs supports both extracted-text and visual page comparison.
 - OCR supports English and Korean text and works best on clean, high-resolution scans; handwriting recognition is unreliable. Like every other tool, all processing (and loading of any supporting data) stays on papertools.dev — nothing is ever fetched from a third-party server.
 - Direct Send needs both devices to be reachable from each other directly, so it usually only works when they're on the same Wi-Fi or local network; there's no server that helps them find each other across different networks.

@@ -115,7 +115,7 @@ btn.addEventListener("click", () => run(btn, async () => {
   }
   const file = await fileBytes(fileDz.files[0]);
   const [w, h] = size.value.split(",").map(Number);
-  const r = pdfRun(file, ranges.value.trim(), w, h);
+  const r = await runWasm(file, ranges.value.trim(), w, h);
   finish(r, "resized.pdf", err);
 }));
 </script>

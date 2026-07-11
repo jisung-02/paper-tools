@@ -111,7 +111,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     return;
   }
   const file = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(file, format.value, parseFloat(fontSize.value) || 11);
+  const r = await runWasm(file, format.value, parseFloat(fontSize.value) || 11);
   finish(r, "numbered.pdf", err);
 }));
 </script>

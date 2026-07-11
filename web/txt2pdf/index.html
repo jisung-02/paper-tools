@@ -127,7 +127,7 @@ fileInput.addEventListener("change", async () => {
 btn.addEventListener("click", () => run(btn, async () => {
   const text = txt.value;
   if (!text.trim()) { showErr(err, t("Enter some text.", "텍스트를 입력하세요.")); return; }
-  const r = pdfRun(text, fontBytes, parseInt(size.value) || 11);
+  const r = await runWasm(text, fontBytes, parseInt(size.value) || 11);
   finish(r, "text.pdf", err);
 }));
 </script>

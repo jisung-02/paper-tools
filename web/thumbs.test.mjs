@@ -3,7 +3,7 @@
 // Run with: node --test web/thumbs.test.mjs
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { formatOrder, formatRanges, parseRanges } from "./thumbs.js";
+import { createPageState, formatOrder, formatRanges, pageStateMove, pageStateSelect, pageStateValue, parseRanges } from "./thumbs.js";
 
 test("parseRanges: single pages", () => {
   assert.deepEqual(parseRanges("1,3,5", 10), [1, 3, 5]);
@@ -82,4 +82,22 @@ test("round-trip: formatOrder output re-parses to the same order", () => {
   assert.equal(text, "4,2,1,3");
   const parsed = parseRanges(text, total);
   assert.deepEqual(parsed, order);
+});
+
+test("page state preserves order and selections beyond the thumbnail limit", () => {
+  const order = [500, ...Array.from({ length: 499 }, (_, i) => i + 1)];
+  const state = createPageState(500, "reorder", order.join(","));
+  assert.equal(state.totalPageCount, 500);
+  assert.equal(state.order.length, 500);
+  assert.equal(state.order[0], 500);
+  pageStateMove(state, 201, 2);
+  assert.equal(state.order[2], 201);
+  assert.equal(pageStateValue(state, "reorder").split(",").length, 500);
+});
+
+test("page state keeps selected pages 199/200/201/500", () => {
+  const state = createPageState(500, "split", "199,200,201,500");
+  assert.deepEqual([...state.selected], [199, 200, 201, 500]);
+  pageStateSelect(state, 200, false);
+  assert.equal(pageStateValue(state, "split"), "199,201,500");
 });

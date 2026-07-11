@@ -1,3 +1,5 @@
+import { createPdfRenderer } from "./pdf-renderer.mjs";
+
 /* web/thumbs.js — progressive-enhancement page-thumbnail grid shared by the
    Reorder, Remove and Split & Extract tools. Loaded via a per-page
    <script type="module"> (pdf.js is ESM-only). The grid never becomes the
@@ -14,6 +16,7 @@
      container   empty <div hidden> to render the grid into (per-page markup) */
 
 let pdfjsLibPromise = null;
+let pdfRendererPromise = null;
 function loadPdfjs() {
   if (!pdfjsLibPromise) {
     pdfjsLibPromise = import("/vendor/pdfjs/pdf.mjs").then((mod) => {
@@ -24,8 +27,48 @@ function loadPdfjs() {
   return pdfjsLibPromise;
 }
 
+function loadPdfRenderer() {
+  if (!pdfRendererPromise) {
+    pdfRendererPromise = loadPdfjs().then((pdfjs) => createPdfRenderer(pdfjs, {
+      createCanvas: () => document.createElement("canvas"),
+    }));
+  }
+  return pdfRendererPromise;
+}
+
 const MAX_PAGES = 200;
 const THUMB_WIDTH = 140;
+
+// The thumbnail grid is only a view. Keep the complete document state in
+// plain arrays so pages beyond the 200-thumbnail preview cannot be lost.
+export function createPageState(total, mode, value = "") {
+  const count = Number.isInteger(total) && total > 0 ? total : 0;
+  const order = Array.from({ length: count }, (_, i) => i + 1);
+  const parsed = parseRanges(value, count);
+  if (mode === "reorder" && parsed && parsed.length === count && new Set(parsed).size === count) order.splice(0, order.length, ...parsed);
+  const selected = new Set(mode === "reorder" || !parsed ? [] : parsed);
+  return { totalPageCount: count, order, selected };
+}
+
+export function pageStateValue(state, mode) {
+  if (mode === "reorder") return formatOrder(state.order);
+  return formatRanges(Array.from(state.selected));
+}
+
+export function pageStateSelect(state, page, selected = true) {
+  if (page >= 1 && page <= state.totalPageCount) {
+    if (selected) state.selected.add(page); else state.selected.delete(page);
+  }
+  return state;
+}
+
+export function pageStateMove(state, page, targetIndex) {
+  const from = state.order.indexOf(page);
+  if (from < 0 || targetIndex < 0 || targetIndex >= state.order.length) return state;
+  state.order.splice(from, 1);
+  state.order.splice(targetIndex, 0, page);
+  return state;
+}
 
 /* ---------------------------------------------------------- range helpers --- */
 
@@ -110,6 +153,8 @@ function setup(config) {
   hintEl.className = "hint thumbhint";
   const noticeEl = document.createElement("p");
   noticeEl.className = "hint thumbnotice";
+  noticeEl.setAttribute("role", "status");
+  noticeEl.setAttribute("aria-live", "polite");
   noticeEl.hidden = true;
   const cellsEl = document.createElement("div");
   cellsEl.className = "thumbcells";
@@ -120,6 +165,7 @@ function setup(config) {
 
   let currentDoc = null;
   let pageCount = 0;
+  let pageState = null;
   let loadToken = 0;
   let draggingEl = null;
 
@@ -132,11 +178,15 @@ function setup(config) {
   function writeFromGrid() {
     const cells = Array.from(cellsEl.children);
     if (config.mode === "reorder") {
-      input.value = formatOrder(cells.map((c) => Number(c.dataset.page)));
+      const visible = cells.map((c) => Number(c.dataset.page));
+      const visibleSet = new Set(visible);
+      const tail = pageState.order.filter((n) => !visibleSet.has(n));
+      pageState.order = visible.concat(tail);
+      input.value = pageStateValue(pageState, config.mode);
     } else {
       const cls = config.mode === "remove" ? "removed" : "selected";
-      const picked = cells.filter((c) => c.classList.contains(cls)).map((c) => Number(c.dataset.page));
-      input.value = picked.length ? formatRanges(picked) : "";
+      cells.forEach((c) => pageStateSelect(pageState, Number(c.dataset.page), c.classList.contains(cls)));
+      input.value = pageStateValue(pageState, config.mode);
     }
   }
 
@@ -146,19 +196,20 @@ function setup(config) {
     if (config.mode === "reorder") {
       if (!parsed) return;
       if (parsed.length !== pageCount || new Set(parsed).size !== pageCount) return;
+      pageState.order = parsed;
       const byPage = new Map(Array.from(cellsEl.children).map((c) => [Number(c.dataset.page), c]));
       const frag = document.createDocumentFragment();
-      for (const n of parsed) {
+      for (const n of pageState.order.slice(0, MAX_PAGES)) {
         const c = byPage.get(n);
         if (c) frag.appendChild(c);
       }
       cellsEl.appendChild(frag);
     } else {
       if (!parsed) return;
-      const set = new Set(parsed);
+      pageState.selected = new Set(parsed);
       const cls = config.mode === "remove" ? "removed" : "selected";
       Array.from(cellsEl.children).forEach((c) => {
-        c.classList.toggle(cls, set.has(Number(c.dataset.page)));
+        c.classList.toggle(cls, pageState.selected.has(Number(c.dataset.page)));
       });
     }
   }
@@ -167,7 +218,28 @@ function setup(config) {
     const cell = e.currentTarget;
     const cls = config.mode === "remove" ? "removed" : "selected";
     cell.classList.toggle(cls);
+    cell.setAttribute("aria-pressed", String(cell.classList.contains(cls)));
     writeFromGrid();
+  }
+
+  function onCellKeydown(e) {
+    const cell = e.currentTarget;
+    const page = Number(cell.dataset.page);
+    if (config.mode === "reorder" && (e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "ArrowRight" || e.key === "ArrowDown")) {
+      e.preventDefault();
+      const delta = e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 1;
+      const index = pageState.order.indexOf(page);
+      pageStateMove(pageState, page, index + delta);
+      const target = cellsEl.children[index + delta];
+      if (target) target.after(cell);
+      writeFromGrid();
+      cell.focus();
+      return;
+    }
+    if (config.mode !== "reorder" && (e.key === " " || e.key === "Enter")) {
+      e.preventDefault();
+      onCellClick(e);
+    }
   }
 
   function onDragStart(e) {
@@ -220,6 +292,11 @@ function setup(config) {
     } else {
       cell.addEventListener("click", onCellClick);
     }
+    cell.tabIndex = 0;
+    cell.setAttribute("role", "button");
+    cell.setAttribute("aria-label", window.t("Page " + n, "페이지 " + n));
+    cell.addEventListener("keydown", onCellKeydown);
+    if (config.mode !== "reorder") cell.setAttribute("aria-pressed", "false");
     const canvas = document.createElement("canvas");
     cell.appendChild(canvas);
     const num = document.createElement("span");
@@ -231,20 +308,10 @@ function setup(config) {
 
   async function renderThumb(doc, n, canvas) {
     try {
-      const page = await doc.getPage(n);
-      const viewport1 = page.getViewport({ scale: 1 });
-      const scale = THUMB_WIDTH / viewport1.width;
       const dpr = window.devicePixelRatio || 1;
-      const viewport = page.getViewport({ scale: scale * dpr });
-      canvas.width = Math.max(1, Math.ceil(viewport.width));
-      canvas.height = Math.max(1, Math.ceil(viewport.height));
+      const rendered = await doc.renderPage(n, { canvas, width: THUMB_WIDTH, pixelRatio: dpr });
       canvas.style.width = THUMB_WIDTH + "px";
-      canvas.style.height = Math.round(viewport1.height * scale) + "px";
-      const ctx = canvas.getContext("2d", { alpha: false });
-      if (!ctx) return;
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      await page.render({ canvasContext: ctx, viewport }).promise;
+      canvas.style.height = Math.round(rendered.displayHeight) + "px";
     } catch (e) {
       // Leave this one cell blank on a per-page render failure.
     }
@@ -256,7 +323,7 @@ function setup(config) {
 
     if (currentDoc) {
       try {
-        currentDoc.destroy();
+        await currentDoc.destroy();
       } catch (e) {}
       currentDoc = null;
     }
@@ -268,26 +335,21 @@ function setup(config) {
     if (!files || files.length === 0) return;
 
     try {
-      const pdfjsLib = await loadPdfjs();
+      const renderer = await loadPdfRenderer();
       if (token !== loadToken) return;
       const buf = await files[0].arrayBuffer();
       const data = new Uint8Array(buf);
-      const task = pdfjsLib.getDocument({
-        data,
-        cMapUrl: "/vendor/pdfjs/cmaps/",
-        cMapPacked: true,
-        standardFontDataUrl: "/vendor/pdfjs/standard_fonts/",
-      });
-      const doc = await task.promise;
+      const doc = await renderer.open(data);
       if (token !== loadToken) {
-        doc.destroy();
+        await doc.destroy();
         return;
       }
       currentDoc = doc;
 
       const total = doc.numPages;
-      const count = Math.min(total, MAX_PAGES);
-      pageCount = count;
+      pageCount = total;
+      pageState = createPageState(total, config.mode, input.value);
+      const visiblePages = pageState.order.slice(0, MAX_PAGES);
 
       hintEl.textContent = HINTS[config.mode]();
       if (total > MAX_PAGES) {
@@ -296,7 +358,7 @@ function setup(config) {
       }
       container.hidden = false;
 
-      for (let n = 1; n <= count; n++) {
+      for (const n of visiblePages) {
         if (token !== loadToken) return;
         const cell = buildCell(n);
         cellsEl.appendChild(cell);
@@ -307,7 +369,7 @@ function setup(config) {
     } catch (e) {
       if (currentDoc) {
         try {
-          currentDoc.destroy();
+          await currentDoc.destroy();
         } catch (err) {}
         currentDoc = null;
       }
@@ -326,4 +388,5 @@ function setup(config) {
       syncGridFromInput();
     } catch (e) {}
   });
+  window.addEventListener("pagehide", () => { currentDoc?.destroy(); }, { once: true });
 }

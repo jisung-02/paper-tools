@@ -133,7 +133,7 @@ btn.addEventListener("click", () => run(btn, async () => {
   }
   await fontReady;
   const file = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(file, text.value, Math.min(400, Math.max(4, parseFloat(fontSize.value) || 48)), Math.min(1, Math.max(0.05, parseFloat(opacity.value) || 0.3)), diagonal.checked, fontBytes);
+  const r = await runWasm(file, text.value, Math.min(400, Math.max(4, parseFloat(fontSize.value) || 48)), Math.min(1, Math.max(0.05, parseFloat(opacity.value) || 0.3)), diagonal.checked, fontBytes);
   finish(r, "watermarked.pdf", err);
 }));
 </script>

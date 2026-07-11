@@ -102,7 +102,7 @@ btn.addEventListener("click", () => run(btn, async () => {
     return;
   }
   const bytes = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(bytes);
+  const r = await runWasm(bytes);
   finish(r, "converted.hwpx", err, "application/hwp+zip");
 }));
 </script>

@@ -22,16 +22,16 @@ License: BSD-2-Clause (see ./LICENSE, from the package's LICENSE.md;
 
 Files (from dist/):
   lib.js                        95,394 bytes (97,684 on disk incl. no BOM)
-    sha256: ed6b39d775484081affa3d21bf491f705673c2a3fd616b2f7bce9020ed8eba1
+    sha256: ed6b39d775484081affa3d21bf491f705673c2a3fd616b2f7bce9020ed8eba13
   tesseract-worker.js            93,353 bytes
-    sha256: a2773a8a09bd51ce066092980f8243a08cbda37277d7ad577e5cfda0435b656
+    sha256: a2773a8a09bd51ce066092980f8243a08cbda37277d7ad577e5cfda0435b656a
   tesseract-core.wasm         1,839,004 bytes  (SIMD build)
-    sha256: 3822dc6ee83d507f2bd2f83b97a3dd5dabf3ea71a9836d951602c9054615137
+    sha256: 3822dc6ee83d507f2bd2f83b97a3dd5dabf3ea71a9836d951602c9054615137e
   tesseract-core-fallback.wasm 1,808,229 bytes  (non-SIMD build; lib.js
     feature-detects and picks whichever the browser supports)
-    sha256: 94d9ce820d31a75814d0b4e5d099405b8738b11633bcef8c0d078a53b2b1ded
+    sha256: 94d9ce820d31a75814d0b4e5d099405b8738b11633bcef8c0d078a53b2b1ded2
   LICENSE (package LICENSE.md)     1,334 bytes
-    sha256: 4b2021f2e93e321ff8bece6f84c221109dd0f72475eaeed37c5929cc5c0a11a
+    sha256: 4b2021f2e93e321ff8bece6f84c221109dd0f72475eaeed37c5929cc5c0a11aa
 
 Not vendored (TypeScript declaration files only, unused at runtime):
   dist/index.d.ts, dist/ocr-client.d.ts, dist/ocr-engine.d.ts,
@@ -48,9 +48,9 @@ License: Apache-2.0 (see the tessdata_fast repo's own LICENSE; not mirrored
   here — link above is authoritative).
 
   eng.traineddata   4,113,088 bytes
-    sha256: 7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b
+    sha256: 7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2
   kor.traineddata   1,677,415 bytes
-    sha256: 6b85e11d9bbf07863b97b3523b1b112844c43e713df8b66418a081fd1060b3b
+    sha256: 6b85e11d9bbf07863b97b3523b1b112844c43e713df8b66418a081fd1060b3b2
 
 Both files' leading bytes match the Tesseract combined-traineddata format
 (a little-endian section-count/name-table header, not a recognizable "magic

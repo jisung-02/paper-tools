@@ -109,7 +109,7 @@ const err = document.getElementById("err");
 const left = document.getElementById("left");
 const bottom = document.getElementById("bottom");
 const right = document.getElementById("right");
-const top = document.getElementById("top");
+const topInput = document.getElementById("top");
 
 const MM_TO_PT = 72 / 25.4;
 
@@ -122,8 +122,8 @@ btn.addEventListener("click", () => run(btn, async () => {
   const l = (parseFloat(left.value) || 0) * MM_TO_PT;
   const b = (parseFloat(bottom.value) || 0) * MM_TO_PT;
   const rr = (parseFloat(right.value) || 0) * MM_TO_PT;
-  const tt = (parseFloat(top.value) || 0) * MM_TO_PT;
-  const r = pdfRun(file, "", l, b, rr, tt);
+  const tt = (parseFloat(topInput.value) || 0) * MM_TO_PT;
+  const r = await runWasm(file, "", l, b, rr, tt);
   finish(r, "cropped.pdf", err);
 }));
 </script>

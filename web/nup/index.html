@@ -110,7 +110,7 @@ btn.addEventListener("click", () => run(btn, async () => {
   }
   const per = parseInt(document.querySelector('input[name="per"]:checked').value, 10);
   const file = await fileBytes(fileDz.files[0]);
-  const r = pdfRun(file, per);
+  const r = await runWasm(file, per);
   finish(r, "nup.pdf", err);
 }));
 </script>

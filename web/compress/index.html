@@ -183,7 +183,7 @@ btn.addEventListener("click", () => run(btn, async () => {
       btn.textContent = t("Compressing…", "압축 중…") + " (" + (i + 1) + "/" + inputFiles.length + ")";
     }
     const file = await fileBytes(inputFile);
-    const r = pdfRun(file, parseInt(quality.value, 10), parseInt(maxWidth.value, 10), grayscale.checked);
+    const r = await runWasm(file, parseInt(quality.value, 10), parseInt(maxWidth.value, 10), grayscale.checked);
     if (r.error) {
       if (inputFiles.length === 1) {
         showErr(err, r.error);
