@@ -1,0 +1,8 @@
+.redact-warning { border-left:4px solid var(--err); padding:.75rem 1rem; background:var(--hover) }
+.redact-toolbar { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; margin:1rem 0 }
+.redact-canvas-wrap { position:relative; width:fit-content; max-width:100%; overflow:auto; border:1px solid var(--border); background:#fff }
+.redact-canvas-wrap canvas { display:block; max-width:none }
+#redactOverlay { position:absolute; inset:0; cursor:crosshair; touch-action:none }
+.redact-confirm { display:block; margin:1rem 0 }
+.redact-actions { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center }
+#redactVerified { padding:.75rem; border:1px solid var(--border); border-radius:.5rem }

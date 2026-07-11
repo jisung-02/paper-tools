@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="/manifest.webmanifest"><title>Permanently Redact PDF — free & private | Paper Tools</title>
+<meta name="description" content="Permanently remove selected PDF regions by rebuilding pages as a verified raster-only PDF in your browser.">
+<script src="/theme.js"></script><link rel="stylesheet" href="../style.css"><link rel="stylesheet" href="/redact/redact.css">
+<link rel="preload" href="./redact.wasm" as="fetch" crossorigin>
+<!-- hreflang -->
+<link rel="alternate" hreflang="en" href="https://papertools.dev/redact/">
+<link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/redact/">
+<link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/redact/">
+<link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/redact/">
+<link rel="alternate" hreflang="es" href="https://papertools.dev/es/redact/">
+<link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/redact/">
+<link rel="alternate" hreflang="de" href="https://papertools.dev/de/redact/">
+<link rel="alternate" hreflang="x-default" href="https://papertools.dev/redact/">
+</head><body>
+<header><a class="wordmark" href="../">Paper Tools</a><nav class="langtoggle"><button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button></nav></header>
+<main>
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+<h1 data-i18n data-en="Permanent PDF Redaction" data-ko="PDF 영구 삭제">Permanent PDF Redaction</h1>
+<p class="desc" data-i18n data-en="Select regions to remove. The result is rebuilt from pixels and contains none of the source PDF objects." data-ko="삭제할 영역을 선택합니다. 결과는 픽셀만으로 새로 만들어 원본 PDF 객체를 포함하지 않습니다.">Select regions to remove. The result is rebuilt from pixels and contains none of the source PDF objects.</p>
+<p class="redact-warning" data-i18n data-en="This safe mode removes selectable text, links, forms, annotations, signatures and accessibility structure from every page." data-ko="이 안전 모드는 모든 페이지의 선택 가능한 텍스트·링크·양식·주석·서명·접근성 구조를 제거합니다.">This safe mode removes selectable text, links, forms, annotations, signatures and accessibility structure from every page.</p>
+<label for="redactInput">PDF</label><div class="drop" id="redactDrop"><span data-i18n data-en="Drag a PDF here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag a PDF here, or click to choose</span><input id="redactInput" type="file" accept="application/pdf"><ul class="filelist"></ul></div>
+<p id="status">Loading tool…</p><p class="err" id="err"></p>
+<section id="redactEditor" hidden>
+<div class="redact-toolbar"><button type="button" id="redactPrev">←</button><span id="redactPage"></span><button type="button" id="redactNext">→</button><button type="button" id="redactClear" data-i18n data-en="Clear page" data-ko="현재 페이지 지우기">Clear page</button><button type="button" id="redactClearAll" data-i18n data-en="Clear all" data-ko="전체 지우기">Clear all</button></div>
+<div class="redact-canvas-wrap"><canvas id="redactPageCanvas"></canvas><canvas id="redactOverlay" aria-label="Drag to select permanent redaction areas"></canvas></div>
+<p id="redactCount" role="status" aria-live="polite"></p>
+<label class="redact-confirm"><input id="redactConfirm" type="checkbox"> <span data-i18n data-en="I understand the output is raster-only and may be larger." data-ko="결과가 이미지 전용이며 파일이 커질 수 있음을 이해했습니다.">I understand the output is raster-only and may be larger.</span></label>
+<div class="redact-actions"><button class="primary" id="redactRun" type="button" data-needs-wasm disabled data-i18n data-en="Build verified redacted PDF" data-ko="검증된 삭제 PDF 만들기">Build verified redacted PDF</button><button id="redactCancel" type="button" disabled data-i18n data-en="Cancel" data-ko="취소">Cancel</button></div>
+<p id="redactVerified" hidden data-i18n data-en="Verified: the output contains only fresh page images and whitelisted PDF objects." data-ko="검증 완료: 출력에는 새 페이지 이미지와 허용된 PDF 객체만 있습니다.">Verified: the output contains only fresh page images and whitelisted PDF objects.</p>
+</section>
+</main>
+<footer><span data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</span> · <a href="../privacy/">Privacy</a></footer>
+<script src="../wasm_exec.js?v=2"></script><script src="../app.js"></script><script>boot("./redact.wasm");</script><script type="module" src="/redact/redact.mjs"></script>
+</body></html>
