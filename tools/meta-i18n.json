@@ -1,11 +1,11 @@
 {
   "": {
-    "ko": {"title": "Paper Tools — 브라우저 속 PDF 도구", "description": "34가지 파일 도구. 업로드도 설치도 필요 없이, 이 탭에서 바로 사용하세요."},
-    "ja": {"title": "Paper Tools — ブラウザ内のPDFツール", "description": "34種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。"},
-    "zh": {"title": "Paper Tools — 浏览器内的PDF工具", "description": "34 款文件工具。无需上传,无需安装——就在这个标签页中直接使用。"},
-    "es": {"title": "Paper Tools — PDF en tu navegador", "description": "34 herramientas de archivos. Sin subidas ni instalaciones: todo aquí mismo, en esta pestaña."},
-    "fr": {"title": "Paper Tools — PDF dans votre navigateur", "description": "34 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet."},
-    "de": {"title": "Paper Tools — PDF-Tools im Browser", "description": "34 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab."}
+    "ko": {"title": "Paper Tools — 브라우저 속 PDF 도구", "description": "41가지 파일 도구. 업로드도 설치도 필요 없이, 이 탭에서 바로 사용하세요."},
+    "ja": {"title": "Paper Tools — ブラウザ内のPDFツール", "description": "41種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。"},
+    "zh": {"title": "Paper Tools — 浏览器内的PDF工具", "description": "41 款文件工具。无需上传,无需安装——就在这个标签页中直接使用。"},
+    "es": {"title": "Paper Tools — PDF en tu navegador", "description": "41 herramientas de archivos. Sin subidas ni instalaciones: todo aquí mismo, en esta pestaña."},
+    "fr": {"title": "Paper Tools — PDF dans votre navigateur", "description": "41 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet."},
+    "de": {"title": "Paper Tools — PDF-Tools im Browser", "description": "41 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab."}
   },
   "privacy": {
     "ko": {"title": "개인정보 처리방침 — Paper Tools", "description": "Paper Tools가 파일을 다루는 방식: 모든 작업이 브라우저에서 실행되며, 어떤 파일도 업로드되지 않습니다."},
@@ -296,27 +296,51 @@
     "de": {"title": "Excel-zu-CSV-Konverter — kostenlos & privat | Paper Tools", "description": "Excel online in CSV umwandeln — kostenlos & privat. .xlsx-Tabellenblätter direkt im Browser in CSV (oder ein ZIP mit CSV-Dateien) umwandeln; Dateien werden nie hochgeladen, keine Anmeldung nötig."}
   },
   "pdfdiff": {
-    "ko": {"title": "PDF 비교 — 무료·비공개 | Paper Tools", "description": "온라인에서 두 PDF를 비교하세요 — 무료이고 비공개입니다. 두 버전 사이에서 달라진 텍스트를 브라우저에서 바로 정확히 확인할 수 있으며, 파일은 업로드되지 않고 회원가입도 필요 없습니다."},
-    "ja": {"title": "PDF比較 — 無料・非公開 | Paper Tools", "description": "オンラインで2つのPDFを比較 — 無料・非公開。2つのバージョン間で変更されたテキストをブラウザ内で正確に確認でき、ファイルはアップロードされず、登録も不要です。"},
-    "zh": {"title": "比较 PDF — 免费且私密 | Paper Tools", "description": "在线比较两个 PDF——免费且私密。在浏览器中直接准确查看两个版本之间发生了哪些文本变化;文件绝不上传,无需注册。"},
-    "es": {"title": "Comparar PDFs — gratis y privado | Paper Tools", "description": "Compara dos PDF en línea — gratis y privado. Descubre exactamente qué texto ha cambiado entre dos versiones directamente en tu navegador; los archivos nunca se suben, sin registro."},
-    "fr": {"title": "Comparer des PDF — gratuit et privé | Paper Tools", "description": "Comparez deux PDF en ligne — gratuit et privé. Découvrez exactement quel texte a changé entre deux versions directement dans votre navigateur ; les fichiers ne sont jamais envoyés, sans inscription."},
-    "de": {"title": "PDFs vergleichen — kostenlos & privat | Paper Tools", "description": "Zwei PDFs online vergleichen — kostenlos & privat. Sehen Sie genau, welcher Text sich zwischen zwei Versionen geändert hat, direkt im Browser; Dateien werden nie hochgeladen, keine Anmeldung nötig."}
+    "ko": {"title": "PDF 비교 — 무료·비공개 | Paper Tools", "description": "두 PDF의 텍스트와 시각적 차이를 브라우저에서 비교하세요. 변경 페이지, 픽셀 영역, 히트맵과 JSON 보고서를 확인할 수 있으며 파일은 업로드되지 않습니다."},
+    "ja": {"title": "PDF比較 — 無料・非公開 | Paper Tools", "description": "2つのPDFのテキストと視覚的な差分をブラウザ内で比較できます。変更ページ、ピクセル領域、ヒートマップ、JSONレポートを確認でき、ファイルはアップロードされません。"},
+    "zh": {"title": "比较 PDF — 免费且私密 | Paper Tools", "description": "在浏览器中比较两个 PDF 的文字和视觉差异。可查看变化页面、像素区域、热图和 JSON 报告，文件绝不会上传。"},
+    "es": {"title": "Comparar PDFs — gratis y privado | Paper Tools", "description": "Compara el texto y las diferencias visuales de dos PDF en el navegador. Revisa páginas modificadas, regiones de píxeles, mapas de calor e informes JSON sin subir archivos."},
+    "fr": {"title": "Comparer des PDF — gratuit et privé | Paper Tools", "description": "Comparez le texte et les différences visuelles de deux PDF dans le navigateur. Examinez les pages modifiées, zones de pixels, cartes thermiques et rapports JSON sans envoyer de fichiers."},
+    "de": {"title": "PDFs vergleichen — kostenlos & privat | Paper Tools", "description": "Vergleiche Text und visuelle Unterschiede zweier PDFs im Browser. Prüfe geänderte Seiten, Pixelbereiche, Heatmaps und JSON-Berichte, ohne Dateien hochzuladen."}
   },
   "ocr": {
-    "ko": {"title": "OCR(문자 인식) — 무료·비공개 | Paper Tools", "description": "온라인에서 스캔한 PDF나 이미지의 글자를 인식하세요 — 무료이고 비공개입니다. 영어 또는 한국어 텍스트를 브라우저 안에서 바로 추출하며, 파일은 업로드되지 않습니다."},
-    "ja": {"title": "OCR(文字認識) — 無料・非公開 | Paper Tools", "description": "オンラインでスキャンしたPDFや画像から文字を認識 — 無料・非公開。英語または韓国語のテキストをブラウザ内で直接抽出します。ファイルはアップロードされません。"},
-    "zh": {"title": "OCR 文字识别 — 免费且私密 | Paper Tools", "description": "在线识别扫描版 PDF 或图片中的文字——免费且私密。直接在浏览器中提取英文或韩文文本；文件绝不上传。"},
-    "es": {"title": "OCR — extraer texto de escaneos, gratis y privado | Paper Tools", "description": "Reconoce texto en un PDF escaneado o una imagen en línea — gratis y privado. Extrae texto en inglés o coreano directamente en tu navegador; los archivos nunca se suben."},
-    "fr": {"title": "OCR — extraire le texte de scans, gratuit et privé | Paper Tools", "description": "Reconnaissez le texte d'un PDF scanné ou d'une image en ligne — gratuit et privé. Extrayez du texte en anglais ou en coréen directement dans votre navigateur ; les fichiers ne sont jamais envoyés."},
-    "de": {"title": "OCR — Text aus Scans erkennen, kostenlos & privat | Paper Tools", "description": "Text aus einem gescannten PDF oder Bild online erkennen — kostenlos & privat. Englischen oder koreanischen Text direkt im Browser extrahieren; Dateien werden nie hochgeladen."}
+    "ko": {"title": "OCR(문자 인식) — 무료·비공개 | Paper Tools", "description": "스캔한 PDF나 이미지에서 영어·한국어를 인식해 TXT 또는 검색 가능한 PDF를 브라우저에서 만드세요. 파일은 업로드되지 않습니다."},
+    "ja": {"title": "OCR(文字認識) — 無料・非公開 | Paper Tools", "description": "スキャンしたPDFや画像から英語・韓国語を認識し、TXTまたは検索可能なPDFをブラウザ内で作成できます。ファイルはアップロードされません。"},
+    "zh": {"title": "OCR 文字识别 — 免费且私密 | Paper Tools", "description": "在浏览器中识别扫描 PDF 或图片中的英文和韩文，并生成 TXT 或可搜索 PDF。文件绝不会上传。"},
+    "es": {"title": "OCR — extraer texto de escaneos, gratis y privado | Paper Tools", "description": "Reconoce inglés o coreano en un PDF escaneado o una imagen y crea un TXT o PDF con búsqueda en el navegador. Los archivos nunca se suben."},
+    "fr": {"title": "OCR — extraire le texte de scans, gratuit et privé | Paper Tools", "description": "Reconnaissez l'anglais ou le coréen dans un PDF scanné ou une image et créez un TXT ou PDF interrogeable dans le navigateur. Aucun fichier n'est envoyé."},
+    "de": {"title": "OCR — Text aus Scans erkennen, kostenlos & privat | Paper Tools", "description": "Erkenne englischen oder koreanischen Text in Scans und erstelle TXT oder ein durchsuchbares PDF im Browser. Dateien werden nie hochgeladen."}
   },
   "send": {
-    "ko": {"title": "다른 기기로 파일 전송 — 무료·비공개 | Paper Tools", "description": "다른 기기로 파일을 바로 보내세요 — 무료이고 비공개입니다. 파일은 두 기기 사이에서만 이동하며 어떤 서버에도 업로드되지 않고, 회원가입도 필요 없습니다."},
-    "ja": {"title": "他の端末に直接送信 — 無料・非公開 | Paper Tools", "description": "他の端末にファイルを直接送信 — 無料・非公開。ファイルは2台の端末の間だけを移動し、どのサーバーにもアップロードされず、登録も不要です。"},
-    "zh": {"title": "直接发送到其他设备 — 免费且私密 | Paper Tools", "description": "在线将文件直接发送到另一台设备——免费且私密。文件只在两台设备之间移动，绝不上传到任何服务器，也无需注册。"},
-    "es": {"title": "Enviar directamente a otro dispositivo — gratis y privado | Paper Tools", "description": "Envía un archivo directamente a otro dispositivo en línea — gratis y privado. El archivo se mueve solo entre los dos dispositivos y nunca se sube a ningún servidor; sin registro."},
-    "fr": {"title": "Envoyer directement vers un autre appareil — gratuit et privé | Paper Tools", "description": "Envoyez un fichier directement vers un autre appareil en ligne — gratuit et privé. Le fichier se déplace uniquement entre les deux appareils et n'est jamais envoyé à un serveur ; sans inscription."},
-    "de": {"title": "Direkt an ein anderes Gerät senden — kostenlos & privat | Paper Tools", "description": "Sende eine Datei online direkt an ein anderes Gerät — kostenlos & privat. Die Datei bewegt sich nur zwischen den beiden Geräten und wird niemals auf einen Server hochgeladen; keine Anmeldung nötig."}
+    "ko": {"title": "다른 기기로 파일 전송 — 무료·비공개 | Paper Tools", "description": "여러 파일을 다른 기기로 직접 보내고 연결이 끊기면 검증된 지점부터 재개하세요. 파일은 두 기기 사이에서만 이동하며 서버에 업로드되지 않습니다."},
+    "ja": {"title": "他の端末に直接送信 — 無料・非公開 | Paper Tools", "description": "複数ファイルを別の端末へ直接送り、切断後は検証済みの位置から再開できます。ファイルは2台の端末間だけを移動し、サーバーにはアップロードされません。"},
+    "zh": {"title": "直接发送到其他设备 — 免费且私密 | Paper Tools", "description": "将多个文件直接发送到另一台设备，并在断线后从已验证的位置继续。文件只在两台设备之间传输，绝不会上传到服务器。"},
+    "es": {"title": "Enviar directamente a otro dispositivo — gratis y privado | Paper Tools", "description": "Envía varios archivos directamente a otro dispositivo y reanuda desde el punto verificado tras una desconexión. Los archivos solo se mueven entre ambos dispositivos y nunca se suben."},
+    "fr": {"title": "Envoyer directement vers un autre appareil — gratuit et privé | Paper Tools", "description": "Envoyez plusieurs fichiers directement vers un autre appareil et reprenez au point vérifié après une déconnexion. Les fichiers circulent uniquement entre les deux appareils."},
+    "de": {"title": "Direkt an ein anderes Gerät senden — kostenlos & privat | Paper Tools", "description": "Sende mehrere Dateien direkt an ein anderes Gerät und setze nach einer Trennung am geprüften Punkt fort. Dateien werden nur zwischen den Geräten übertragen und nie hochgeladen."}
+  },
+  "workflow": {
+    "ko": {"title": "PDF 작업 파이프라인 — 무료·비공개 | Paper Tools", "description": "여러 PDF 작업을 하나의 파이프라인으로 연결하세요. 중간 결과를 다시 내려받거나 파일을 다시 선택하지 않아도 모든 처리가 브라우저 안에서 실행됩니다."},
+    "ja": {"title": "PDFワークフロー — 無料・非公開 | Paper Tools", "description": "複数のPDF処理を1つのワークフローに連結できます。中間結果の再ダウンロードやファイルの再選択は不要で、すべてブラウザ内で処理されます。"},
+    "zh": {"title": "PDF 工作流 — 免费且私密 | Paper Tools", "description": "将多个 PDF 操作串联成一个工作流。无需反复下载中间结果或重新选择文件，所有处理均在浏览器中完成。"},
+    "es": {"title": "Flujo de trabajo PDF — gratis y privado | Paper Tools", "description": "Encadena varias operaciones PDF en un solo flujo. No necesitas descargar resultados intermedios ni volver a elegir el archivo; todo se procesa en el navegador."},
+    "fr": {"title": "Flux de travail PDF — gratuit et privé | Paper Tools", "description": "Enchaînez plusieurs opérations PDF dans un seul flux. Inutile de télécharger les résultats intermédiaires ou de resélectionner le fichier : tout s'exécute dans le navigateur."},
+    "de": {"title": "PDF-Arbeitsablauf — kostenlos & privat | Paper Tools", "description": "Verknüpfe mehrere PDF-Schritte zu einem Arbeitsablauf. Zwischenergebnisse müssen weder heruntergeladen noch Dateien erneut ausgewählt werden; alles läuft im Browser."}
+  },
+  "batch": {
+    "ko": {"title": "PDF 일괄 자동화 — 무료·비공개 | Paper Tools", "description": "여러 파일에 같은 PDF 작업을 순차 적용하고 결과를 ZIP 하나로 받으세요. 파일은 업로드되지 않으며 브라우저에서 제한된 메모리로 처리됩니다."},
+    "ja": {"title": "PDF一括処理 — 無料・非公開 | Paper Tools", "description": "複数ファイルに同じPDF処理を順番に適用し、結果を1つのZIPで取得できます。ファイルはアップロードされず、ブラウザ内でメモリを制限して処理します。"},
+    "zh": {"title": "PDF 批量自动化 — 免费且私密 | Paper Tools", "description": "依次对多个文件应用相同的 PDF 操作，并将结果打包为一个 ZIP。文件不会上传，浏览器会在受限内存中完成处理。"},
+    "es": {"title": "Automatización PDF por lotes — gratis y privada | Paper Tools", "description": "Aplica la misma operación PDF a varios archivos de forma secuencial y descarga los resultados en un ZIP. Los archivos no se suben y el navegador limita la memoria usada."},
+    "fr": {"title": "Automatisation PDF par lots — gratuite et privée | Paper Tools", "description": "Appliquez la même opération PDF à plusieurs fichiers successivement et récupérez les résultats dans un ZIP. Aucun fichier n'est envoyé et la mémoire reste limitée dans le navigateur."},
+    "de": {"title": "PDF-Stapelautomatisierung — kostenlos & privat | Paper Tools", "description": "Wende denselben PDF-Schritt nacheinander auf mehrere Dateien an und lade die Ergebnisse als ZIP herunter. Dateien werden nicht hochgeladen und der Browser begrenzt den Speicherverbrauch."}
+  },
+  "redact": {
+    "ko": {"title": "PDF 영구 삭제 — 무료·비공개 | Paper Tools", "description": "PDF의 민감한 영역을 영구적으로 가리세요. 페이지를 이미지로 다시 만들어 원본 텍스트·주석·메타데이터가 결과 파일에 남지 않도록 브라우저 안에서 처리합니다."},
+    "ja": {"title": "PDFの完全墨消し — 無料・非公開 | Paper Tools", "description": "PDFの機密領域を完全に墨消しします。ページを画像として再構築し、元のテキスト、注釈、メタデータが出力に残らないようブラウザ内で処理します。"},
+    "zh": {"title": "PDF 永久遮盖 — 免费且私密 | Paper Tools", "description": "永久遮盖 PDF 中的敏感区域。页面会重新构建为图像，确保原始文字、注释和元数据不会保留在输出文件中，所有处理均在浏览器内完成。"},
+    "es": {"title": "Redacción permanente de PDF — gratis y privada | Paper Tools", "description": "Oculta permanentemente zonas sensibles de un PDF. Las páginas se reconstruyen como imágenes para que el texto, las anotaciones y los metadatos originales no permanezcan en el resultado; todo se procesa en el navegador."},
+    "fr": {"title": "Caviardage permanent de PDF — gratuit et privé | Paper Tools", "description": "Masquez définitivement les zones sensibles d'un PDF. Les pages sont reconstruites en images afin que le texte, les annotations et les métadonnées d'origine ne restent pas dans le résultat, entièrement dans le navigateur."},
+    "de": {"title": "Dauerhafte PDF-Schwärzung — kostenlos & privat | Paper Tools", "description": "Schwärze vertrauliche PDF-Bereiche dauerhaft. Seiten werden als Bilder neu aufgebaut, damit ursprünglicher Text, Anmerkungen und Metadaten nicht in der Ausgabe verbleiben; alles läuft im Browser."}
   }
 }

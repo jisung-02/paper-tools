@@ -1,11 +1,14 @@
 # Built WebAssembly — produced by build.sh, rebuilt in CI on deploy
 web/*/*.wasm
+.staging/
 web/wasm_exec.js
+web/operation-catalog.json
 
 # Stray local build output (go build without -o drops binaries in the repo root)
 /hwp2pdf
 /pdfimages
 /pdftext
+/ocrpdf
 
 # OS / editor cruft
 .DS_Store
@@ -14,6 +17,10 @@ web/wasm_exec.js
 # Local tool state / caches
 .gstack/
 .wrangler/
+.worktrees/
+node_modules/
+test-results/
+playwright-report/
 web/.gstack/
 /web/ko/
 /web/ja/

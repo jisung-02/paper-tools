@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  TINYGO_VERSION: 0.41.1
+  TINYGO_AMD64_SHA256: 901fbccffc61adb111656d1f907dfc21b6c499ca841b115866a0d6de2d835fbe
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Install TinyGo
+        run: |
+          curl -fsSL -o /tmp/tinygo.deb https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/tinygo_${TINYGO_VERSION}_amd64.deb
+          echo "${TINYGO_AMD64_SHA256}  /tmp/tinygo.deb" | sha256sum -c -
+          sudo dpkg -i /tmp/tinygo.deb
+      - name: Install binaryen (wasm-opt)
+        run: sudo apt-get update && sudo apt-get install -y binaryen
+      - run: go test ./...
+      - run: go test -race ./...
+      - run: go vet ./...
+      - run: tinygo test ./pdf ./xlsx ./imgconv
+      - run: GOOS=js GOARCH=wasm go build ./wasm/...
+      - name: Build deployment WebAssembly
+        run: JOBS=2 ./build.sh
+      - run: node tools/check-wasm-size.mjs web
+      - run: node --test
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run test:e2e
+      - run: node tools/verify-vendor.mjs
+      - run: go test -run '^$' -bench . -benchmem ./pdf
+      - run: node tools/stage-assets.mjs --hash web /tmp/yaho-staging/web
+      - run: git diff --check

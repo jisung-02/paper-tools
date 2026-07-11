@@ -9,8 +9,9 @@ command -v tinygo >/dev/null 2>&1 || {
 
 WASM_EXEC="$(tinygo env TINYGOROOT)/targets/wasm_exec.js"
 cp "$WASM_EXEC" web/
+cp tools/operation-catalog.json web/operation-catalog.json
 
-TOOLS="merge interleave split remove reorder blank rotate crop resize nup img2pdf watermark stamp flatten pagenum compress metadata info protect unlock pdfdiff imgconv imgresize pdftext pdfimages txt2pdf md2pdf docx2pdf hwpx2pdf hwp2pdf docx2hwpx hwpx2docx pdf2docx pdf2hwpx xlsx2csv"
+TOOLS="$(node -e 'const c=require("./tools/operation-catalog.json"); process.stdout.write(c.filter(x=>x.engine==="wasm").map(x=>x.id).join(" "))')"
 
 JOBS="${JOBS:-$(command -v nproc >/dev/null 2>&1 && nproc || sysctl -n hw.ncpu)}"
 echo "building with ${JOBS} parallel jobs..."
