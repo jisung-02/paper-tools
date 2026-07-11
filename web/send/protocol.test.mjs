@@ -5,7 +5,7 @@ import { sha256Hex, transferChecksum } from "./integrity.mjs";
 
 test("manifest accepts multiple files and rejects unsafe metadata", () => {
   const manifest = validateManifest({
-    version: 2,
+    version: 3,
     transferId: "transfer-1",
     chunkSize: 4,
     files: [
@@ -17,11 +17,12 @@ test("manifest accepts multiple files and rejects unsafe metadata", () => {
   assert.throws(() => validateManifest({ ...manifest, files: [{ id: "x", name: "../secret", size: 1, type: "x" }] }), /file name/);
   assert.throws(() => validateManifest({ ...manifest, files: [{ id: "x", name: "x", size: -1, type: "x" }] }), /size/);
   assert.throws(() => validateManifest({
-    version: 2,
+    version: 3,
     transferId: "too-many-chunks",
     chunkSize: 1,
     files: [{ id: "x", name: "x", size: 1_000_001, type: "x" }],
   }), /chunks/);
+  assert.throws(() => validateManifest({ ...manifest, version: 2 }), /manifest/);
 });
 
 test("safeFileName makes duplicate output names collision-free", () => {
@@ -38,55 +39,41 @@ test("safeFileName keeps collision suffixes inside the UTF-8 name limit", () => 
   assert.match(duplicate, / \(2\)\.pdf$/);
 });
 
-test("receiver validates ordered chunks and resumes at verified offsets", async () => {
+test("receiver hashes each chunk, writes it at the running offset, and resumes at the verified offset", async () => {
   const bytes = new TextEncoder().encode("data");
-  const digest = await sha256Hex(bytes);
   const writes = [];
   const receiver = new ReceiverProtocol({ write: async (file, offset, value) => writes.push([file.id, offset, [...value]]) });
-  receiver.start({ version: 2, transferId: "t", chunkSize: 4, files: [{ id: "a", name: "a", size: 4, type: "x" }] });
+  receiver.start({ version: 3, transferId: "t", chunkSize: 4, files: [{ id: "a", name: "a", size: 4, type: "x" }] });
   assert.deepEqual(receiver.resumeOffsets(), { a: 0 });
-  assert.deepEqual(await receiver.chunk({ fileId: "a", seq: 0, offset: 0, length: 4, sha256: digest }, bytes), { type: "ack", fileId: "a", seq: 0, offset: 4 });
+  assert.deepEqual(await receiver.chunk("a", bytes), { offset: 4 });
   assert.deepEqual(receiver.resumeOffsets(), { a: 4 });
   assert.deepEqual(writes, [["a", 0, [100, 97, 116, 97]]]);
 });
 
-test("receiver idempotently ACKs the last verified chunk", async () => {
-  const bytes = new TextEncoder().encode("data");
-  const digest = await sha256Hex(bytes);
-  let writes = 0;
-  const receiver = new ReceiverProtocol({ write: async () => { writes++; } });
-  receiver.start({ version: 2, transferId: "t", chunkSize: 4, files: [{ id: "a", name: "a", size: 4, type: "x" }] });
-  const header = { fileId: "a", seq: 0, offset: 0, length: 4, sha256: digest };
-  const first = await receiver.chunk(header, bytes);
-  const duplicate = await receiver.chunk(header, bytes);
-  assert.deepEqual(duplicate, first);
-  assert.equal(writes, 1);
-});
-
-test("receiver emits three NACKs and aborts on the next hash mismatch", async () => {
+test("receiver rejects a chunk for an unknown file id, wrong length, or once the file is full", async () => {
   const receiver = new ReceiverProtocol({ write: async () => {} });
-  receiver.start({ version: 2, transferId: "t", chunkSize: 4, files: [{ id: "a", name: "a", size: 4, type: "x" }] });
-  const header = { fileId: "a", seq: 0, offset: 0, length: 4, sha256: "00".repeat(32) };
-  const bytes = new TextEncoder().encode("data");
-  assert.equal((await receiver.chunk(header, bytes)).type, "nack");
-  assert.equal((await receiver.chunk(header, bytes)).type, "nack");
-  assert.equal((await receiver.chunk(header, bytes)).type, "nack");
-  await assert.rejects(receiver.chunk(header, bytes), /retry limit/);
+  receiver.start({ version: 3, transferId: "t", chunkSize: 4, files: [{ id: "a", name: "a", size: 4, type: "x" }] });
+  await assert.rejects(receiver.chunk("missing", new Uint8Array(4)), /unknown file id/);
+  await assert.rejects(receiver.chunk("a", new Uint8Array(3)), /unexpected chunk length/);
+  await receiver.chunk("a", new Uint8Array(4));
+  await assert.rejects(receiver.chunk("a", new Uint8Array(4)), /no remaining bytes/);
 });
 
-test("receiver rejects duplicate, skipped and oversized chunks", async () => {
+test("resumeOffsets floors a misaligned offset to the chunk boundary and truncates its digest list to match", async () => {
   const receiver = new ReceiverProtocol({ write: async () => {} });
-  receiver.start({ version: 2, transferId: "t", chunkSize: 4, files: [{ id: "a", name: "a", size: 4, type: "x" }] });
-  const bytes = new Uint8Array([1]);
-  const digest = await sha256Hex(bytes);
-  await assert.rejects(receiver.chunk({ fileId: "a", seq: 1, offset: 0, length: 1, sha256: digest }, bytes), /sequence/);
-  await assert.rejects(receiver.chunk({ fileId: "a", seq: 0, offset: 1, length: 1, sha256: digest }, bytes), /offset/);
-  await assert.rejects(receiver.chunk({ fileId: "a", seq: 0, offset: 0, length: 2, sha256: digest }, bytes), /length/);
-  const emptyDigest = await sha256Hex(new Uint8Array());
-  await assert.rejects(receiver.chunk({ fileId: "a", seq: 0, offset: 0, length: 0, sha256: emptyDigest }, new Uint8Array()), /length/);
+  receiver.start({ version: 3, transferId: "t", chunkSize: 4, files: [{ id: "a", name: "a", size: 10, type: "x" }] });
+  // Every real write path keeps state chunk-aligned; this reaches into the
+  // internal state map to exercise the defensive floor/truncate invariant
+  // directly, since the wire protocol can't otherwise produce a misaligned
+  // offset (one binary message is always one whole chunk).
+  const state = receiver.fileState("a");
+  state.offset = 6;
+  state.digests = ["digest-for-bytes-0-4", "digest-for-bytes-4-8"];
+  assert.deepEqual(receiver.resumeOffsets(), { a: 4 });
+  assert.deepEqual(state.digests, ["digest-for-bytes-0-4"]);
 });
 
-test("receiver verifies per-file checksum before finishing the sink", async () => {
+test("receiver verifies the composite per-file checksum before finishing the sink, and is idempotent", async () => {
   const bytes = new TextEncoder().encode("data");
   const digest = await sha256Hex(bytes);
   const checksum = await transferChecksum([digest]);
@@ -95,17 +82,26 @@ test("receiver verifies per-file checksum before finishing the sink", async () =
     write: async () => {},
     finish: async (file) => { finished.push(file.id); return new Blob([bytes]); },
   });
-  receiver.start({ version: 2, transferId: "t", chunkSize: 4, files: [{ id: "a", name: "a", size: 4, type: "x" }] });
-  await receiver.chunk({ fileId: "a", seq: 0, offset: 0, length: 4, sha256: digest }, bytes);
+  receiver.start({ version: 3, transferId: "t", chunkSize: 4, files: [{ id: "a", name: "a", size: 4, type: "x" }] });
+  await receiver.chunk("a", bytes);
 
   await assert.rejects(receiver.finish("a", "PT-SHA256-v1:" + "00".repeat(32)), /checksum/);
   const result = await receiver.finish("a", checksum);
   assert.equal(result.file.id, "a");
   assert.equal(result.value.size, 4);
-  await assert.rejects(receiver.finish("a", "PT-SHA256-v1:" + "00".repeat(32)), /checksum/);
   assert.equal((await receiver.finish("a", checksum)).replayed, true);
   assert.deepEqual(finished, ["a"]);
   assert.deepEqual(receiver.complete(), { transferId: "t", files: 1, bytes: 4 });
+});
+
+test("a zero-byte file completes with no chunks, using the checksum of an empty digest list", async () => {
+  const receiver = new ReceiverProtocol({ write: async () => {}, finish: async () => new Blob([]) });
+  receiver.start({ version: 3, transferId: "t", chunkSize: 4, files: [{ id: "a", name: "empty", size: 0, type: "x" }] });
+  assert.deepEqual(receiver.resumeOffsets(), { a: 0 });
+  const emptyChecksum = await transferChecksum([]);
+  const result = await receiver.finish("a", emptyChecksum);
+  assert.equal(result.value.size, 0);
+  assert.deepEqual(receiver.complete(), { transferId: "t", files: 1, bytes: 0 });
 });
 
 test("integrity functions are deterministic", async () => {

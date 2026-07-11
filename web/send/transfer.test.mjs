@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { sha256Hex } from "./integrity.mjs";
 import { MemoryReceiveSink } from "./storage.mjs";
 import {
   createReceiverSession,
@@ -76,7 +75,64 @@ function namedBlob(name, value, type = "application/octet-stream") {
   return blob;
 }
 
-test("v2 sessions transfer multiple files, NACK a corrupt chunk, retry, and complete", async () => {
+function controlTypes(channel) {
+  return channel.sent
+    .filter((value) => typeof value === "string")
+    .map((value) => JSON.parse(value).type);
+}
+
+test("v3 sessions stream multiple files back-to-back with no per-chunk headers or acks", async () => {
+  const outputs = [];
+  const [senderChannel, receiverChannel] = channelPair();
+  const receiver = createReceiverSession(receiverChannel, {
+    sinkFactory: async () => new MemoryReceiveSink({ maxBytes: 1024 }),
+    onFile: async (file, value) => outputs.push([file.name, await value.text()]),
+  });
+  const sender = createSenderSession(senderChannel, [
+    namedBlob("a.txt", "abcde", "text/plain"),
+    namedBlob("b.txt", "xyz", "text/plain"),
+  ], { chunkSize: 4, transferId: "transfer-1", negotiationTimeoutMs: 20 });
+
+  receiverChannel.open();
+  senderChannel.open();
+  const sent = await sender.start();
+  const received = await receiver.done;
+
+  assert.deepEqual(sent, { transferId: "transfer-1", files: 2, bytes: 8 });
+  assert.deepEqual(received, sent);
+  assert.deepEqual(outputs, [["a.txt", "abcde"], ["b.txt", "xyz"]]);
+  assert.deepEqual(controlTypes(senderChannel), ["manifest", "file-start", "file-done", "file-start", "file-done", "complete"]);
+  assert.deepEqual(controlTypes(receiverChannel), ["hello", "resume", "file-ack", "file-ack", "complete-ack"]);
+  // "abcde" at chunkSize 4 is two chunks (4 + 1), "xyz" is one chunk.
+  const binaryCount = senderChannel.sent.filter((value) => value instanceof ArrayBuffer).length;
+  assert.equal(binaryCount, 3);
+});
+
+test("a zero-byte file sends file-start immediately followed by file-done with no binary chunks", async () => {
+  const outputs = [];
+  const [senderChannel, receiverChannel] = channelPair();
+  const receiver = createReceiverSession(receiverChannel, {
+    sinkFactory: async () => new MemoryReceiveSink({ maxBytes: 16 }),
+    onFile: async (file, value) => outputs.push([file.name, value.size]),
+  });
+  const sender = createSenderSession(senderChannel, [namedBlob("empty.bin", "")], {
+    chunkSize: 4,
+    transferId: "zero-byte",
+    negotiationTimeoutMs: 20,
+  });
+  receiverChannel.open();
+  senderChannel.open();
+
+  const sent = await sender.start();
+  await receiver.done;
+
+  assert.deepEqual(sent, { transferId: "zero-byte", files: 1, bytes: 0 });
+  assert.deepEqual(outputs, [["empty.bin", 0]]);
+  assert.equal(senderChannel.sent.filter((value) => value instanceof ArrayBuffer).length, 0);
+  assert.deepEqual(controlTypes(senderChannel), ["manifest", "file-start", "file-done", "complete"]);
+});
+
+test("a chunk corrupted in transit fails the transfer via the composite checksum, not a length check", async () => {
   let corruptNextBinary = true;
   const [senderChannel, receiverChannel] = channelPair((value) => {
     if (!(value instanceof ArrayBuffer) || !corruptNextBinary) return value;
@@ -85,136 +141,57 @@ test("v2 sessions transfer multiple files, NACK a corrupt chunk, retry, and comp
     new Uint8Array(copy)[0] ^= 0xff;
     return copy;
   });
-  const outputs = [];
+  const errors = [];
   const receiver = createReceiverSession(receiverChannel, {
     sinkFactory: async () => new MemoryReceiveSink({ maxBytes: 1024 }),
-    onFile: (file, value) => outputs.push({ file, value }),
+    onError: (error) => errors.push(error.message),
   });
-  const sender = createSenderSession(senderChannel, [
-    namedBlob("a.txt", "abcde", "text/plain"),
-    namedBlob("b.txt", "xyz", "text/plain"),
-  ], { chunkSize: 4, transferId: "transfer-1", negotiationTimeoutMs: 20, ackTimeoutMs: 100 });
-
+  const sender = createSenderSession(senderChannel, [namedBlob("a.txt", "abcde", "text/plain")], {
+    chunkSize: 4,
+    transferId: "corrupt-1",
+    negotiationTimeoutMs: 20,
+  });
   receiverChannel.open();
   senderChannel.open();
-  const sent = await sender.start();
-  const received = await receiver.done;
 
-  assert.equal(sent.version, 2);
-  assert.equal(sent.files, 2);
-  assert.equal(received.version, 2);
-  assert.equal(outputs.length, 2);
-  assert.equal(await outputs[0].value.text(), "abcde");
-  assert.equal(await outputs[1].value.text(), "xyz");
-  const headers = senderChannel.sent.filter((value) => typeof value === "string")
-    .map((value) => { try { return JSON.parse(value); } catch { return null; } })
-    .filter((value) => value?.type === "chunk");
-  assert.equal(headers.length, 4, "three chunks plus one retry");
+  await assert.rejects(sender.start(), /checksum/);
+  await assert.rejects(receiver.done, /checksum/);
+  assert.deepEqual(errors, ["file checksum mismatch"]);
 });
 
-test("sender retries after a lost ACK without duplicating the received bytes", async () => {
-  let dropAck = true;
-  const [senderChannel, receiverChannel] = channelPair(undefined, (value) => {
-    if (typeof value !== "string" || !dropAck) return value;
-    try {
-      if (JSON.parse(value).type === "ack") { dropAck = false; return undefined; }
-    } catch {}
-    return value;
-  });
-  const outputs = [];
-  const receiver = createReceiverSession(receiverChannel, {
-    sinkFactory: async () => new MemoryReceiveSink({ maxBytes: 16 }),
-    onFile: (file, value) => outputs.push({ file, value }),
-  });
-  const sender = createSenderSession(senderChannel, [namedBlob("a.txt", "data")], {
-    chunkSize: 4,
-    transferId: "lost-ack",
-    negotiationTimeoutMs: 20,
-    ackTimeoutMs: 2,
-  });
+test("sender fails clearly when no hello arrives before the negotiation timeout", async () => {
+  const [senderChannel, receiverChannel] = channelPair();
+  const sender = createSenderSession(senderChannel, [namedBlob("a.txt", "a")], { negotiationTimeoutMs: 5 });
   receiverChannel.open();
   senderChannel.open();
-  assert.equal((await sender.start()).version, 2);
-  await receiver.done;
-  assert.equal(await outputs[0].value.text(), "data");
-  const headers = senderChannel.sent.filter((value) => typeof value === "string")
-    .map((value) => { try { return JSON.parse(value); } catch { return null; } })
-    .filter((value) => value?.type === "chunk");
-  assert.equal(headers.length, 2);
+  await assert.rejects(sender.start(), /outdated page/);
+  assert.deepEqual(controlTypes(senderChannel), []);
 });
 
-test("sender allows the initial chunk plus three retransmissions", async () => {
-  let corruptions = 0;
-  const [senderChannel, receiverChannel] = channelPair((value) => {
-    if (!(value instanceof ArrayBuffer) || corruptions === 3) return value;
-    corruptions++;
-    const copy = value.slice(0);
-    new Uint8Array(copy)[0] ^= 0xff;
-    return copy;
+test("sender fails clearly when the peer only speaks legacy protocol versions", async () => {
+  const [senderChannel, receiverChannel] = channelPair();
+  receiverChannel.addEventListener("open", () => {
+    receiverChannel.send(JSON.stringify({ type: "hello", versions: [1, 2] }));
   });
-  const outputs = [];
-  const receiver = createReceiverSession(receiverChannel, {
-    sinkFactory: async () => new MemoryReceiveSink({ maxBytes: 16 }),
-    onFile: (file, value) => outputs.push({ file, value }),
-  });
-  const sender = createSenderSession(senderChannel, [namedBlob("a.bin", "data")], {
-    chunkSize: 4,
-    transferId: "three-retransmissions",
-    negotiationTimeoutMs: 20,
-    ackTimeoutMs: 100,
-  });
+  const sender = createSenderSession(senderChannel, [namedBlob("a.txt", "a")], { negotiationTimeoutMs: 200 });
   receiverChannel.open();
   senderChannel.open();
-
-  assert.equal((await sender.start()).version, 2);
-  await receiver.done;
-  assert.equal(await outputs[0].value.text(), "data");
-  const headers = senderChannel.sent.filter((value) => typeof value === "string")
-    .map((value) => JSON.parse(value))
-    .filter((value) => value.type === "chunk");
-  assert.equal(headers.length, 4);
-});
-
-test("sender stops after three retransmissions when every ACK times out", async () => {
-  const [senderChannel, receiverChannel] = channelPair(undefined, (value) => {
-    if (typeof value !== "string") return value;
-    const message = JSON.parse(value);
-    return message.type === "ack" ? undefined : value;
-  });
-  const receiver = createReceiverSession(receiverChannel, {
-    sinkFactory: async () => new MemoryReceiveSink({ maxBytes: 16 }),
-  });
-  const sender = createSenderSession(senderChannel, [namedBlob("a.bin", "data")], {
-    chunkSize: 4,
-    transferId: "ack-timeout-limit",
-    negotiationTimeoutMs: 20,
-    ackTimeoutMs: 2,
-  });
-  receiverChannel.open();
-  senderChannel.open();
-
-  await assert.rejects(sender.start(), /timed out/);
-  const headers = senderChannel.sent.filter((value) => typeof value === "string")
-    .map((value) => JSON.parse(value))
-    .filter((value) => value.type === "chunk");
-  await receiver.abort();
-  await assert.rejects(receiver.done, (error) => error?.name === "AbortError");
-  assert.equal(headers.length, 4);
+  await assert.rejects(sender.start(), /outdated page/);
+  assert.deepEqual(controlTypes(senderChannel), []);
 });
 
 test("sender rejects an inbox that queues too many unmatched control messages", async () => {
   const [senderChannel, receiverChannel] = channelPair();
   const sender = createSenderSession(senderChannel, [namedBlob("a.bin", "data")], {
     transferId: "bounded-inbox-count",
-    negotiationTimeoutMs: 20,
-    ackTimeoutMs: 5,
+    negotiationTimeoutMs: 200,
   });
   receiverChannel.open();
   senderChannel.open();
   for (let index = 0; index <= MAX_QUEUED_CONTROL_MESSAGES; index++) {
     receiverChannel.send(JSON.stringify({ type: "unmatched", index }));
   }
-  receiverChannel.send(JSON.stringify({ type: "hello", versions: [2, 1] }));
+  receiverChannel.send(JSON.stringify({ type: "hello", versions: [3] }));
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   await assert.rejects(sender.start(), /control message queue limit/);
@@ -226,59 +203,55 @@ test("sender rejects an inbox whose queued control text exceeds the char budget"
   const [senderChannel, receiverChannel] = channelPair();
   const sender = createSenderSession(senderChannel, [namedBlob("a.bin", "data")], {
     transferId: "bounded-inbox-chars",
-    negotiationTimeoutMs: 20,
-    ackTimeoutMs: 5,
+    negotiationTimeoutMs: 200,
   });
   receiverChannel.open();
   senderChannel.open();
   const payload = "x".repeat(Math.floor(MAX_QUEUED_CONTROL_CHARS / 2));
   receiverChannel.send(JSON.stringify({ type: "unmatched", payload, index: 0 }));
   receiverChannel.send(JSON.stringify({ type: "unmatched", payload, index: 1 }));
-  receiverChannel.send(JSON.stringify({ type: "hello", versions: [2, 1] }));
+  receiverChannel.send(JSON.stringify({ type: "hello", versions: [3] }));
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   await assert.rejects(sender.start(), /control message queue limit/);
   assert.equal(senderChannel.sent.length, 0);
 });
 
-test("sender honors a verified resume offset", async () => {
+test("sender honors a verified resume offset from a hand-rolled v3 receiver", async () => {
   const [senderChannel, receiverChannel] = channelPair();
-  let header = null;
+  let fileStart = null;
   const received = [];
   receiverChannel.addEventListener("open", () => {
-    receiverChannel.send(JSON.stringify({ type: "hello", versions: [2, 1] }));
+    receiverChannel.send(JSON.stringify({ type: "hello", versions: [3] }));
   });
   receiverChannel.addEventListener("message", ({ data }) => {
     if (typeof data === "string") {
       const message = JSON.parse(data);
       if (message.type === "manifest") {
-        receiverChannel.send(JSON.stringify({ type: "resume", transferId: message.manifest.transferId, offsets: { f0: 4 } }));
-      } else if (message.type === "chunk") {
-        header = message;
+        receiverChannel.send(JSON.stringify({ type: "resume", offsets: { f0: 4 } }));
+      } else if (message.type === "file-start") {
+        fileStart = message;
       } else if (message.type === "file-done") {
         receiverChannel.send(JSON.stringify({ type: "file-ack", fileId: message.fileId }));
       } else if (message.type === "complete") {
-        receiverChannel.send(JSON.stringify({ type: "complete-ack", transferId: message.transferId }));
+        receiverChannel.send(JSON.stringify({ type: "complete-ack" }));
       }
       return;
     }
     received.push(...new Uint8Array(data));
-    receiverChannel.send(JSON.stringify({ type: "ack", fileId: header.fileId, seq: header.seq, offset: header.offset + header.length }));
   });
 
   const sender = createSenderSession(senderChannel, [namedBlob("resume.bin", "abcdefgh")], {
     chunkSize: 4,
     transferId: "resume-1",
     negotiationTimeoutMs: 20,
-    ackTimeoutMs: 100,
   });
   receiverChannel.open();
   senderChannel.open();
   const result = await sender.start();
 
-  assert.equal(result.version, 2);
-  assert.equal(header.offset, 4);
-  assert.equal(header.seq, 1);
+  assert.equal(result.transferId, "resume-1");
+  assert.deepEqual(fileStart, { type: "file-start", fileId: "f0", offset: 4 });
   assert.equal(new TextDecoder().decode(new Uint8Array(received)), "efgh");
 });
 
@@ -286,34 +259,43 @@ test("fresh sessions resume verified bytes from the retained partial sink", asyn
   const store = new ReceiveTransferStore({ expiryMs: 1000 });
   const sink = new MemoryReceiveSink({ maxBytes: 16 });
   const source = namedBlob("resume.bin", "abcdefgh");
-  let firstReceiverChannel;
-  let closedAfterFirstAck = false;
-  const [firstSenderChannel, receiverChannel] = channelPair(undefined, (value) => {
-    if (typeof value === "string" && !closedAfterFirstAck) {
-      const message = JSON.parse(value);
-      if (message.type === "ack") {
-        closedAfterFirstAck = true;
-        queueMicrotask(() => firstReceiverChannel.close());
-      }
-    }
-    return value;
-  });
-  firstReceiverChannel = receiverChannel;
-  const firstReceiver = createReceiverSession(firstReceiverChannel, {
+  const [firstSenderChannel, receiverChannel] = channelPair();
+
+  // v3 has no per-chunk ack to hang a "disconnect after N bytes" test off of,
+  // and the sender otherwise races ahead (no round trip between chunks), so
+  // this simulates backpressure to deterministically block it after the
+  // first chunk — a real "bufferedamountlow" just never fires here, which is
+  // exactly what a stalled/closed connection looks like from the sender's
+  // side.
+  const originalSend = firstSenderChannel.send.bind(firstSenderChannel);
+  let binarySent = 0;
+  firstSenderChannel.send = (value) => {
+    originalSend(value);
+    if (value instanceof ArrayBuffer && ++binarySent === 1) firstSenderChannel.bufferedAmount = 1e9;
+  };
+
+  let firstChunkWritten;
+  const firstChunkWrittenPromise = new Promise((resolve) => { firstChunkWritten = resolve; });
+  const firstReceiver = createReceiverSession(receiverChannel, {
     transferStore: store,
     sinkFactory: async () => sink,
+    onProgress: () => firstChunkWritten(),
   });
   const firstSender = createSenderSession(firstSenderChannel, [source], {
     chunkSize: 4,
     transferId: "real-resume",
     negotiationTimeoutMs: 20,
-    ackTimeoutMs: 100,
   });
-  firstReceiverChannel.open();
+  receiverChannel.open();
   firstSenderChannel.open();
 
-  await assert.rejects(firstSender.start(), /closed/);
-  await assert.rejects(firstReceiver.done, /closed/);
+  const firstStart = firstSender.start();
+  const firstDone = firstReceiver.done;
+  await firstChunkWrittenPromise;
+  receiverChannel.close();
+
+  await assert.rejects(firstStart, /closed/);
+  await assert.rejects(firstDone, /closed/);
 
   const outputs = [];
   const [secondSenderChannel, secondReceiverChannel] = channelPair();
@@ -326,18 +308,19 @@ test("fresh sessions resume verified bytes from the retained partial sink", asyn
     chunkSize: 4,
     transferId: "real-resume",
     negotiationTimeoutMs: 20,
-    ackTimeoutMs: 100,
   });
   secondReceiverChannel.open();
   secondSenderChannel.open();
 
-  assert.equal((await secondSender.start()).version, 2);
+  assert.deepEqual(await secondSender.start(), { transferId: "real-resume", files: 1, bytes: 8 });
   assert.equal((await secondReceiver.done).bytes, 8);
   assert.equal(await outputs[0].value.text(), "abcdefgh");
-  const resumedHeaders = secondSenderChannel.sent.filter((value) => typeof value === "string")
+  const fileStarts = secondSenderChannel.sent
+    .filter((value) => typeof value === "string")
     .map((value) => JSON.parse(value))
-    .filter((value) => value.type === "chunk");
-  assert.deepEqual(resumedHeaders.map((header) => header.offset), [4]);
+    .filter((value) => value.type === "file-start");
+  assert.deepEqual(fileStarts, [{ type: "file-start", fileId: "f0", offset: 4 }]);
+  assert.equal(secondSenderChannel.sent.filter((value) => value instanceof ArrayBuffer).length, 1);
 });
 
 test("fresh sessions replay a completed file ACK and continue later files", async () => {
@@ -367,7 +350,6 @@ test("fresh sessions replay a completed file ACK and continue later files", asyn
     chunkSize: 4,
     transferId: "resume-after-file",
     negotiationTimeoutMs: 20,
-    ackTimeoutMs: 100,
   });
   firstReceiverChannel.open();
   firstSenderChannel.open();
@@ -384,7 +366,6 @@ test("fresh sessions replay a completed file ACK and continue later files", asyn
     chunkSize: 4,
     transferId: "resume-after-file",
     negotiationTimeoutMs: 20,
-    ackTimeoutMs: 100,
   });
   secondReceiverChannel.open();
   secondSenderChannel.open();
@@ -392,10 +373,17 @@ test("fresh sessions replay a completed file ACK and continue later files", asyn
   await secondSender.start();
   await secondReceiver.done;
   assert.deepEqual(outputs, [["a.bin", "abcd"], ["b.bin", "efgh"]]);
-  const resumedHeaders = secondSenderChannel.sent.filter((value) => typeof value === "string")
+  // f0 was already fully received and ack'd, so its file-start is resent with
+  // offset === size (no chunks follow); only f1 gets streamed bytes.
+  const fileStarts = secondSenderChannel.sent
+    .filter((value) => typeof value === "string")
     .map((value) => JSON.parse(value))
-    .filter((value) => value.type === "chunk");
-  assert.deepEqual(resumedHeaders.map((header) => header.fileId), ["f1"]);
+    .filter((value) => value.type === "file-start");
+  assert.deepEqual(fileStarts, [
+    { type: "file-start", fileId: "f0", offset: 4 },
+    { type: "file-start", fileId: "f1", offset: 0 },
+  ]);
+  assert.equal(secondSenderChannel.sent.filter((value) => value instanceof ArrayBuffer).length, 1);
 });
 
 test("retained transfer expiry aborts its partial sink and frees the transfer id", async () => {
@@ -411,7 +399,7 @@ test("retained transfer expiry aborts its partial sink and frees the transfer id
     cancelExpiry() {},
   });
   const manifest = {
-    version: 2,
+    version: 3,
     transferId: "expires",
     chunkSize: 4,
     files: [{ id: "f0", name: "a.bin", size: 4, type: "application/octet-stream" }],
@@ -446,7 +434,7 @@ test("explicit abort after disconnect removes retained bytes immediately", async
     sinkFactory: async () => new MemoryReceiveSink({ maxBytes: 16 }),
   });
   const manifest = {
-    version: 2,
+    version: 3,
     transferId: "abort-disconnected",
     chunkSize: 4,
     files: [{ id: "f0", name: "a.bin", size: 8, type: "application/octet-stream" }],
@@ -454,15 +442,8 @@ test("explicit abort after disconnect removes retained bytes immediately", async
   const bytes = new TextEncoder().encode("abcd");
   receiverChannel.open();
   senderChannel.open();
-  senderChannel.send(JSON.stringify({ type: "manifest", manifest }));
-  senderChannel.send(JSON.stringify({
-    type: "chunk",
-    fileId: "f0",
-    seq: 0,
-    offset: 0,
-    length: bytes.byteLength,
-    sha256: await sha256Hex(bytes),
-  }));
+  senderChannel.send(JSON.stringify({ type: "manifest", transferId: manifest.transferId, chunkSize: manifest.chunkSize, files: manifest.files }));
+  senderChannel.send(JSON.stringify({ type: "file-start", fileId: "f0", offset: 0 }));
   senderChannel.send(bytes.buffer);
   await new Promise((resolve) => setTimeout(resolve, 0));
   senderChannel.close();
@@ -479,73 +460,6 @@ test("explicit abort after disconnect removes retained bytes immediately", async
   await store.abort("abort-disconnected");
 });
 
-test("sender falls back to v1 for an old single-file receiver", async () => {
-  const [senderChannel, receiverChannel] = channelPair();
-  const received = [];
-  receiverChannel.addEventListener("message", ({ data }) => received.push(data));
-  const sender = createSenderSession(senderChannel, [namedBlob("legacy.txt", "old", "text/plain")], {
-    negotiationTimeoutMs: 1,
-  });
-  receiverChannel.open();
-  senderChannel.open();
-
-  const result = await sender.start();
-  assert.equal(result.version, 1);
-  assert.deepEqual(JSON.parse(received[0]), { name: "legacy.txt", size: 3, type: "text/plain" });
-  assert.equal(new TextDecoder().decode(received[1]), "old");
-  assert.equal(received[2], "done");
-});
-
-test("legacy sender does not report completion while bytes remain buffered", async () => {
-  let senderChannel;
-  let receiverChannel;
-  [senderChannel, receiverChannel] = channelPair((value) => {
-    if (value === "done") senderChannel.bufferedAmount = 10;
-    return value;
-  });
-  const sender = createSenderSession(senderChannel, [namedBlob("legacy.txt", "old")], {
-    negotiationTimeoutMs: 1,
-    drainPollMs: 1,
-  });
-  receiverChannel.open();
-  senderChannel.open();
-  let settled = false;
-  const result = sender.start().then((value) => { settled = true; return value; });
-  await new Promise((resolve) => setTimeout(resolve, 5));
-  assert.equal(settled, false);
-  senderChannel.bufferedAmount = 0;
-  assert.equal((await result).version, 1);
-});
-
-test("sender refuses to collapse multiple files into a legacy transfer", async () => {
-  const [senderChannel, receiverChannel] = channelPair();
-  const sender = createSenderSession(senderChannel, [namedBlob("a", "a"), namedBlob("b", "b")], {
-    negotiationTimeoutMs: 1,
-  });
-  receiverChannel.open();
-  senderChannel.open();
-  await assert.rejects(sender.start(), /only supports one file/);
-  assert.equal(senderChannel.sent.length, 0);
-});
-
-test("new receiver accepts a legacy v1 sender", async () => {
-  const [senderChannel, receiverChannel] = channelPair();
-  const outputs = [];
-  const receiver = createReceiverSession(receiverChannel, {
-    onFile: (file, value) => outputs.push({ file, value }),
-  });
-  receiverChannel.open();
-  senderChannel.open();
-  senderChannel.send(JSON.stringify({ name: "legacy.txt", size: 3, type: "text/plain" }));
-  senderChannel.send(new TextEncoder().encode("old").buffer);
-  senderChannel.send("done");
-
-  const result = await receiver.done;
-  assert.equal(result.version, 1);
-  assert.equal(outputs[0].file.name, "legacy.txt");
-  assert.equal(await outputs[0].value.text(), "old");
-});
-
 test("completed transfer settles even when presentation callback fails", async () => {
   const [senderChannel, receiverChannel] = channelPair();
   const errors = [];
@@ -557,7 +471,6 @@ test("completed transfer settles even when presentation callback fails", async (
   const sender = createSenderSession(senderChannel, [namedBlob("a", "a")], {
     transferId: "presentation-error",
     negotiationTimeoutMs: 20,
-    ackTimeoutMs: 100,
   });
   receiverChannel.open();
   senderChannel.open();
@@ -566,7 +479,7 @@ test("completed transfer settles even when presentation callback fails", async (
     receiver.done,
     new Promise((_, reject) => setTimeout(() => reject(new Error("done did not settle")), 20)),
   ]);
-  assert.equal(result.version, 2);
+  assert.deepEqual(result, { transferId: "presentation-error", files: 1, bytes: 1 });
   assert.deepEqual(errors, ["render failed"]);
 });
 
@@ -582,10 +495,12 @@ test("receiver abort cleans a partial disk sink", async () => {
   const receiver = createReceiverSession(receiverChannel, { sinkFactory: async () => sink });
   receiverChannel.open();
   senderChannel.open();
-  senderChannel.send(JSON.stringify({ type: "hello", version: 2 }));
+  senderChannel.send(JSON.stringify({ type: "hello", versions: [3] }));
   senderChannel.send(JSON.stringify({
     type: "manifest",
-    manifest: { version: 2, transferId: "partial", chunkSize: 4, files: [{ id: "a", name: "a", size: 4, type: "x" }] },
+    transferId: "partial",
+    chunkSize: 4,
+    files: [{ id: "a", name: "a", size: 4, type: "x" }],
   }));
   await new Promise((resolve) => setTimeout(resolve, 0));
   await receiver.abort();

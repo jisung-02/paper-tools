@@ -2,14 +2,13 @@ import { sha256Hex, transferChecksum } from "./integrity.mjs";
 import { MAX_CHUNK_BYTES, MAX_FILES, MAX_TOTAL_BYTES, ReceiverProtocol, validateManifest } from "./protocol.mjs";
 import { MemoryReceiveSink } from "./storage.mjs";
 
-const LEGACY_MAX_BYTES = 256 * 1024 * 1024;
 const MAX_CONTROL_CHARS = 1024 * 1024;
 export const MAX_QUEUED_CONTROL_MESSAGES = 256;
 export const MAX_QUEUED_CONTROL_CHARS = 256 * 1024;
 const DEFAULT_CHUNK_SIZE = 64 * 1024;
 const DEFAULT_NEGOTIATION_TIMEOUT_MS = 500;
-const DEFAULT_ACK_TIMEOUT_MS = 10_000;
 const DEFAULT_BUFFER_HIGH_WATERMARK = 8 * 1024 * 1024;
+const OUTDATED_PEER_MESSAGE = "peer is running an outdated page — reload on both devices";
 
 function timeoutError(label) {
   const error = new Error(`${label} timed out`);
@@ -38,7 +37,7 @@ function validateSourceFiles(files) {
 export function buildTransferManifest(files, { chunkSize = DEFAULT_CHUNK_SIZE, transferId = randomTransferId() } = {}) {
   validateSourceFiles(files);
   return validateManifest({
-    version: 2,
+    version: 3,
     transferId,
     chunkSize,
     files: files.map((file, index) => ({
@@ -84,6 +83,11 @@ function waitForOpen(channel) {
   });
 }
 
+// waitForBuffer(channel, highWatermark) -> resolves once bufferedAmount is at
+// or below highWatermark, using the "bufferedamountlow" event rather than
+// polling. Used both for per-chunk backpressure (highWatermark = the send
+// buffer ceiling) and, with highWatermark 0 and the threshold pinned to 0,
+// for a full drain (see waitForFullDrain below).
 async function waitForBuffer(channel, highWatermark) {
   if (channel.readyState !== "open") throw new Error("data channel is not open");
   if (channel.bufferedAmount <= highWatermark) return;
@@ -99,18 +103,21 @@ async function waitForBuffer(channel, highWatermark) {
   });
 }
 
-async function waitForDrain(channel, pollMs) {
-  while (channel.bufferedAmount > 0) {
-    if (channel.readyState !== "open") throw new Error("data channel closed while draining");
-    await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => { cleanup(); resolve(); }, pollMs);
-      const closed = () => { cleanup(); reject(new Error("data channel closed while draining")); };
-      const cleanup = () => {
-        clearTimeout(timer);
-        channel.removeEventListener("close", closed);
-      };
-      channel.addEventListener("close", closed, { once: true });
-    });
+// waitForFullDrain(channel) -> resolves once bufferedAmount reaches exactly
+// zero. "bufferedamountlow" only fires on a transition down through
+// bufferedAmountLowThreshold, so the threshold is pinned to 0 for the
+// duration of the wait — otherwise, if bufferedAmount is already below the
+// configured threshold, no further transition (and so no event) would ever
+// occur even though bytes are still in flight.
+async function waitForFullDrain(channel) {
+  if (channel.readyState !== "open") throw new Error("data channel is not open");
+  if (channel.bufferedAmount === 0) return;
+  const previousThreshold = channel.bufferedAmountLowThreshold;
+  channel.bufferedAmountLowThreshold = 0;
+  try {
+    await waitForBuffer(channel, 0);
+  } finally {
+    channel.bufferedAmountLowThreshold = previousThreshold;
   }
 }
 
@@ -162,6 +169,12 @@ class ControlInbox {
     }
   }
 
+  // wait(predicate, timeoutMs, label) -> the next queued or future message
+  // matching predicate. timeoutMs is optional: omit it to wait indefinitely
+  // (still rejected promptly by a "close" event via fail()) — used for every
+  // wait past initial negotiation, since the data channel's own reliable,
+  // ordered delivery is what bounds how long a well-behaved peer takes to
+  // reply, not an arbitrary clock.
   wait(predicate, timeoutMs, label) {
     const index = this.messages.findIndex((entry) => predicate(entry.message));
     if (index !== -1) {
@@ -172,11 +185,13 @@ class ControlInbox {
     if (this.error) return Promise.reject(this.error);
     return new Promise((resolve, reject) => {
       const waiter = { predicate, reject, resolve, timer: null };
-      waiter.timer = setTimeout(() => {
-        const index2 = this.waiters.indexOf(waiter);
-        if (index2 !== -1) this.waiters.splice(index2, 1);
-        reject(timeoutError(label));
-      }, timeoutMs);
+      if (Number.isFinite(timeoutMs)) {
+        waiter.timer = setTimeout(() => {
+          const index2 = this.waiters.indexOf(waiter);
+          if (index2 !== -1) this.waiters.splice(index2, 1);
+          reject(timeoutError(label));
+        }, timeoutMs);
+      }
       this.waiters.push(waiter);
     });
   }
@@ -284,12 +299,6 @@ export class ReceiveTransferStore {
 
 const defaultReceiveTransferStore = new ReceiveTransferStore();
 
-function validateLegacyFile(file) {
-  const nameBytes = new TextEncoder().encode(file.name).byteLength;
-  if (!file.name || nameBytes > 255 || /[\\/\0]/.test(file.name) || file.size > LEGACY_MAX_BYTES ||
-      (file.type || "").length > 128) throw new Error("file is not compatible with a legacy receiver");
-}
-
 class SenderSession {
   constructor(channel, files, options = {}) {
     this.channel = channel;
@@ -306,110 +315,65 @@ class SenderSession {
     this.started = true;
     await waitForOpen(this.channel);
     const negotiationTimeoutMs = this.options.negotiationTimeoutMs ?? DEFAULT_NEGOTIATION_TIMEOUT_MS;
-    let hello = null;
+    let hello;
     try {
       hello = await this.inbox.wait(
-        (message) => message.type === "hello" && Array.isArray(message.versions) && message.versions.includes(2),
+        (message) => message.type === "hello",
         negotiationTimeoutMs,
         "protocol negotiation",
       );
     } catch (error) {
-      if (error.code !== "TIMEOUT") throw error;
+      if (error.code === "TIMEOUT") throw new Error(OUTDATED_PEER_MESSAGE);
+      throw error;
     }
-    if (!hello) return this.sendLegacy();
-    return this.sendV2();
-  }
-
-  async sendLegacy() {
-    if (this.files.length !== 1) throw new Error("the receiving browser only supports one file");
-    const file = this.files[0];
-    validateLegacyFile(file);
-    sendControl(this.channel, { name: file.name, size: file.size, type: file.type || "application/octet-stream" });
-    let offset = 0;
-    while (offset < file.size) {
-      await waitForBuffer(this.channel, this.options.bufferedHighWatermark ?? DEFAULT_BUFFER_HIGH_WATERMARK);
-      const length = Math.min(DEFAULT_CHUNK_SIZE, file.size - offset);
-      const bytes = await readChunk(file, offset, length);
-      this.channel.send(bytes.buffer);
-      offset += bytes.byteLength;
-      this.options.onProgress?.({ version: 1, file, sent: offset, total: file.size });
-    }
-    this.channel.send("done");
-    await waitForDrain(this.channel, this.options.drainPollMs ?? 50);
-    return { version: 1, transferId: null, files: 1, bytes: file.size };
+    if (!Array.isArray(hello.versions) || !hello.versions.includes(3)) throw new Error(OUTDATED_PEER_MESSAGE);
+    return this.sendV3();
   }
 
   async waitControl(predicate, label) {
     const message = await this.inbox.wait(
       (value) => value.type === "error" || predicate(value),
-      this.options.ackTimeoutMs ?? DEFAULT_ACK_TIMEOUT_MS,
+      undefined,
       label,
     );
     if (message.type === "error") throw new Error(message.message || "receiver rejected the transfer");
     return message;
   }
 
-  async sendV2() {
+  async sendV3() {
     const manifest = buildTransferManifest(this.files, this.options);
-    sendControl(this.channel, { type: "hello", version: 2 });
-    sendControl(this.channel, { type: "manifest", manifest });
-    const resume = await this.waitControl(
-      (message) => message.type === "resume" && message.transferId === manifest.transferId,
-      "resume handshake",
-    );
+    sendControl(this.channel, {
+      type: "manifest",
+      transferId: manifest.transferId,
+      chunkSize: manifest.chunkSize,
+      files: manifest.files.map((file) => ({ id: file.id, name: file.name, size: file.size, type: file.type })),
+    });
+    const resume = await this.waitControl((message) => message.type === "resume", "resume handshake");
     const offsets = validateResumeOffsets(manifest, resume.offsets);
     let sent = manifest.files.reduce((sum, file) => sum + offsets[file.id], 0);
 
     for (let fileIndex = 0; fileIndex < manifest.files.length; fileIndex++) {
       const descriptor = manifest.files[fileIndex];
       const source = this.files[fileIndex];
-      let offset = offsets[descriptor.id];
+      const offset = offsets[descriptor.id];
       const digests = [];
       for (let prior = 0; prior < offset; prior += manifest.chunkSize) {
         const bytes = await readChunk(source, prior, Math.min(manifest.chunkSize, offset - prior));
         digests.push(await sha256Hex(bytes));
       }
 
-      while (offset < descriptor.size) {
-        const bytes = await readChunk(source, offset, Math.min(manifest.chunkSize, descriptor.size - offset));
-        const digest = await sha256Hex(bytes);
-        const header = {
-          type: "chunk",
-          fileId: descriptor.id,
-          seq: Math.floor(offset / manifest.chunkSize),
-          offset,
-          length: bytes.byteLength,
-          sha256: digest,
-        };
-        let acknowledged = false;
-        for (let attempt = 0; attempt < 4; attempt++) {
-          await waitForBuffer(this.channel, this.options.bufferedHighWatermark ?? DEFAULT_BUFFER_HIGH_WATERMARK);
-          const responsePromise = this.waitControl(
-            (message) => (message.type === "ack" || message.type === "nack") &&
-              message.fileId === descriptor.id && message.seq === header.seq,
-            "chunk acknowledgement",
-          );
-          sendControl(this.channel, header);
-          this.channel.send(bytes.buffer);
-          let response;
-          try {
-            response = await responsePromise;
-          } catch (error) {
-            if (error.code === "TIMEOUT" && attempt < 3) continue;
-            throw error;
-          }
-          if (response.type === "ack") {
-            if (response.offset !== offset + bytes.byteLength) throw new Error("invalid acknowledgement offset");
-            acknowledged = true;
-            break;
-          }
-          if (response.offset !== offset) throw new Error("invalid retry offset");
-        }
-        if (!acknowledged) throw new Error("chunk retry limit exceeded");
-        digests.push(digest);
-        offset += bytes.byteLength;
+      sendControl(this.channel, { type: "file-start", fileId: descriptor.id, offset });
+
+      let position = offset;
+      while (position < descriptor.size) {
+        const length = Math.min(manifest.chunkSize, descriptor.size - position);
+        const bytes = await readChunk(source, position, length);
+        await waitForBuffer(this.channel, this.options.bufferedHighWatermark ?? DEFAULT_BUFFER_HIGH_WATERMARK);
+        this.channel.send(bytes.buffer);
+        digests.push(await sha256Hex(bytes));
+        position += bytes.byteLength;
         sent += bytes.byteLength;
-        this.options.onProgress?.({ version: 2, file: descriptor, sent, total: manifest.totalSize });
+        this.options.onProgress?.({ file: descriptor, sent, total: manifest.totalSize });
       }
 
       const checksum = await transferChecksum(digests);
@@ -421,13 +385,11 @@ class SenderSession {
       await fileAck;
     }
 
-    const completeAck = this.waitControl(
-      (message) => message.type === "complete-ack" && message.transferId === manifest.transferId,
-      "transfer completion",
-    );
+    const completeAck = this.waitControl((message) => message.type === "complete-ack", "transfer completion");
     sendControl(this.channel, { type: "complete", transferId: manifest.transferId });
     await completeAck;
-    return { version: 2, transferId: manifest.transferId, files: manifest.files.length, bytes: manifest.totalSize };
+    await waitForFullDrain(this.channel);
+    return { transferId: manifest.transferId, files: manifest.files.length, bytes: manifest.totalSize };
   }
 
   dispose() {
@@ -435,41 +397,13 @@ class SenderSession {
   }
 }
 
-class LegacyReceiver {
-  constructor(meta) {
-    if (!meta || typeof meta.name !== "string" || !meta.name || /[\\/\0]/.test(meta.name) ||
-        !Number.isSafeInteger(meta.size) || meta.size < 0 || meta.size > LEGACY_MAX_BYTES ||
-        typeof meta.type !== "string" || new TextEncoder().encode(meta.name).byteLength > 255 || meta.type.length > 128) {
-      throw new Error("invalid legacy metadata");
-    }
-    this.file = { id: "legacy", name: meta.name, size: meta.size, type: meta.type || "application/octet-stream" };
-    this.chunks = [];
-    this.received = 0;
-  }
-
-  chunk(bytes) {
-    if (this.received + bytes.byteLength > this.file.size) throw new Error("legacy chunk exceeds declared size");
-    this.chunks.push(bytes.slice());
-    this.received += bytes.byteLength;
-  }
-
-  finish() {
-    if (this.received !== this.file.size) throw new Error("legacy transfer is incomplete");
-    const blob = new Blob(this.chunks, { type: this.file.type });
-    this.chunks = [];
-    return blob;
-  }
-}
-
 class ReceiverSession {
   constructor(channel, options = {}) {
     this.channel = channel;
     this.options = options;
-    this.mode = null;
     this.protocol = null;
     this.sink = null;
-    this.legacy = null;
-    this.pendingHeader = null;
+    this.currentFileId = null;
     this.finished = false;
     this.transferStore = options.transferStore || defaultReceiveTransferStore;
     this.transferId = null;
@@ -478,7 +412,7 @@ class ReceiverSession {
     channel.binaryType = "arraybuffer";
     this.done = new Promise((resolve, reject) => { this.resolveDone = resolve; this.rejectDone = reject; });
     this.onOpen = () => {
-      try { sendControl(channel, { type: "hello", versions: [2, 1] }); } catch (error) { this.fail(error); }
+      try { sendControl(channel, { type: "hello", versions: [3] }); } catch (error) { this.fail(error); }
     };
     this.onMessage = ({ data }) => {
       this.queue = this.queue.then(() => this.handle(data)).catch((error) => this.fail(error));
@@ -499,28 +433,24 @@ class ReceiverSession {
   async handle(data) {
     if (this.finished) throw new Error("message received after transfer completion");
     if (typeof data !== "string") return this.handleBinary(await asBytes(data));
-    if (this.mode === "legacy" && data === "done") return this.finishLegacy();
     const message = parseControl(data);
-    if (!this.mode && typeof message.name === "string" && Number.isSafeInteger(message.size)) {
-      this.mode = "legacy";
-      this.legacy = new LegacyReceiver(message);
-      return;
-    }
     if (message.type === "hello") return;
-    if (message.type === "manifest") return this.startV2(message.manifest);
-    if (message.type === "chunk") {
-      if (this.mode !== "v2" || !this.protocol || this.pendingHeader) throw new Error("chunk header out of order");
-      this.pendingHeader = message;
-      return;
-    }
-    if (message.type === "file-done") return this.finishV2File(message);
-    if (message.type === "complete") return this.finishV2(message);
+    if (message.type === "manifest") return this.startTransfer(message);
+    if (message.type === "file-start") return this.startFile(message);
+    if (message.type === "file-done") return this.finishFile(message);
+    if (message.type === "complete") return this.finishTransfer(message);
+    if (message.type === "error") throw new Error(message.message || "sender reported an error");
     throw new Error("unsupported control message");
   }
 
-  async startV2(value) {
-    if (this.mode || this.protocol) throw new Error("manifest out of order");
-    const manifest = validateManifest(value);
+  async startTransfer(message) {
+    if (this.protocol) throw new Error("manifest out of order");
+    const manifest = validateManifest({
+      version: 3,
+      transferId: message.transferId,
+      chunkSize: message.chunkSize,
+      files: message.files,
+    });
     const entry = await this.transferStore.acquire(manifest, async (normalizedManifest) => (
       this.options.sinkFactory
         ? this.options.sinkFactory(normalizedManifest)
@@ -530,54 +460,50 @@ class ReceiverSession {
     this.protocol = entry.protocol;
     this.transferId = manifest.transferId;
     this.attached = true;
-    this.mode = "v2";
     this.options.onSink?.(this.sink, manifest);
-    sendControl(this.channel, { type: "resume", transferId: manifest.transferId, offsets: this.protocol.resumeOffsets() });
+    sendControl(this.channel, { type: "resume", offsets: this.protocol.resumeOffsets() });
+  }
+
+  async startFile(message) {
+    if (!this.protocol || this.currentFileId) throw new Error("file-start out of order");
+    const state = this.protocol.fileState(message.fileId);
+    if (!Number.isSafeInteger(message.offset) || message.offset < 0 || message.offset > state.file.size) {
+      throw new Error("invalid file-start offset");
+    }
+    if (message.offset !== state.offset) throw new Error("unexpected file-start offset");
+    this.currentFileId = message.fileId;
   }
 
   async handleBinary(bytes) {
-    if (this.mode === "legacy") {
-      this.legacy.chunk(bytes);
-      this.options.onProgress?.({ version: 1, received: this.legacy.received, total: this.legacy.file.size, file: this.legacy.file });
-      return;
-    }
-    if (this.mode !== "v2" || !this.protocol || !this.pendingHeader) throw new Error("binary chunk out of order");
-    const header = this.pendingHeader;
-    this.pendingHeader = null;
-    const response = await this.protocol.chunk(header, bytes);
-    sendControl(this.channel, response);
+    if (!this.protocol || !this.currentFileId) throw new Error("binary chunk out of order");
+    // One binary message is one chunk — SCTP preserves message boundaries, so
+    // there is no per-chunk header to parse or reassemble.
+    await this.protocol.chunk(this.currentFileId, bytes);
     const received = Object.values(this.protocol.resumeOffsets()).reduce((sum, value) => sum + value, 0);
-    this.options.onProgress?.({ version: 2, received, total: this.protocol.manifest.totalSize, fileId: header.fileId });
+    this.options.onProgress?.({ received, total: this.protocol.manifest.totalSize, fileId: this.currentFileId });
   }
 
-  async finishV2File(message) {
-    if (this.mode !== "v2" || !this.protocol || this.pendingHeader) throw new Error("file completion out of order");
+  async finishFile(message) {
+    if (!this.protocol || message.fileId !== this.currentFileId) throw new Error("file-done out of order");
+    if (typeof message.checksum !== "string" || !/^PT-SHA256-v1:[0-9a-f]{64}$/i.test(message.checksum)) {
+      throw new Error("invalid checksum");
+    }
     const result = await this.protocol.finish(message.fileId, message.checksum);
+    this.currentFileId = null;
     if (!result.replayed) await this.options.onFile?.(result.file, result.value, this.sink);
     sendControl(this.channel, { type: "file-ack", fileId: result.file.id });
   }
 
-  async finishV2(message) {
-    if (this.mode !== "v2" || !this.protocol || message.transferId !== this.protocol.manifest.transferId) {
+  async finishTransfer(message) {
+    if (!this.protocol || message.transferId !== this.protocol.manifest.transferId) {
       throw new Error("transfer completion out of order");
     }
     const result = this.protocol.complete();
-    sendControl(this.channel, { type: "complete-ack", transferId: result.transferId });
+    sendControl(this.channel, { type: "complete-ack" });
     this.finished = true;
     this.transferStore.complete(result.transferId);
     this.attached = false;
-    const value = { version: 2, ...result };
-    try { await this.options.onComplete?.(value, this.sink); }
-    catch (error) { try { this.options.onError?.(error); } catch {} }
-    this.resolveDone(value);
-  }
-
-  async finishLegacy() {
-    const value = this.legacy.finish();
-    await this.options.onFile?.(this.legacy.file, value, null);
-    this.finished = true;
-    const result = { version: 1, transferId: null, files: 1, bytes: this.legacy.file.size };
-    try { await this.options.onComplete?.(result, null); }
+    try { await this.options.onComplete?.(result, this.sink); }
     catch (error) { try { this.options.onError?.(error); } catch {} }
     this.resolveDone(result);
   }

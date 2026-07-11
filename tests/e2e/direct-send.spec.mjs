@@ -111,7 +111,7 @@ test("receiver applies a replacement offer through hashchange in the same tab", 
   await expect(page.locator("#abortReceiveBtn")).toBeVisible();
 });
 
-test("Direct Send v2 transfers multiple files over a real data channel", async ({ page }) => {
+test("Direct Send v3 transfers multiple files over a real data channel", async ({ page }) => {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/send/");
@@ -140,7 +140,7 @@ test("Direct Send v2 transfers multiple files over a real data channel", async (
     const sender = createSenderSession(channel, [
       new File(["alpha"], "a.txt", { type: "text/plain" }),
       new File(["beta"], "b.txt", { type: "text/plain" }),
-    ], { transferId: "browser-e2e", chunkSize: 3, negotiationTimeoutMs: 2000, ackTimeoutMs: 2000 });
+    ], { transferId: "browser-e2e", chunkSize: 3, negotiationTimeoutMs: 2000 });
     const sent = await sender.start();
     while (!receiver) await new Promise((resolve) => setTimeout(resolve, 0));
     const received = await receiver.done;
@@ -151,8 +151,8 @@ test("Direct Send v2 transfers multiple files over a real data channel", async (
     return { sent, received, outputs };
   });
 
-  expect(result.sent).toEqual({ version: 2, transferId: "browser-e2e", files: 2, bytes: 9 });
-  expect(result.received).toEqual({ version: 2, transferId: "browser-e2e", files: 2, bytes: 9 });
+  expect(result.sent).toEqual({ transferId: "browser-e2e", files: 2, bytes: 9 });
+  expect(result.received).toEqual({ transferId: "browser-e2e", files: 2, bytes: 9 });
   expect(result.outputs).toEqual([["a.txt", "alpha"], ["b.txt", "beta"]]);
   expect(errors).toEqual([]);
 });
@@ -183,40 +183,54 @@ test("Direct Send reconnects real data channels and resumes verified bytes", asy
       });
     }
 
-    async function openConnection({ disconnectAfterFirstAck, sinkFactory, onFile }) {
+    // v3 has no per-chunk ack to hang a "disconnect partway through the
+    // file" test off of — the sender just streams chunks back-to-back. To
+    // deterministically interrupt after exactly one verified chunk, the
+    // second binary chunk send is intercepted and dropped outright (so it
+    // never reaches the wire at all), and the actual disconnect waits for
+    // the receiver's onProgress to confirm the first chunk was durably
+    // written before tearing the connections down.
+    async function openConnection({ disconnectAfterFirstChunk, sinkFactory, onFile }) {
       const senderPC = new RTCPeerConnection({ iceServers: [] });
       const receiverPC = new RTCPeerConnection({ iceServers: [] });
       const channel = senderPC.createDataChannel("resume");
-      const observed = { resumeOffset: null, chunkOffsets: [] };
+      const observed = { resumeOffset: null, fileStartOffsets: [] };
       let receiver = null;
-      let interrupted = false;
+      let firstChunkWritten = null;
+      const firstChunkWrittenPromise = disconnectAfterFirstChunk
+        ? new Promise((resolve) => { firstChunkWritten = resolve; })
+        : null;
+
+      if (disconnectAfterFirstChunk) {
+        const originalSend = channel.send.bind(channel);
+        let binarySent = 0;
+        channel.send = (value) => {
+          if (value instanceof ArrayBuffer && ++binarySent === 2) return;
+          originalSend(value);
+        };
+      }
+
       channel.addEventListener("message", ({ data }) => {
         if (typeof data !== "string") return;
         const message = JSON.parse(data);
         if (message.type === "resume") observed.resumeOffset = message.offsets.f0;
-        if (disconnectAfterFirstAck && !interrupted && message.type === "ack" && message.offset === 4) {
-          interrupted = true;
-          channel.close();
-          senderPC.close();
-          receiverPC.close();
-        }
       });
       const sender = createSenderSession(channel, [source], {
         chunkSize: 4,
         transferId: "browser-real-resume",
         negotiationTimeoutMs: 2000,
-        ackTimeoutMs: 2000,
       });
       receiverPC.ondatachannel = ({ channel: incoming }) => {
         incoming.addEventListener("message", ({ data }) => {
           if (typeof data !== "string") return;
           const message = JSON.parse(data);
-          if (message.type === "chunk") observed.chunkOffsets.push(message.offset);
+          if (message.type === "file-start") observed.fileStartOffsets.push(message.offset);
         });
         receiver = createReceiverSession(incoming, {
           transferStore: store,
           sinkFactory,
           onFile,
+          onProgress: disconnectAfterFirstChunk ? () => firstChunkWritten?.() : undefined,
         });
       };
 
@@ -229,26 +243,31 @@ test("Direct Send reconnects real data channels and resumes verified bytes", asy
       await waitForIce(receiverPC);
       await senderPC.setRemoteDescription(receiverPC.localDescription);
       while (!receiver) await new Promise((resolve) => setTimeout(resolve, 0));
-      return { senderPC, receiverPC, sender, get receiver() { return receiver; }, observed };
+      return { senderPC, receiverPC, sender, get receiver() { return receiver; }, observed, firstChunkWrittenPromise };
     }
 
     const first = await openConnection({
-      disconnectAfterFirstAck: true,
+      disconnectAfterFirstChunk: true,
       sinkFactory: async () => sink,
     });
-    const firstSend = await first.sender.start().then(
+    const firstSendPromise = first.sender.start().then(
       () => ({ ok: true }),
       (error) => ({ ok: false, error: error.message }),
     );
-    const firstReceive = await first.receiver.done.then(
+    const firstReceivePromise = first.receiver.done.then(
       () => ({ ok: true }),
       (error) => ({ ok: false, error: error.message }),
     );
+    await first.firstChunkWrittenPromise;
+    first.senderPC.close();
+    first.receiverPC.close();
+    const firstSend = await firstSendPromise;
+    const firstReceive = await firstReceivePromise;
     first.sender.dispose();
     first.receiver.dispose();
 
     const second = await openConnection({
-      disconnectAfterFirstAck: false,
+      disconnectAfterFirstChunk: false,
       sinkFactory: async () => { throw new Error("resume created a second sink"); },
       onFile: async (file, value) => outputs.push([file.name, await value.text()]),
     });
@@ -263,7 +282,7 @@ test("Direct Send reconnects real data channels and resumes verified bytes", asy
       firstSend,
       firstReceive,
       resumeOffset: second.observed.resumeOffset,
-      chunkOffsets: second.observed.chunkOffsets,
+      fileStartOffsets: second.observed.fileStartOffsets,
       sent,
       received,
       outputs,
@@ -273,7 +292,7 @@ test("Direct Send reconnects real data channels and resumes verified bytes", asy
   expect(result.firstSend.ok).toBe(false);
   expect(result.firstReceive.ok).toBe(false);
   expect(result.resumeOffset).toBe(4);
-  expect(result.chunkOffsets).toEqual([4]);
+  expect(result.fileStartOffsets).toEqual([4]);
   expect(result.sent.bytes).toBe(8);
   expect(result.received.bytes).toBe(8);
   expect(result.outputs).toEqual([["resume.bin", "abcdefgh"]]);

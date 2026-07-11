@@ -41,7 +41,7 @@ export function safeFileName(name, used) {
 }
 
 export function validateManifest(value) {
-  if (!value || value.version !== 2 || typeof value.transferId !== "string" ||
+  if (!value || value.version !== 3 || typeof value.transferId !== "string" ||
       value.transferId.length < 1 || value.transferId.length > 128 ||
       !Number.isSafeInteger(value.chunkSize) || value.chunkSize < 1 || value.chunkSize > MAX_CHUNK_BYTES ||
       !Array.isArray(value.files) || value.files.length < 1 || value.files.length > MAX_FILES) {
@@ -66,7 +66,7 @@ export function validateManifest(value) {
     if (!Number.isSafeInteger(totalChunks) || totalChunks > MAX_CHUNKS) throw new Error("transfer has too many chunks");
     return Object.freeze({ id: file.id, name, size: file.size, type: file.type || "application/octet-stream" });
   });
-  return Object.freeze({ version: 2, transferId: value.transferId, chunkSize: value.chunkSize, files, totalSize });
+  return Object.freeze({ version: 3, transferId: value.transferId, chunkSize: value.chunkSize, files, totalSize });
 }
 
 export class ReceiverProtocol {
@@ -75,69 +75,61 @@ export class ReceiverProtocol {
     this.sink = sink;
     this.manifest = null;
     this.states = new Map();
-    this.retries = new Map();
     this.finished = new Map();
   }
 
   start(manifest) {
     if (this.manifest) throw new Error("transfer already started");
     this.manifest = validateManifest(manifest);
-    for (const file of this.manifest.files) this.states.set(file.id, { file, offset: 0, seq: 0, digests: [], last: null });
+    for (const file of this.manifest.files) this.states.set(file.id, { file, offset: 0, digests: [] });
     return this.manifest;
+  }
+
+  // fileState(fileId) -> the per-file resume/digest bookkeeping, or throws
+  // "unknown file id" for any id not present in the manifest (including
+  // non-string ids, since Map#get on a foreign key just misses).
+  fileState(fileId) {
+    if (!this.manifest) throw new Error("transfer not started");
+    const state = this.states.get(fileId);
+    if (!state) throw new Error("unknown file id");
+    return state;
   }
 
   resumeOffsets() {
     if (!this.manifest) throw new Error("transfer not started");
-    return Object.fromEntries([...this.states].map(([id, state]) => [id, state.offset]));
+    const { chunkSize } = this.manifest;
+    const offsets = {};
+    for (const [id, state] of this.states) {
+      // Every chunk write below is whole-chunk-atomic, so state.offset should
+      // already be chunk-aligned (or equal to the file size) by construction.
+      // Floor+truncate anyway as a defensive invariant for whatever produced
+      // this state, since a misaligned resume offset would desync the sender's
+      // composite checksum from the receiver's stored digest list.
+      if (state.offset !== state.file.size && state.offset % chunkSize !== 0) {
+        const aligned = Math.floor(state.offset / chunkSize) * chunkSize;
+        state.digests = state.digests.slice(0, Math.floor(aligned / chunkSize));
+        state.offset = aligned;
+      }
+      offsets[id] = state.offset;
+    }
+    return offsets;
   }
 
-  async chunk(header, payload) {
-    if (!this.manifest) throw new Error("transfer not started");
+  async chunk(fileId, payload) {
     if (!(payload instanceof Uint8Array)) throw new Error("chunk payload must be bytes");
-    const state = this.states.get(header?.fileId);
-    if (!state) throw new Error("unknown file id");
-    if (!Number.isSafeInteger(header.seq) || header.seq < 0) throw new Error("unexpected chunk sequence");
-    if (!Number.isSafeInteger(header.offset) || header.offset < 0) throw new Error("unexpected chunk offset");
-    if (!Number.isSafeInteger(header.length) || header.length !== payload.byteLength || header.length <= 0 ||
-        header.length > this.manifest.chunkSize || header.offset + header.length > state.file.size) {
-      throw new Error("invalid chunk length");
-    }
-    if (typeof header.sha256 !== "string" || !/^[0-9a-f]{64}$/i.test(header.sha256)) throw new Error("invalid chunk hash");
-    const actual = await sha256Hex(payload);
-    const retryKey = `${state.file.id}:${header.seq}`;
-    if (state.last && header.seq === state.last.seq && header.offset === state.last.offset &&
-        header.length === state.last.length && header.sha256.toLowerCase() === state.last.sha256) {
-      if (actual !== state.last.sha256) {
-        const attempts = (this.retries.get(retryKey) || 0) + 1;
-        this.retries.set(retryKey, attempts);
-        if (attempts > 3) throw new Error("chunk retry limit exceeded");
-        return { type: "nack", fileId: state.file.id, seq: header.seq, offset: header.offset };
-      }
-      this.retries.delete(retryKey);
-      return state.last.ack;
-    }
-    if (header.seq !== state.seq) throw new Error("unexpected chunk sequence");
-    if (header.offset !== state.offset) throw new Error("unexpected chunk offset");
-    if (actual !== header.sha256.toLowerCase()) {
-      const attempts = (this.retries.get(retryKey) || 0) + 1;
-      this.retries.set(retryKey, attempts);
-      if (attempts > 3) throw new Error("chunk retry limit exceeded");
-      return { type: "nack", fileId: state.file.id, seq: state.seq, offset: state.offset };
-    }
+    const state = this.fileState(fileId);
+    if (state.offset >= state.file.size) throw new Error("file has no remaining bytes");
+    const expectedLength = Math.min(this.manifest.chunkSize, state.file.size - state.offset);
+    if (payload.byteLength !== expectedLength) throw new Error("unexpected chunk length");
+    const digest = await sha256Hex(payload);
     await this.sink.write(state.file, state.offset, payload);
-    this.retries.delete(retryKey);
     state.offset += payload.byteLength;
-    state.seq++;
-    state.digests.push(actual);
-    const ack = { type: "ack", fileId: state.file.id, seq: header.seq, offset: state.offset };
-    state.last = { seq: header.seq, offset: header.offset, length: header.length, sha256: actual, ack };
-    return ack;
+    state.digests.push(digest);
+    return { offset: state.offset };
   }
 
   async finish(fileId, checksum) {
-    if (!this.manifest) throw new Error("transfer not started");
-    const state = this.states.get(fileId);
-    if (!state) throw new Error("unknown file id");
+    const state = this.fileState(fileId);
     if (state.offset !== state.file.size) throw new Error("file is incomplete");
     const expected = await transferChecksum(state.digests);
     if (checksum !== expected) throw new Error("file checksum mismatch");
