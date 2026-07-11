@@ -65,3 +65,9 @@ test("batch page derives interleave bounds from the catalog", async () => {
   const page = await readFile(new URL("../web/batch/batch-page.mjs", import.meta.url), "utf8");
   assert.doesNotMatch(page, /operationId === ["']interleave["']/);
 });
+
+test("PWA manifest uses the visible catalog count", async () => {
+  const manifest = JSON.parse(await readFile(new URL("../web/manifest.webmanifest", import.meta.url), "utf8"));
+  const visibleCount = catalog.filter((entry) => entry.page !== false).length;
+  assert.match(manifest.description, new RegExp(`\\b${visibleCount}\\b`));
+});
