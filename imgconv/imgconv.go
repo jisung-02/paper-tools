@@ -10,14 +10,31 @@ import (
 	"image/png"
 )
 
+const maxImagePixels uint64 = 16 * 1024 * 1024
+
+func decodeImage(data []byte) (image.Image, string, error) {
+	config, _, err := image.DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		return nil, "", fmt.Errorf("decode config: %w", err)
+	}
+	if config.Width <= 0 || config.Height <= 0 || uint64(config.Width)*uint64(config.Height) > maxImagePixels {
+		return nil, "", fmt.Errorf("image exceeds pixel budget of %d", maxImagePixels)
+	}
+	img, format, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, "", fmt.Errorf("decode: %w", err)
+	}
+	return img, format, nil
+}
+
 // Convert decodes image data and re-encodes it to the specified format.
 // format must be one of "png", "jpeg", or "gif" (lowercase).
 // For JPEG, jpegQuality is used (defaults to 85 if <= 0).
 // Returns the encoded bytes or an error if decoding/encoding fails.
 func Convert(data []byte, format string, jpegQuality int) ([]byte, error) {
-	img, _, err := image.Decode(bytes.NewReader(data))
+	img, _, err := decodeImage(data)
 	if err != nil {
-		return nil, fmt.Errorf("decode: %w", err)
+		return nil, err
 	}
 
 	var buf bytes.Buffer
@@ -62,9 +79,9 @@ func Convert(data []byte, format string, jpegQuality int) ([]byte, error) {
 // Returns the encoded bytes, the detected/output format name, or an error
 // if decoding/encoding fails.
 func Resize(data []byte, maxW, maxH int, jpegQuality int) ([]byte, string, error) {
-	img, format, err := image.Decode(bytes.NewReader(data))
+	img, format, err := decodeImage(data)
 	if err != nil {
-		return nil, "", fmt.Errorf("decode: %w", err)
+		return nil, "", err
 	}
 
 	scaled := scaleToFit(img, maxW, maxH)
@@ -171,14 +188,14 @@ func boxResize(src image.Image, newW, newH int) *image.NRGBA {
 				x1 = srcW
 			}
 
-			var rSum, gSum, bSum, aSum, n uint32
+			var rSum, gSum, bSum, aSum, n uint64
 			for sy := y0; sy < y1; sy++ {
 				for sx := x0; sx < x1; sx++ {
 					c := color.NRGBAModel.Convert(src.At(b.Min.X+sx, b.Min.Y+sy)).(color.NRGBA)
-					rSum += uint32(c.R)
-					gSum += uint32(c.G)
-					bSum += uint32(c.B)
-					aSum += uint32(c.A)
+					rSum += uint64(c.R)
+					gSum += uint64(c.G)
+					bSum += uint64(c.B)
+					aSum += uint64(c.A)
 					n++
 				}
 			}

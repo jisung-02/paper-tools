@@ -7,6 +7,7 @@ import (
 	"math"
 	"sort"
 	"unicode/utf16"
+	"unicode/utf8"
 )
 
 // ---------------------------------------------------------------- parsing ---
@@ -282,6 +283,11 @@ func parseCmapFormat12(data []byte, subOff uint32) map[rune]uint16 {
 		return nil
 	}
 	nGroups := binary.BigEndian.Uint32(data[subOff+12 : subOff+16])
+	if uint64(subOff)+16+uint64(nGroups)*12 > uint64(len(data)) {
+		return nil
+	}
+	const maxMappings = 1_200_000
+	var mappings uint64
 	m := map[rune]uint16{}
 	for i := uint32(0); i < nGroups; i++ {
 		off := subOff + 16 + i*12
@@ -291,6 +297,14 @@ func parseCmapFormat12(data []byte, subOff uint32) map[rune]uint16 {
 		startChar := binary.BigEndian.Uint32(data[off : off+4])
 		endChar := binary.BigEndian.Uint32(data[off+4 : off+8])
 		startGlyph := binary.BigEndian.Uint32(data[off+8 : off+12])
+		if endChar < startChar || endChar > utf8.MaxRune {
+			return nil
+		}
+		span := uint64(endChar) - uint64(startChar) + 1
+		if mappings > maxMappings-span {
+			return nil
+		}
+		mappings += span
 		for c := startChar; c <= endChar; c++ {
 			gid := startGlyph + (c - startChar)
 			if gid <= 0xFFFF {
@@ -627,6 +641,7 @@ func embedTTF(b *builder, f *ttfFont, usedRunesInOrder []rune) (Ref, error) {
 // text.go) expects: beginbfchar/endbfchar blocks of "<code> <utf16be>" pairs.
 func embedToUnicode(b *builder, f *ttfFont, usedRunesInOrder []rune) (Ref, error) {
 	seen := map[rune]bool{}
+	seenGlyphs := map[uint16]rune{}
 	var lines []string
 	for _, r := range usedRunesInOrder {
 		if seen[r] {
@@ -637,6 +652,10 @@ func embedToUnicode(b *builder, f *ttfFont, usedRunesInOrder []rune) (Ref, error
 		if !ok {
 			continue
 		}
+		if previous, exists := seenGlyphs[gid]; exists && previous != r {
+			return Ref{}, fmt.Errorf("ambiguous ToUnicode mapping: glyph %d maps both %U and %U", gid, previous, r)
+		}
+		seenGlyphs[gid] = r
 		units := utf16.Encode([]rune{r})
 		var hexVal bytes.Buffer
 		for _, u := range units {

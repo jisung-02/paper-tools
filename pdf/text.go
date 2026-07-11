@@ -2,10 +2,21 @@ package pdf
 
 import (
 	"bytes"
+	"errors"
 	"strconv"
 	"strings"
 	"unicode/utf16"
 )
+
+const maxToUnicodeMappings = 65536
+
+// ErrToUnicodeCMapLimit reports a ToUnicode CMap whose mappings exceed the
+// bounded work ExtractText is willing to perform for one font.
+var ErrToUnicodeCMapLimit = errors.New("ToUnicode CMap mapping limit exceeded")
+
+// ErrToUnicodeCMapCode reports a source code wider than the font's declared
+// one- or two-byte character code width.
+var ErrToUnicodeCMapCode = errors.New("ToUnicode CMap code exceeds font code width")
 
 // fontDecoder maps character codes shown by a content stream's Tj/TJ
 // operators to unicode text, for one font resource.
@@ -49,30 +60,48 @@ func (f *fontDecoder) decode(s []byte) string {
 var fallbackFontDecoder = &fontDecoder{codeBytes: 1}
 
 // buildFontDecoder inspects a resolved font dict and constructs its decoder.
-func (d *Doc) buildFontDecoder(fontDict Dict) *fontDecoder {
+func (d *Doc) buildFontDecoder(fontDict Dict) (*fontDecoder, error) {
 	fd := &fontDecoder{codeBytes: 1}
 	if sub, _ := d.R(fontDict["Subtype"]).(Name); sub == "Type0" {
 		fd.codeBytes = 2
 	}
 	if tuRef, ok := fontDict["ToUnicode"]; ok {
 		if st, ok := d.R(tuRef).(*Stream); ok {
-			if data, err := d.decodeStream(st); err == nil {
-				fd.toUnicode = parseToUnicodeCMap(data)
+			data, err := d.decodeStream(st)
+			if err != nil {
+				return nil, err
 			}
+			m, err := parseToUnicodeCMap(data, fd.codeBytes)
+			if err != nil {
+				return nil, err
+			}
+			fd.toUnicode = m
 		}
 	}
-	return fd
+	return fd, nil
 }
 
 // parseToUnicodeCMap extracts a code -> unicode-text map from the decoded
 // bytes of a /ToUnicode CMap stream. It's a best-effort scanner over
 // beginbfchar/endbfchar and beginbfrange/endbfrange blocks, not a full
 // PostScript interpreter.
-func parseToUnicodeCMap(data []byte) map[uint32]string {
+func parseToUnicodeCMap(data []byte, codeBytes int) (map[uint32]string, error) {
 	m := map[uint32]string{}
-	parseCMapBlock(data, []byte("beginbfchar"), []byte("endbfchar"), func(toks [][]byte) {
+	mappings := 0
+	add := func(code uint32, val string) error {
+		if mappings >= maxToUnicodeMappings {
+			return ErrToUnicodeCMapLimit
+		}
+		m[code] = val
+		mappings++
+		return nil
+	}
+	if err := parseCMapBlock(data, []byte("beginbfchar"), []byte("endbfchar"), func(toks [][]byte) error {
 		for i := 0; i+1 < len(toks); i += 2 {
-			code, ok := hexToken(toks[i])
+			if codeTokenTooWide(toks[i], codeBytes) {
+				return ErrToUnicodeCMapCode
+			}
+			code, ok := hexCodeToken(toks[i], codeBytes)
 			if !ok {
 				continue
 			}
@@ -80,14 +109,22 @@ func parseToUnicodeCMap(data []byte) map[uint32]string {
 			if !ok {
 				continue
 			}
-			m[code] = val
+			if err := add(code, val); err != nil {
+				return err
+			}
 		}
-	})
-	parseCMapBlock(data, []byte("beginbfrange"), []byte("endbfrange"), func(toks [][]byte) {
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	if err := parseCMapBlock(data, []byte("beginbfrange"), []byte("endbfrange"), func(toks [][]byte) error {
 		i := 0
 		for i+2 < len(toks) {
-			lo, ok1 := hexToken(toks[i])
-			hi, ok2 := hexToken(toks[i+1])
+			if codeTokenTooWide(toks[i], codeBytes) || codeTokenTooWide(toks[i+1], codeBytes) {
+				return ErrToUnicodeCMapCode
+			}
+			lo, ok1 := hexCodeToken(toks[i], codeBytes)
+			hi, ok2 := hexCodeToken(toks[i+1], codeBytes)
 			if !ok1 || !ok2 {
 				i++
 				continue
@@ -101,7 +138,9 @@ func parseToUnicodeCMap(data []byte) map[uint32]string {
 						break
 					}
 					if val, ok := utf16Token(tok); ok {
-						m[code] = val
+						if err := add(code, val); err != nil {
+							return err
+						}
 					}
 				}
 				i += 3
@@ -110,33 +149,45 @@ func parseToUnicodeCMap(data []byte) map[uint32]string {
 			// <lo> <hi> <dst> — increment dst per code.
 			dst, ok := utf16RuneToken(toks[i+2])
 			if ok {
-				for code := lo; code <= hi; code++ {
-					m[code] = string(rune(int(dst) + int(code-lo)))
+				count := uint64(hi) - uint64(lo) + 1
+				if count > uint64(maxToUnicodeMappings-mappings) {
+					return ErrToUnicodeCMapLimit
+				}
+				for offset := uint64(0); offset < count; offset++ {
+					code := lo + uint32(offset)
+					if err := add(code, string(rune(int(dst)+int(offset)))); err != nil {
+						return err
+					}
 				}
 			}
 			i += 3
 		}
-	})
-	return m
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // parseCMapBlock finds every [start ... end] block in data and calls fn with
 // the whitespace/token-separated <...> and [...] tokens found inside.
-func parseCMapBlock(data, start, end []byte, fn func(toks [][]byte)) {
+func parseCMapBlock(data, start, end []byte, fn func(toks [][]byte) error) error {
 	pos := 0
 	for {
 		si := bytes.Index(data[pos:], start)
 		if si < 0 {
-			return
+			return nil
 		}
 		si += pos
 		ei := bytes.Index(data[si:], end)
 		if ei < 0 {
-			return
+			return nil
 		}
 		ei += si
 		body := data[si+len(start) : ei]
-		fn(tokenizeCMapBody(body))
+		if err := fn(tokenizeCMapBody(body)); err != nil {
+			return err
+		}
 		pos = ei + len(end)
 	}
 }
@@ -192,6 +243,35 @@ func hexToken(tok []byte) (uint32, bool) {
 		return 0, false
 	}
 	return v, true
+}
+
+func hexCodeToken(tok []byte, codeBytes int) (uint32, bool) {
+	if codeBytes != 1 && codeBytes != 2 {
+		return 0, false
+	}
+	digits := 0
+	for _, c := range tok {
+		if !isWS(c) && c != '<' && c != '>' {
+			digits++
+		}
+	}
+	if digits != codeBytes*2 {
+		return 0, false
+	}
+	return hexToken(tok)
+}
+
+func codeTokenTooWide(tok []byte, codeBytes int) bool {
+	if codeBytes != 1 && codeBytes != 2 {
+		return true
+	}
+	digits := 0
+	for _, c := range tok {
+		if !isWS(c) && c != '<' && c != '>' {
+			digits++
+		}
+	}
+	return digits > codeBytes*2
 }
 
 // utf16Token decodes a "<...>" token as UTF-16BE bytes into a Go string.
@@ -532,7 +612,10 @@ func ExtractText(file []byte) (string, error) {
 
 	var out strings.Builder
 	for i, page := range pages {
-		text := extractPageText(d, page)
+		text, err := extractPageText(d, page)
+		if err != nil {
+			return "", err
+		}
 		out.WriteString(text)
 		if i != len(pages)-1 {
 			out.WriteString("\n\n")
@@ -543,12 +626,18 @@ func ExtractText(file []byte) (string, error) {
 
 // extractPageText is best-effort: any failure to resolve content/fonts for
 // this page just yields an empty string for it, never an error.
-func extractPageText(d *Doc, page Page) string {
-	content := pageContentBytes(d, page)
-	if content == nil {
-		return ""
+func extractPageText(d *Doc, page Page) (string, error) {
+	content, err := pageContentBytes(d, page)
+	if err != nil {
+		return "", err
 	}
-	fonts := pageFontDecoders(d, page)
+	if content == nil {
+		return "", nil
+	}
+	fonts, err := pageFontDecoders(d, page)
+	if err != nil {
+		return "", err
+	}
 
 	var out strings.Builder
 	var cur *fontDecoder
@@ -610,28 +699,28 @@ func extractPageText(d *Doc, page Page) string {
 		}
 		pending = pending[:0]
 	}
-	return out.String()
+	return out.String(), nil
 }
 
 // pageContentBytes resolves and concatenates a page's /Contents stream(s).
 // /Contents lives on the page's own dict (it's not one of the inheritable
 // attributes Pages() copies into page.Attrs), so it's fetched via d.Get.
-func pageContentBytes(d *Doc, page Page) []byte {
+func pageContentBytes(d *Doc, page Page) ([]byte, error) {
 	pageDict, ok := d.Get(page.Num).(Dict)
 	if !ok {
-		return nil
+		return nil, nil
 	}
 	contents, ok := pageDict["Contents"]
 	if !ok {
-		return nil
+		return nil, nil
 	}
 	switch v := d.R(contents).(type) {
 	case *Stream:
 		data, err := d.decodeStream(v)
 		if err != nil {
-			return nil
+			return nil, err
 		}
-		return data
+		return data, nil
 	case Array:
 		var parts [][]byte
 		for _, item := range v {
@@ -641,33 +730,37 @@ func pageContentBytes(d *Doc, page Page) []byte {
 			}
 			data, err := d.decodeStream(st)
 			if err != nil {
-				continue
+				return nil, err
 			}
 			parts = append(parts, data)
 		}
-		return bytes.Join(parts, []byte(" "))
+		return bytes.Join(parts, []byte(" ")), nil
 	}
-	return nil
+	return nil, nil
 }
 
 // pageFontDecoders resolves a page's /Resources /Font dict into a map of
 // font resource name -> decoder.
-func pageFontDecoders(d *Doc, page Page) map[Name]*fontDecoder {
+func pageFontDecoders(d *Doc, page Page) (map[Name]*fontDecoder, error) {
 	out := map[Name]*fontDecoder{}
 	res, ok := d.R(page.Attrs["Resources"]).(Dict)
 	if !ok {
-		return out
+		return out, nil
 	}
 	fontDict, ok := d.R(res["Font"]).(Dict)
 	if !ok {
-		return out
+		return out, nil
 	}
 	for name, v := range fontDict {
 		fd, ok := d.R(v).(Dict)
 		if !ok {
 			continue
 		}
-		out[name] = d.buildFontDecoder(fd)
+		decoder, err := d.buildFontDecoder(fd)
+		if err != nil {
+			return nil, err
+		}
+		out[name] = decoder
 	}
-	return out
+	return out, nil
 }

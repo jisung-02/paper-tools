@@ -778,6 +778,11 @@ func protectWith(file []byte, userPw, ownerPw string, useRC4 bool) ([]byte, erro
 	encRef := b.alloc()
 	b.objs[encRef.Num-1] = encDict
 	b.encryptRef = encRef
+	root, err = b.finalize(root)
+	if err != nil {
+		return nil, err
+	}
+	encRef = b.encryptRef
 
 	for i := range b.objs {
 		if i == encRef.Num-1 {
@@ -786,7 +791,7 @@ func protectWith(file []byte, userPw, ownerPw string, useRC4 bool) ([]byte, erro
 		b.objs[i] = encryptValue(fileKey, aesFilter, i+1, 0, b.objs[i])
 	}
 
-	return b.bytes(root), nil
+	return b.writeBytes(root), nil
 }
 
 // protectAES256 implements ProtectCipher(..., CipherAES256): a random
@@ -861,6 +866,11 @@ func protectAES256(file []byte, userPw, ownerPw string) ([]byte, error) {
 	encRef := b.alloc()
 	b.objs[encRef.Num-1] = encDict
 	b.encryptRef = encRef
+	root, err = b.finalize(root)
+	if err != nil {
+		return nil, err
+	}
+	encRef = b.encryptRef
 
 	for i := range b.objs {
 		if i == encRef.Num-1 {
@@ -869,7 +879,7 @@ func protectAES256(file []byte, userPw, ownerPw string) ([]byte, error) {
 		b.objs[i] = encryptValue(fileKey, true, i+1, 0, b.objs[i])
 	}
 
-	return b.bytes(root), nil
+	return b.writeBytes(root), nil
 }
 
 // Unlock removes encryption, given a valid user or owner password.

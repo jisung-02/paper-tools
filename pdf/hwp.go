@@ -5,6 +5,7 @@ import (
 	"compress/flate"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"regexp"
 	"sort"
@@ -69,6 +70,12 @@ func parseCFB(raw []byte) (*cfbFile, error) {
 
 	sectorShift := le16(30)
 	miniSectorShift := le16(32)
+	if sectorShift != 9 && sectorShift != 12 {
+		return nil, errors.New("유효한 hwp 파일이 아닙니다")
+	}
+	if miniSectorShift != 6 {
+		return nil, errors.New("유효한 hwp 파일이 아닙니다")
+	}
 	numFATSectors := le32(44)
 	firstDirSector := le32(48)
 	miniStreamCutoff := le32(56)
@@ -345,6 +352,9 @@ const hwpTagParaText = 67 // HWPTAG_PARA_TEXT
 // HwpText extracts plain paragraph text from a legacy .hwp (HWP 5.0 binary
 // / Compound File Binary) document.
 func HwpText(data []byte) (string, error) {
+	if int64(len(data)) > officeParseLimits.maxHWPInputBytes {
+		return "", errors.New("hwp: input too large")
+	}
 	cfb, err := parseCFB(data)
 	if err != nil {
 		return "", err
@@ -367,18 +377,32 @@ func HwpText(data []byte) (string, error) {
 			continue
 		}
 		sectionData := raw
+		if int64(len(raw)) > officeParseLimits.maxHWPSectionBytes {
+			return "", errors.New("hwp: section too large")
+		}
 		if compressed {
 			r := flate.NewReader(bytes.NewReader(raw))
-			out, rerr := io.ReadAll(r)
-			r.Close()
-			if rerr == nil {
-				sectionData = out
+			out, rerr := io.ReadAll(&io.LimitedReader{R: r, N: officeParseLimits.maxHWPSectionBytes + 1})
+			closeErr := r.Close()
+			if rerr != nil {
+				return "", fmt.Errorf("hwp: decompress section %q: %w", name, rerr)
 			}
-			// ponytail: if raw-deflate decoding fails, fall back to treating
-			// the stream as already-uncompressed raw bytes (best effort)
-			// rather than aborting the whole extraction.
+			if closeErr != nil {
+				return "", fmt.Errorf("hwp: close section %q: %w", name, closeErr)
+			}
+			if int64(len(out)) > officeParseLimits.maxHWPSectionBytes {
+				return "", errors.New("hwp: decompressed section too large")
+			}
+			sectionData = out
 		}
-		sb.WriteString(extractSectionRecords(sectionData))
+		text, err := extractSectionRecords(sectionData)
+		if err != nil {
+			return "", err
+		}
+		sb.WriteString(text)
+		if sb.Len() > int(officeParseLimits.maxTextBytes) {
+			return "", errors.New("hwp: extracted text too large")
+		}
 	}
 
 	result := sb.String()
@@ -390,7 +414,7 @@ func HwpText(data []byte) (string, error) {
 // extractSectionRecords walks the HWP record stream in data, decoding the
 // text of every HWPTAG_PARA_TEXT record and appending a paragraph-boundary
 // "\n" after each one.
-func extractSectionRecords(data []byte) string {
+func extractSectionRecords(data []byte) (string, error) {
 	var sb strings.Builder
 	pos := 0
 	for pos+4 <= len(data) {
@@ -403,13 +427,13 @@ func extractSectionRecords(data []byte) string {
 		pos += 4
 		if size == 0xFFF {
 			if pos+4 > len(data) {
-				break
+				return "", errors.New("hwp: truncated record size")
 			}
 			size = binary.LittleEndian.Uint32(data[pos:])
 			pos += 4
 		}
 		if pos+int(size) > len(data) {
-			break
+			return "", errors.New("hwp: truncated record")
 		}
 		rec := data[pos : pos+int(size)]
 		pos += int(size)
@@ -419,7 +443,10 @@ func extractSectionRecords(data []byte) string {
 			sb.WriteString("\n")
 		}
 	}
-	return sb.String()
+	if pos != len(data) {
+		return "", errors.New("hwp: truncated record header")
+	}
+	return sb.String(), nil
 }
 
 // decodeParaText decodes a HWPTAG_PARA_TEXT record payload (a sequence of

@@ -16,6 +16,24 @@ import (
 
 const maxZipEntryBytes = 64 << 20
 
+type limits struct {
+	maxZipEntryBytes int
+	maxZipEntries    int
+	maxZipTotalBytes uint64
+	maxRows          int
+	maxColumns       int
+	maxCSVBytes      int
+}
+
+var parseLimits = limits{
+	maxZipEntryBytes: maxZipEntryBytes,
+	maxZipEntries:    1_024,
+	maxZipTotalBytes: 128 << 20,
+	maxRows:          1_048_576,
+	maxColumns:       16_384,
+	maxCSVBytes:      64 << 20,
+}
+
 // Sheet holds one worksheet's name and its CSV-encoded contents.
 type Sheet struct {
 	Name string
@@ -95,9 +113,20 @@ func ToCSV(data []byte) ([]Sheet, error) {
 	if err != nil {
 		return nil, errors.New("유효한 xlsx 파일이 아닙니다")
 	}
+	if len(zr.File) > parseLimits.maxZipEntries {
+		return nil, errors.New("xlsx 파일에 항목이 너무 많습니다")
+	}
 
 	files := make(map[string]*zip.File, len(zr.File))
+	var total uint64
 	for _, f := range zr.File {
+		if f.UncompressedSize64 > uint64(parseLimits.maxZipEntryBytes) {
+			return nil, fmt.Errorf("xlsx entry %q too large: limit %d bytes", f.Name, parseLimits.maxZipEntryBytes)
+		}
+		total += f.UncompressedSize64
+		if total > parseLimits.maxZipTotalBytes {
+			return nil, errors.New("xlsx 압축 해제 크기가 제한을 초과했습니다")
+		}
 		files[f.Name] = f
 	}
 
@@ -122,13 +151,15 @@ func ToCSV(data []byte) ([]Sheet, error) {
 	rels := map[string]string{}
 	if relsFile, ok := files["xl/_rels/workbook.xml.rels"]; ok {
 		relsBytes, err := readZipFile(relsFile)
-		if err == nil {
-			var relsXML relationshipsXML
-			if xml.Unmarshal(relsBytes, &relsXML) == nil {
-				for _, r := range relsXML.Relationship {
-					rels[r.ID] = r.Target
-				}
-			}
+		if err != nil {
+			return nil, err
+		}
+		var relsXML relationshipsXML
+		if err := xml.Unmarshal(relsBytes, &relsXML); err != nil {
+			return nil, fmt.Errorf("유효한 xlsx 관계 파일이 아닙니다: %w", err)
+		}
+		for _, r := range relsXML.Relationship {
+			rels[r.ID] = r.Target
 		}
 	}
 
@@ -142,26 +173,17 @@ func ToCSV(data []byte) ([]Sheet, error) {
 		path := resolveWorksheetPath(files, rels, ws.RID, i+1)
 		wsFile, ok := files[path]
 		if !ok {
-			if len(wb.Sheets) == 1 {
-				return nil, fmt.Errorf("워크시트를 찾을 수 없습니다: %s", ws.Name)
-			}
-			continue
+			return nil, fmt.Errorf("워크시트를 찾을 수 없습니다: %s", ws.Name)
 		}
 
 		wsBytes, err := readZipFile(wsFile)
 		if err != nil {
-			if len(wb.Sheets) == 1 {
-				return nil, fmt.Errorf("워크시트를 찾을 수 없습니다: %s", ws.Name)
-			}
-			continue
+			return nil, fmt.Errorf("워크시트를 읽을 수 없습니다: %s: %w", ws.Name, err)
 		}
 
 		var worksheet worksheetXML
 		if err := xml.Unmarshal(wsBytes, &worksheet); err != nil {
-			if len(wb.Sheets) == 1 {
-				return nil, fmt.Errorf("워크시트를 찾을 수 없습니다: %s", ws.Name)
-			}
-			continue
+			return nil, fmt.Errorf("유효한 워크시트가 아닙니다: %s: %w", ws.Name, err)
 		}
 
 		csvBytes, err := worksheetToCSV(worksheet, sharedStrings)
@@ -171,30 +193,26 @@ func ToCSV(data []byte) ([]Sheet, error) {
 		sheets = append(sheets, Sheet{Name: ws.Name, CSV: csvBytes})
 	}
 
-	if len(sheets) == 0 {
-		return nil, errors.New("xlsx 파일에 유효한 워크시트가 없습니다")
-	}
-
 	return sheets, nil
 }
 
 // readZipFile fully reads a *zip.File's contents.
 func readZipFile(f *zip.File) ([]byte, error) {
-	if f.UncompressedSize64 > maxZipEntryBytes {
-		return nil, fmt.Errorf("xlsx entry %q too large: limit %d bytes", f.Name, maxZipEntryBytes)
+	if f.UncompressedSize64 > uint64(parseLimits.maxZipEntryBytes) {
+		return nil, fmt.Errorf("xlsx entry %q too large: limit %d bytes", f.Name, parseLimits.maxZipEntryBytes)
 	}
 	rc, err := f.Open()
 	if err != nil {
 		return nil, err
 	}
 	defer rc.Close()
-	lr := &io.LimitedReader{R: rc, N: maxZipEntryBytes + 1}
+	lr := &io.LimitedReader{R: rc, N: int64(parseLimits.maxZipEntryBytes) + 1}
 	var buf bytes.Buffer
 	if _, err := buf.ReadFrom(lr); err != nil {
 		return nil, err
 	}
-	if buf.Len() > maxZipEntryBytes {
-		return nil, fmt.Errorf("xlsx entry %q too large: limit %d bytes", f.Name, maxZipEntryBytes)
+	if buf.Len() > parseLimits.maxZipEntryBytes {
+		return nil, fmt.Errorf("xlsx entry %q too large: limit %d bytes", f.Name, parseLimits.maxZipEntryBytes)
 	}
 	return buf.Bytes(), nil
 }
@@ -232,12 +250,12 @@ func parseSharedStrings(files map[string]*zip.File) ([]string, error) {
 	}
 	b, err := readZipFile(f)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	var sst sstXML
 	if err := xml.Unmarshal(b, &sst); err != nil {
-		return nil, nil
+		return nil, fmt.Errorf("유효한 xlsx 공유 문자열 파일이 아닙니다: %w", err)
 	}
 
 	out := make([]string, len(sst.SI))
@@ -335,6 +353,9 @@ func worksheetToCSV(ws worksheetXML, sharedStrings []string) ([]byte, error) {
 		if err != nil || rowNum <= 0 {
 			rowNum = prevRowNum + 1
 		}
+		if rowNum > parseLimits.maxRows {
+			return nil, fmt.Errorf("xlsx row limit exceeded: %d", parseLimits.maxRows)
+		}
 
 		for prevRowNum+1 < rowNum {
 			records = append(records, []string{})
@@ -350,9 +371,12 @@ func worksheetToCSV(ws worksheetXML, sharedStrings []string) ([]byte, error) {
 		for _, c := range row.Cells {
 			col, _, err := splitCellRef(c.R)
 			if err != nil {
-				continue
+				return nil, err
 			}
 			colIdx := colLetterToIndex(col)
+			if colIdx > parseLimits.maxColumns {
+				return nil, fmt.Errorf("xlsx column limit exceeded: %d", parseLimits.maxColumns)
+			}
 			if colIdx > maxCol {
 				maxCol = colIdx
 			}
@@ -368,7 +392,7 @@ func worksheetToCSV(ws worksheetXML, sharedStrings []string) ([]byte, error) {
 	}
 
 	var buf bytes.Buffer
-	w := csv.NewWriter(&buf)
+	w := csv.NewWriter(&limitedBuffer{buf: &buf, remaining: parseLimits.maxCSVBytes})
 	for _, rec := range records {
 		if err := w.Write(rec); err != nil {
 			return nil, err
@@ -380,4 +404,18 @@ func worksheetToCSV(ws worksheetXML, sharedStrings []string) ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+type limitedBuffer struct {
+	buf       *bytes.Buffer
+	remaining int
+}
+
+func (w *limitedBuffer) Write(p []byte) (int, error) {
+	if len(p) > w.remaining {
+		return 0, errors.New("xlsx csv output exceeds configured limit")
+	}
+	n, err := w.buf.Write(p)
+	w.remaining -= n
+	return n, err
 }

@@ -2,13 +2,43 @@ package imgconv
 
 import (
 	"bytes"
+	"encoding/binary"
+	"hash/crc32"
 	"image"
 	"image/color"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"strings"
 	"testing"
 )
+
+type virtualWhiteImage struct{ bounds image.Rectangle }
+
+func (i virtualWhiteImage) ColorModel() color.Model { return color.NRGBAModel }
+func (i virtualWhiteImage) Bounds() image.Rectangle { return i.bounds }
+func (i virtualWhiteImage) At(int, int) color.Color {
+	return color.NRGBA{R: 255, G: 255, B: 255, A: 255}
+}
+
+func pngHeader(width, height uint32) []byte {
+	data := make([]byte, 13)
+	binary.BigEndian.PutUint32(data[0:4], width)
+	binary.BigEndian.PutUint32(data[4:8], height)
+	data[8] = 8 // bit depth
+	data[9] = 6 // RGBA
+
+	var out bytes.Buffer
+	out.Write([]byte{'\x89', 'P', 'N', 'G', '\r', '\n', '\x1a', '\n'})
+	binary.Write(&out, binary.BigEndian, uint32(len(data)))
+	out.WriteString("IHDR")
+	out.Write(data)
+	var crcInput bytes.Buffer
+	crcInput.WriteString("IHDR")
+	crcInput.Write(data)
+	binary.Write(&out, binary.BigEndian, crc32.ChecksumIEEE(crcInput.Bytes()))
+	return out.Bytes()
+}
 
 func TestConvert(t *testing.T) {
 	// Build a small test image
@@ -286,4 +316,32 @@ func TestResize(t *testing.T) {
 			t.Fatalf("Expected error for garbage input, got nil")
 		}
 	})
+}
+
+func TestBoxResizeLargeWhiteImageDoesNotOverflow(t *testing.T) {
+	const side = 4105
+	white := virtualWhiteImage{bounds: image.Rect(0, 0, side, side)}
+	got := boxResize(white, 1, 1)
+	c := got.NRGBAAt(0, 0)
+	if c != (color.NRGBA{R: 255, G: 255, B: 255, A: 255}) {
+		t.Fatalf("boxResize large white image = %#v, want opaque white", c)
+	}
+}
+
+func TestImagePixelBudgetCheckedBeforeDecode(t *testing.T) {
+	data := pngHeader(4105, 4105)
+	for _, operation := range []struct {
+		name string
+		run  func() error
+	}{
+		{"Convert", func() error { _, err := Convert(data, "png", 0); return err }},
+		{"Resize", func() error { _, _, err := Resize(data, 1, 1, 0); return err }},
+	} {
+		t.Run(operation.name, func(t *testing.T) {
+			err := operation.run()
+			if err == nil || !strings.Contains(err.Error(), "pixel budget") {
+				t.Fatalf("expected pixel budget error, got %v", err)
+			}
+		})
+	}
 }

@@ -54,7 +54,7 @@ func Compress(file []byte, opts CompressOpts) ([]byte, error) {
 		b.objs[i] = recodeStream(b, st, opts)
 	}
 
-	return b.bytes(root), nil
+	return b.bytes(root)
 }
 
 // filterName returns the single filter name applied to st: absent -> ("",

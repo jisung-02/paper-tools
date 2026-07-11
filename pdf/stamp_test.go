@@ -7,6 +7,8 @@ import (
 	"image/color"
 	"image/jpeg"
 	"image/png"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -63,6 +65,79 @@ func lastContentData(t *testing.T, d *Doc, pd Dict) ([]byte, bool) {
 		t.Fatalf("last content entry is not a stream")
 	}
 	return st.Data, true
+}
+
+// rotatedRectPDF builds a single-page classic-xref PDF with the given
+// MediaBox dimensions and /Rotate value, for exercising the rotation
+// branches of StampImage's cm matrix.
+func rotatedRectPDF(width, height float64, rotate int) []byte {
+	var buf bytes.Buffer
+	buf.WriteString("%PDF-1.7\n")
+
+	offsets := make([]int, 4) // index 1..3
+	writeObjRaw := func(num int, body string) {
+		offsets[num] = buf.Len()
+		fmt.Fprintf(&buf, "%d 0 obj\n%s\nendobj\n", num, body)
+	}
+	writeObjRaw(1, "<< /Type /Catalog /Pages 2 0 R >>")
+	writeObjRaw(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>")
+	writeObjRaw(3, fmt.Sprintf("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 %g %g] /Rotate %d >>", width, height, rotate))
+
+	xrefOff := buf.Len()
+	buf.WriteString("xref\n0 4\n")
+	buf.WriteString("0000000000 65535 f \n")
+	for i := 1; i <= 3; i++ {
+		fmt.Fprintf(&buf, "%010d 00000 n \n", offsets[i])
+	}
+	buf.WriteString("trailer\n<< /Root 1 0 R /Size 4 >>\nstartxref\n")
+	fmt.Fprintf(&buf, "%d\n", xrefOff)
+	buf.WriteString("%%EOF\n")
+	return buf.Bytes()
+}
+
+// TestStampImage_Rotate90TranslationStaysOnPage guards against a regression
+// where the /Rotate 90 branch's cm-matrix x-translation ("e" term) used
+// x0+y1-y instead of x1-y. On a non-square 400x600 page stamping
+// bottom-right, the wrong formula produces e=576, far outside the page's
+// [0,400] x-range; the correct formula keeps it on-page.
+func TestStampImage_Rotate90TranslationStaysOnPage(t *testing.T) {
+	img := stampPNG(t, 80, 40, false) // 2:1 aspect
+	src := rotatedRectPDF(400, 600, 90)
+	out, err := StampImage(src, img, StampOpts{
+		Position:     PosBottomRight,
+		WidthPercent: 20,
+		MarginPt:     24,
+		Pages:        "1",
+	})
+	if err != nil {
+		t.Fatalf("StampImage: %v", err)
+	}
+	d, err := Parse(out)
+	if err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	pages, err := d.Pages()
+	if err != nil {
+		t.Fatalf("Pages: %v", err)
+	}
+	pd1 := d.Get(pages[0].Num).(Dict)
+	data, has := lastContentData(t, d, pd1)
+	if !has {
+		t.Fatalf("page1 missing Contents")
+	}
+
+	re := regexp.MustCompile(`([-\d.]+) ([-\d.]+) ([-\d.]+) ([-\d.]+) ([-\d.]+) ([-\d.]+) cm`)
+	m := re.FindSubmatch(data)
+	if m == nil {
+		t.Fatalf("content = %q, could not find cm operator", data)
+	}
+	e, err := strconv.ParseFloat(string(m[5]), 64)
+	if err != nil {
+		t.Fatalf("parse cm e term %q: %v", m[5], err)
+	}
+	if e < 0 || e > 400 {
+		t.Errorf("cm e term = %v, want within page x-range [0,400] (bug pushes it to 576)", e)
+	}
 }
 
 func TestStampImage_BottomRightAnchor(t *testing.T) {
