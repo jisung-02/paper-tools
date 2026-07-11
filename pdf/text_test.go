@@ -4,11 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"os"
-	"os/exec"
 	"strings"
 	"testing"
-	"time"
 )
 
 // textPDF builds a minimal single-page PDF with a classic xref table: a
@@ -103,30 +100,12 @@ func TestExtractTextEncrypted(t *testing.T) {
 }
 
 func TestExtractTextRejectsOversizedToUnicodeRange(t *testing.T) {
-	if os.Getenv("PDF_CMAP_RANGE_HELPER") == "1" {
-		_, _ = ExtractText(textPDF("BT /F1 12 Tf (A) Tj ET", `
+	_, err := ExtractText(textPDF("BT /F1 12 Tf (A) Tj ET", `
 1 beginbfrange
 <FFFFFFFE> <FFFFFFFF> <0041>
 endbfrange`))
-		return
-	}
-
-	cmd := exec.Command(os.Args[0], "-test.run=^TestExtractTextRejectsOversizedToUnicodeRange$")
-	cmd.Env = append(os.Environ(), "PDF_CMAP_RANGE_HELPER=1")
-	if err := cmd.Start(); err != nil {
-		t.Fatalf("start helper: %v", err)
-	}
-	done := make(chan error, 1)
-	go func() { done <- cmd.Wait() }()
-	select {
-	case err := <-done:
-		if err != nil {
-			t.Fatalf("helper failed unexpectedly: %v", err)
-		}
-	case <-time.After(2 * time.Second):
-		_ = cmd.Process.Kill()
-		<-done
-		t.Fatal("ExtractText did not reject an oversized ToUnicode range")
+	if !errors.Is(err, ErrToUnicodeCMapCode) {
+		t.Fatalf("ExtractText error = %v, want ErrToUnicodeCMapCode", err)
 	}
 }
 
