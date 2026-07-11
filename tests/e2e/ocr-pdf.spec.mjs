@@ -60,8 +60,11 @@ test("searchable OCR PDF preserves image pixels and exposes recognized text", as
     buffer: Buffer.from(png),
   });
 
-  const downloadPromise = page.waitForEvent("download");
   await page.locator("#run").click();
+  const textPreview = page.locator(".result-preview");
+  await expect(textPreview.locator(".result-preview-text")).toHaveText(/HELLO\s+OCR/i, { timeout: 120_000 });
+  const downloadPromise = page.waitForEvent("download");
+  await textPreview.getByRole("button", { name: "Download result" }).click();
   const download = await downloadPromise;
   const chunks = [];
   for await (const chunk of await download.createReadStream()) chunks.push(chunk);
@@ -71,18 +74,18 @@ test("searchable OCR PDF preserves image pixels and exposes recognized text", as
   await page.locator("#outputType").selectOption("pdf");
   await page.locator("#run").click();
 
-  await expect(page.locator(".result-preview")).toBeVisible({ timeout: 120_000 });
+  const pdfPreview = page.locator(".result-preview");
+  await expect(pdfPreview.locator("canvas")).toHaveCount(2, { timeout: 120_000 });
   await expect(page.locator("#err")).toHaveText("");
+  const pdfDownloadPromise = page.waitForEvent("download");
+  await pdfPreview.getByRole("button", { name: "Download result" }).click();
+  const pdfDownload = await pdfDownloadPromise;
+  const pdfChunks = [];
+  for await (const chunk of await pdfDownload.createReadStream()) pdfChunks.push(chunk);
+  const pdfBytes = Buffer.concat(pdfChunks);
 
-  const result = await page.evaluate(async () => {
-    const section = document.querySelector(".result-preview");
-    const sourceImage = section.querySelector("img");
-    const resultFrame = section.querySelector("iframe");
-    await sourceImage.decode();
-
-    const response = await fetch(resultFrame.src);
-    const data = new Uint8Array(await response.arrayBuffer());
-    const pdfBytes = Array.from(data);
+  const result = await page.evaluate(async ({ pdf, source }) => {
+    const data = Uint8Array.from(pdf);
     const pdfjs = await import("/vendor/pdfjs/pdf.mjs");
     pdfjs.GlobalWorkerOptions.workerSrc = "/vendor/pdfjs/pdf.worker.mjs";
     const task = pdfjs.getDocument({ data });
@@ -98,10 +101,12 @@ test("searchable OCR PDF preserves image pixels and exposes recognized text", as
     await pdfPage.render({ canvasContext: renderedContext, viewport }).promise;
 
     const original = document.createElement("canvas");
-    original.width = sourceImage.naturalWidth;
-    original.height = sourceImage.naturalHeight;
+    const sourceImage = await createImageBitmap(new Blob([Uint8Array.from(source)], { type: "image/png" }));
+    original.width = sourceImage.width;
+    original.height = sourceImage.height;
     const originalContext = original.getContext("2d", { alpha: false });
     originalContext.drawImage(sourceImage, 0, 0);
+    sourceImage.close();
 
     let changed = 0;
     if (rendered.width !== original.width || rendered.height !== original.height) {
@@ -115,8 +120,8 @@ test("searchable OCR PDF preserves image pixels and exposes recognized text", as
     }
 
     await task.destroy();
-    return { changed, pdf: pdfBytes, text };
-  });
+    return { changed, text };
+  }, { pdf: [...pdfBytes], source: png });
 
   expect(result.text).toMatch(/HELLO\s+OCR/i);
   expect(result.changed).toBe(0);
@@ -127,23 +132,26 @@ test("searchable OCR PDF preserves image pixels and exposes recognized text", as
   await page.locator("#fileDrop input[type=file]").setInputFiles({
     name: "ocr-source.pdf",
     mimeType: "application/pdf",
-    buffer: Buffer.from(result.pdf),
+    buffer: pdfBytes,
   });
   await page.locator("#run").click();
-  await expect(page.locator(".result-preview iframe")).toHaveCount(2, { timeout: 120_000 });
+  await expect(page.locator(".result-preview canvas")).toHaveCount(2, { timeout: 120_000 });
   await expect(page.locator("#err")).toHaveText("");
-  const pdfInputText = await page.evaluate(async () => {
-    const frames = document.querySelectorAll(".result-preview iframe");
-    const response = await fetch(frames[frames.length - 1].src);
+  const nextDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download result" }).click();
+  const nextDownload = await nextDownloadPromise;
+  const nextChunks = [];
+  for await (const chunk of await nextDownload.createReadStream()) nextChunks.push(chunk);
+  const pdfInputText = await page.evaluate(async (bytes) => {
     const pdfjs = await import("/vendor/pdfjs/pdf.mjs");
     pdfjs.GlobalWorkerOptions.workerSrc = "/vendor/pdfjs/pdf.worker.mjs";
-    const task = pdfjs.getDocument({ data: new Uint8Array(await response.arrayBuffer()) });
+    const task = pdfjs.getDocument({ data: Uint8Array.from(bytes) });
     const doc = await task.promise;
     const pdfPage = await doc.getPage(1);
     const text = (await pdfPage.getTextContent()).items.map((item) => item.str).join(" ");
     await task.destroy();
     return text;
-  });
+  }, [...Buffer.concat(nextChunks)]);
   expect(pdfInputText).toMatch(/HELLO\s+OCR/i);
 });
 
