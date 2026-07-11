@@ -97,6 +97,10 @@ test("CI builds optimized TinyGo WASM before running browser E2E", async () => {
   assert.match(ci, /go test -race \.\/\.\.\./);
   assert.match(deploy, /hashFiles\([^\n]*tools\/operation-catalog\.json/);
   assert.match(deploy, /cp tools\/operation-catalog\.json web\/operation-catalog\.json/);
+  assert.ok(
+    deploy.indexOf("node --test") > deploy.indexOf("cp tools/operation-catalog.json web/operation-catalog.json"),
+    "deploy Node tests must run after the generated catalog is available",
+  );
 });
 
 test("Playwright uses bundled browsers when local Chrome is unavailable", async () => {

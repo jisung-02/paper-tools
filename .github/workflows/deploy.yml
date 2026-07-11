@@ -56,7 +56,6 @@ jobs:
       - name: Test
         run: |
           go test ./...
-          node --test
           node tools/verify-vendor.mjs
 
       - name: Test (TinyGo runtime)
@@ -80,6 +79,9 @@ jobs:
         run: |
           cp tools/operation-catalog.json web/operation-catalog.json
           node tools/gen-i18n.mjs
+
+      - name: Test generated web assets
+        run: node --test
 
       - name: Check WebAssembly size budget
         run: node tools/check-wasm-size.mjs web
