@@ -236,7 +236,8 @@ test("replacing either input invalidates rendered canvases and requires a fresh 
   await expect(page.locator("#visualStats")).toContainText("1/1");
 });
 
-test("cancelling while an OPFS archive close is delayed removes the stale closed output", async ({ page }) => {
+test("cancelling while an OPFS archive close is delayed removes the stale closed output", async ({ page, browserName }) => {
+  test.skip(browserName === "webkit", "WebKit does not provide reliable native OPFS handles");
   test.setTimeout(60_000);
   await page.addInitScript(() => {
     const entries = new Set();
@@ -294,7 +295,8 @@ test("cancelling while an OPFS archive close is delayed removes the stale closed
   await expect(page.locator("#visualNotice")).toHaveText("Visual comparison cancelled.");
 });
 
-test("pagehide cleans a successfully downloaded OPFS archive before its delayed timer", async ({ page }) => {
+test("pagehide cleans a successfully downloaded OPFS archive before its delayed timer", async ({ page, browserName }) => {
+  test.skip(browserName === "webkit", "WebKit does not provide reliable native OPFS handles");
   await page.addInitScript(() => {
     const entries = new Map();
     const records = [];
@@ -355,7 +357,8 @@ test("pagehide cleans a successfully downloaded OPFS archive before its delayed 
   expect(state).toMatchObject({ closes: 1, aborts: 0, removes: 1 });
 });
 
-test("cancelled ZIP writes finish cleanup before an immediate re-export can start", async ({ page }) => {
+test("cancelled ZIP writes finish cleanup before an immediate re-export can start", async ({ page, browserName }) => {
+  test.skip(browserName === "webkit", "WebKit does not provide reliable native OPFS handles");
   test.setTimeout(60_000);
   await page.addInitScript(() => {
     const records = new Map();
