@@ -11,6 +11,10 @@
 <script src="/theme.js"></script>
 <link rel="stylesheet" href="../style.css">
 <link rel="modulepreload" href="/send/send.mjs">
+<link rel="modulepreload" href="/send/transfer.mjs">
+<link rel="modulepreload" href="/send/protocol.mjs">
+<link rel="modulepreload" href="/send/integrity.mjs">
+<link rel="modulepreload" href="/send/storage.mjs">
 <meta name="description" content="Send a file straight to another device online — free & private. It moves directly between the two devices in your browser and is never uploaded to any server; no signup.">
 <link rel="canonical" href="https://papertools.dev/send/">
 <meta property="og:type" content="website">
@@ -55,27 +59,27 @@
 <a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
 
 <h1 data-i18n data-en="Direct Send" data-ko="직접 전송">Direct Send</h1>
-<p class="desc" data-i18n data-en="Send a file straight to another device. It moves directly between the two devices and is never uploaded to any server." data-ko="다른 기기로 파일을 바로 보냅니다. 파일은 두 기기 사이에서만 이동하며 어떤 서버에도 업로드되지 않습니다.">Send a file straight to another device. It moves directly between the two devices and is never uploaded to any server.</p>
+<p class="desc" data-i18n data-en="Send one or more files straight to another device. They move directly between the two devices and are never uploaded to any server." data-ko="한 개 이상의 파일을 다른 기기로 바로 보냅니다. 파일은 두 기기 사이에서만 이동하며 어떤 서버에도 업로드되지 않습니다.">Send one or more files straight to another device. They move directly between the two devices and are never uploaded to any server.</p>
 <p class="hint" data-i18n data-en="Both devices usually need to be on the same network (e.g. the same Wi-Fi)." data-ko="보통 두 기기가 같은 네트워크(예: 같은 와이파이)에 연결되어 있어야 합니다.">Both devices usually need to be on the same network (e.g. the same Wi-Fi).</p>
-<p id="status" hidden>Loading tool…</p>
+<p id="status" role="status" aria-live="polite" hidden>Loading tool…</p>
 
 <div id="senderView">
 
 <ol class="hint">
-  <li data-i18n data-en="Choose a file" data-ko="파일 선택">Choose a file</li>
+  <li data-i18n data-en="Choose one or more files" data-ko="파일 한 개 이상 선택">Choose one or more files</li>
   <li data-i18n data-en="Open the link (or scan the QR code) on the other device" data-ko="다른 기기에서 링크 열기(또는 QR 코드 스캔)">Open the link (or scan the QR code) on the other device</li>
   <li data-i18n data-en="On this device, open the reply link from the other device (or paste the reply code)" data-ko="다른 기기가 보낸 응답 링크를 이 기기에서 열기(또는 응답 코드 붙여넣기)">On this device, open the reply link from the other device (or paste the reply code)</li>
 </ol>
 
 <div class="drop" id="fileDrop">
-  <span data-i18n data-en="Drag a file here, or click to choose" data-ko="파일을 끌어다 놓거나 클릭해서 선택">Drag a file here, or click to choose</span>
-  <input type="file">
+  <span data-i18n data-en="Drag files here, or click to choose" data-ko="파일을 끌어다 놓거나 클릭해서 선택">Drag files here, or click to choose</span>
+  <input type="file" multiple>
   <ul class="filelist"></ul>
 </div>
-<p class="hint" id="pickHint" hidden data-i18n data-en="Choose a single file." data-ko="파일을 한 개만 선택하세요.">Choose a single file.</p>
+<p class="hint" id="pickHint" role="status" aria-live="polite" hidden data-i18n data-en="The selected files exceed the transfer limit." data-ko="선택한 파일이 전송 제한을 초과했습니다.">The selected files exceed the transfer limit.</p>
 
 <div id="senderPanel" hidden>
-  <p class="hint" id="offerStatus"></p>
+  <p class="hint" id="offerStatus" role="status" aria-live="polite"></p>
 
   <div id="qrOffer"></div>
   <p class="hint" data-i18n data-en="Or scan this QR code on the other device" data-ko="다른 기기에서 이 QR 코드를 스캔하세요">Or scan this QR code on the other device</p>
@@ -90,14 +94,23 @@
 
   <div id="sendProgressWrap" hidden>
     <progress id="sendProgressBar" max="100" value="0"></progress>
-    <p class="hint" id="sendProgressText"></p>
+    <p class="hint" id="sendProgressText" role="status" aria-live="polite"></p>
   </div>
+
+  <div id="sendResumePanel" hidden>
+    <p class="hint" id="resumeSendHint" role="status" aria-live="polite" data-i18n data-en="Keep the same receiving tab open, then create and send a new link to resume this transfer." data-ko="같은 수신 탭을 열어 둔 채 새 링크를 만들어 보내면 전송을 이어갈 수 있습니다.">Keep the same receiving tab open, then create and send a new link to resume this transfer.</p>
+    <button type="button" class="primary" id="resumeSendBtn" data-i18n data-en="Resume with a new link" data-ko="새 링크로 이어서 전송">Resume with a new link</button>
+  </div>
+  <button type="button" class="secondary" id="cancelSendBtn" data-i18n data-en="Cancel this transfer" data-ko="이 전송 취소">Cancel this transfer</button>
 </div>
 
 </div>
 
 <div id="receiverView" hidden>
-  <p class="hint" id="recvStatus"></p>
+  <p class="hint" id="recvStatus" role="status" aria-live="polite"></p>
+
+  <button type="button" class="secondary" id="chooseFolderBtn" hidden data-i18n data-en="Save directly to a folder" data-ko="폴더에 바로 저장">Save directly to a folder</button>
+  <p class="hint" id="receiveDestination" role="status" aria-live="polite" data-i18n data-en="Without a selected folder, files use private browser storage when available." data-ko="폴더를 선택하지 않으면 가능한 경우 브라우저 전용 저장소를 사용합니다.">Without a selected folder, files use private browser storage when available.</p>
 
   <label for="replyLinkOut" data-i18n data-en="Reply link" data-ko="응답 링크">Reply link</label>
   <input type="text" id="replyLinkOut" readonly>
@@ -115,14 +128,25 @@
 
   <div id="recvProgressWrap" hidden>
     <progress id="recvProgressBar" max="100" value="0"></progress>
-    <p class="hint" id="recvProgressText"></p>
+    <p class="hint" id="recvProgressText" role="status" aria-live="polite"></p>
   </div>
 
-  <button type="button" class="primary" id="downloadBtn" hidden data-i18n data-en="Download" data-ko="다운로드">Download</button>
+  <section id="receivedFiles" hidden>
+    <h2 data-i18n data-en="Received files" data-ko="받은 파일">Received files</h2>
+    <ul id="receivedFilesList"></ul>
+  </section>
+
+  <div id="receiveResumePanel" hidden>
+    <p class="hint" id="receiveResumeHint" role="status" aria-live="polite" data-i18n data-en="Keep this same receiving tab open. Paste the sender's new link or offer code here to resume without discarding verified bytes." data-ko="이 수신 탭을 그대로 열어 두세요. 검증된 바이트를 유지한 채 이어받으려면 보내는 쪽의 새 링크나 제안 코드를 여기에 붙여 넣으세요.">Keep this same receiving tab open. Paste the sender's new link or offer code here to resume without discarding verified bytes.</p>
+    <label for="resumeOfferInput" data-i18n data-en="New sender link or offer code" data-ko="보내는 쪽의 새 링크 또는 제안 코드">New sender link or offer code</label>
+    <textarea id="resumeOfferInput" rows="4" data-en-placeholder="Paste the new sender link or offer code" data-ko-placeholder="보내는 쪽의 새 링크나 제안 코드를 붙여 넣으세요" placeholder="Paste the new sender link or offer code"></textarea>
+    <button type="button" class="primary" id="applyResumeOfferBtn" data-i18n data-en="Apply new offer" data-ko="새 제안 적용">Apply new offer</button>
+  </div>
+  <button type="button" class="secondary" id="abortReceiveBtn" data-i18n data-en="Cancel received transfer" data-ko="수신 전송 취소">Cancel received transfer</button>
 </div>
 
 <div id="relayView" hidden>
-  <p class="hint" id="relayStatus"></p>
+  <p class="hint" id="relayStatus" role="status" aria-live="polite"></p>
 
   <div id="relayFallback" hidden>
     <label for="relayCodeOut" data-i18n data-en="Reply code" data-ko="응답 코드">Reply code</label>
@@ -132,12 +156,12 @@
   </div>
 </div>
 
-<p class="err" id="err"></p>
+<p class="err" id="err" role="alert" aria-live="assertive"></p>
 
 <section class="page-info">
-<h2 data-i18n data-en="How to send a file directly to another device" data-ko="다른 기기로 파일을 직접 보내는 방법">How to send a file directly to another device</h2>
+<h2 data-i18n data-en="How to send files directly to another device" data-ko="다른 기기로 파일을 직접 보내는 방법">How to send files directly to another device</h2>
 <ol>
-  <li data-i18n data-en="Choose a file to send." data-ko="보낼 파일을 선택합니다.">Choose a file to send.</li>
+  <li data-i18n data-en="Choose one or more files to send." data-ko="보낼 파일을 한 개 이상 선택합니다.">Choose one or more files to send.</li>
   <li data-i18n data-en="Open the link, or scan the QR code, on the other device." data-ko="다른 기기에서 링크를 열거나 QR 코드를 스캔합니다.">Open the link, or scan the QR code, on the other device.</li>
   <li data-i18n data-en="Paste the reply code shown on the other device to connect and start the transfer." data-ko="다른 기기에 표시된 응답 코드를 붙여넣으면 연결되어 전송이 시작됩니다.">Paste the reply code shown on the other device to connect and start the transfer.</li>
 </ol>
