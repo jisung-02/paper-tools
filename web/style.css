@@ -504,6 +504,85 @@ footer {
 }
 .thumbcell.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
 
+/* mdedit: split editor/preview layout */
+.mdsplit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 1.25rem 0;
+}
+@media (max-width: 900px) {
+  .mdsplit { grid-template-columns: 1fr; }
+}
+.mdpane label,
+.mdpane .hint {
+  display: block;
+  margin: 0 0 .35rem;
+  font-family: var(--mono);
+  font-size: .78rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+#mdsrc {
+  font-family: var(--mono);
+  min-height: 380px;
+}
+
+.mdpreview {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--sheet-shadow);
+  padding: 20px 22px;
+  min-height: 380px;
+  max-height: 380px;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+
+.mdpreview h1, .mdpreview h2, .mdpreview h3, .mdpreview h4 {
+  line-height: 1.25;
+  margin: .9em 0 .35em;
+}
+.mdpreview h1:first-child, .mdpreview h2:first-child,
+.mdpreview h3:first-child, .mdpreview h4:first-child { margin-top: 0; }
+.mdpreview h1, .mdpreview h2 {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: .3em;
+}
+.mdpreview p, .mdpreview ul, .mdpreview ol { margin: .6em 0; }
+.mdpreview li { margin: .2em 0; }
+.mdpreview blockquote {
+  border-left: 3px solid var(--border-strong);
+  margin: .6em 0;
+  padding: .1em 1em;
+  color: var(--muted);
+}
+.mdpreview code {
+  font-family: var(--mono);
+  background: var(--hover);
+  padding: 2px 5px;
+  border-radius: var(--radius);
+}
+.mdpreview pre {
+  font-family: var(--mono);
+  background: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .75em 1em;
+  overflow-x: auto;
+}
+.mdpreview pre code { background: none; padding: 0; border-radius: 0; }
+.mdpreview a { color: var(--accent); text-decoration: underline; }
+.mdpreview hr { border: none; border-top: 1px solid var(--border); margin: 1em 0; }
+.mdpreview em { font-style: italic; }
+.mdpreview strong { font-weight: 700; }
+
+.mdbuttons { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 1.5rem; }
+.mdbuttons button.primary,
+.mdbuttons button.secondary { margin-top: 0; }
+
 /* PWA "Open with which tool?" chooser (file-handler launch on the index page) */
 .launch-overlay {
   position: fixed;

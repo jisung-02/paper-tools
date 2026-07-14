@@ -17,7 +17,7 @@ are never uploaded — every conversion happens locally on your device.
 
 ## What it is
 
-41 client-side tools for PDFs, images, and office documents. Open a tool,
+42 client-side tools for PDFs, images, and office documents. Open a tool,
 drop a file, get a result — nothing leaves the browser tab. No server, no
 uploads, no account.
 

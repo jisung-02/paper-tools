@@ -5,10 +5,10 @@ import catalog from "../tools/operation-catalog.json" with { type: "json" };
 import { operationArgs } from "../web/operation-adapters.mjs";
 
 test("operation catalog is the complete unique tool inventory", () => {
-  assert.equal(catalog.length, 42);
+  assert.equal(catalog.length, 43);
   const ids = catalog.map((entry) => entry.id);
   assert.equal(new Set(ids).size, ids.length);
-  assert.equal(catalog.filter((entry) => entry.engine === "wasm").length, 37);
+  assert.equal(catalog.filter((entry) => entry.engine === "wasm").length, 38);
   for (const entry of catalog) {
     assert.match(entry.id, /^[a-z][a-z0-9]*$/);
     assert.ok(["wasm", "module", "transport"].includes(entry.engine));

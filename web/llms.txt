@@ -2,7 +2,7 @@
 
 > Privacy-first PDF, image and document tools that run entirely in your browser. Files never leave your device — free, no signup, no installs.
 
-Paper Tools is a collection of 41 client-side file tools, live at https://papertools.dev . Every tool runs entirely in the tab and does all processing locally; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source.
+Paper Tools is a collection of 42 client-side file tools, live at https://papertools.dev . Every tool runs entirely in the tab and does all processing locally; nothing is uploaded to a server. The interface is available in 7 languages (English by default, plus Korean, Japanese, Chinese, Spanish, French and German). The project is open source.
 
 ## Tools
 
@@ -40,6 +40,7 @@ Paper Tools is a collection of 41 client-side file tools, live at https://papert
 - [PDF → Word](https://papertools.dev/pdf2docx/): Convert a PDF's text into a .docx (text and paragraphs only).
 - [PDF → Hangul](https://papertools.dev/pdf2hwpx/): Convert a PDF's text into a .hwpx (text and paragraphs only).
 - [Markdown → PDF](https://papertools.dev/md2pdf/): Convert a Markdown (.md) file to PDF, with Korean font support.
+- [Markdown Editor](https://papertools.dev/mdedit/): Write Markdown with a live rendered preview, and download it as .md or as a standalone HTML file.
 - [Excel → CSV](https://papertools.dev/xlsx2csv/): Convert an .xlsx workbook's sheets to CSV (or a ZIP of CSVs for multiple sheets).
 - [Image Resize](https://papertools.dev/imgresize/): Shrink an image to a maximum width/height; never upscales.
 - [Stamp / Signature](https://papertools.dev/stamp/): Overlay a stamp or signature image onto PDF pages at a chosen position, size and opacity.

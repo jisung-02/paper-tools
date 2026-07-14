@@ -5,7 +5,14 @@
 <link>https://papertools.dev/</link>
 <description>Free, private PDF &amp; file tools that run entirely in your browser — no uploads, no signup.</description>
 <language>en</language>
-<lastBuildDate>Mon, 06 Jul 2026 00:00:00 GMT</lastBuildDate>
+<lastBuildDate>Tue, 14 Jul 2026 00:00:00 GMT</lastBuildDate>
+<item>
+<title>Markdown Editor</title>
+<link>https://papertools.dev/mdedit/</link>
+<guid isPermaLink="true">https://papertools.dev/mdedit/</guid>
+<description>Edit Markdown online — free &amp; private. Write in the editor and see the rendered preview instantly; download as .md or standalone HTML right in your browser; no upload, no signup.</description>
+<pubDate>Tue, 14 Jul 2026 00:00:00 GMT</pubDate>
+</item>
 <item>
 <title>Flatten PDF</title>
 <link>https://papertools.dev/flatten/</link>
