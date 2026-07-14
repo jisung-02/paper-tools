@@ -1,13 +1,20 @@
+/* --bg values are mirrored by <meta name="theme-color"> in every generated HTML page — change them together */
 :root {
   color-scheme: light dark;
   --bg: #ffffff;
-  --fg: #18181b;
-  --muted: #71717a;
-  --border: #e4e4e7;
-  --border-strong: #d4d4d8;
-  --border-stronger: #a1a1aa;
-  --hover: #f4f4f5;
-  --err: #dc2626;
+  --fg: #211e1b;
+  --muted: #6f6a63;
+  --border: #e8e4dd;
+  --border-strong: #d8d2c9;
+  --border-stronger: #a9a299;
+  --hover: #f7f5f0;
+  --err: #c93f2e;
+  --accent: #3f3dbb;
+  --accent-contrast: #fff;
+  --sheet-shadow: 0 1px 2px rgba(46, 38, 28, 0.07), 0 0 0 0.5px rgba(46, 38, 28, 0.02);
+  --sheet-shadow-hover: 0 3px 10px rgba(46, 38, 28, 0.10), 0 0 0 0.5px rgba(46, 38, 28, 0.04);
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, "Apple SD Gothic Neo", "Noto Sans KR", monospace;
+  --radius: 3px;
 }
 
 /* Dark palette: same monochrome scale, inverted. An explicit choice
@@ -17,26 +24,34 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --bg: #09090b;
-    --fg: #f4f4f5;
-    --muted: #a1a1aa;
-    --border: #3f3f46;
-    --border-strong: #52525b;
-    --border-stronger: #71717a;
-    --hover: #27272a;
-    --err: #f87171;
+    --fg: #ece9e3;
+    --muted: #a49e94;
+    --border: #3d3a35;
+    --border-strong: #524e47;
+    --border-stronger: #736d63;
+    --hover: #211f1c;
+    --err: #f08575;
+    --accent: #a3a0f0;
+    --accent-contrast: #131217;
+    --sheet-shadow: none;
+    --sheet-shadow-hover: none;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #09090b;
-  --fg: #f4f4f5;
-  --muted: #a1a1aa;
-  --border: #3f3f46;
-  --border-strong: #52525b;
-  --border-stronger: #71717a;
-  --hover: #27272a;
-  --err: #f87171;
+  --fg: #ece9e3;
+  --muted: #a49e94;
+  --border: #3d3a35;
+  --border-strong: #524e47;
+  --border-stronger: #736d63;
+  --hover: #211f1c;
+  --err: #f08575;
+  --accent: #a3a0f0;
+  --accent-contrast: #131217;
+  --sheet-shadow: none;
+  --sheet-shadow-hover: none;
 }
 
 :root[data-theme="light"] {
@@ -58,7 +73,11 @@ body {
   overflow-wrap: break-word;
 }
 
+/* typewriter layer */
+.wordmark, .drop .filelist, .hint, #status, .back, .result, dl.info dt, .pagesizes, footer, .thumbcell .thumbnum { font-family: var(--mono); letter-spacing: 0; }
+
 a { color: inherit; }
+a:hover { text-decoration-color: var(--accent); }
 
 /* header */
 header {
@@ -73,7 +92,6 @@ header {
 
 .wordmark {
   font-weight: 600;
-  letter-spacing: -0.01em;
   color: var(--fg);
   text-decoration: none;
 }
@@ -89,7 +107,7 @@ header {
   color: var(--muted);
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   padding: .15rem .4rem;
   cursor: pointer;
 }
@@ -101,7 +119,7 @@ header {
   color: var(--muted);
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   padding: .2rem .45rem;
   cursor: pointer;
 }
@@ -120,9 +138,10 @@ main.wide { max-width: 960px; }
 
 /* hero (landing) */
 .hero h1 {
-  font-size: clamp(1.75rem, 4vw, 2.25rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.9rem, 4.5vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
   margin: 0 0 .5rem;
 }
 .hero p {
@@ -135,12 +154,22 @@ main.wide { max-width: 960px; }
 .groups { max-width: 960px; margin: 0 auto; }
 .group { margin-top: 2.5rem; }
 .group h2 {
-  font-size: .8rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-family: var(--mono);
+  font-size: .72rem;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .14em;
   color: var(--muted);
   font-weight: 600;
   margin: 0 0 .75rem;
+}
+.group h2::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
 }
 
 .grid {
@@ -150,18 +179,21 @@ main.wide { max-width: 960px; }
 }
 
 .card-link {
+  position: relative;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
   padding: .9rem 1rem;
   text-decoration: none;
   color: var(--fg);
-  transition: background .12s, border-color .12s;
+  box-shadow: var(--sheet-shadow);
+  transition: background .12s, border-color .12s, box-shadow .12s;
 }
 .card-link:hover {
   background: var(--hover);
-  border-color: var(--border-strong);
+  border-color: var(--border-stronger);
+  box-shadow: var(--sheet-shadow-hover);
 }
 .card-link .name {
   font-weight: 550;
@@ -173,6 +205,35 @@ main.wide { max-width: 960px; }
   display: block;
   margin-top: .15rem;
 }
+
+/* dog-ear: ::before masks the corner with the PAGE background (relies on cards
+   keeping the same background as the page — a tinted card would break the
+   illusion), ::after is the fold flap, kept exactly 1px smaller so the
+   diagonal reads as a crease. Sizes only; colors/geometry are shared here. */
+.card-link::before,
+.card-link::after,
+.drop::before,
+.drop::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  transition: border-width .15s ease;
+  pointer-events: none;
+}
+.card-link::before {
+  border-width: 0 16px 16px 0;
+  border-color: transparent var(--bg) transparent transparent;
+}
+.card-link::after {
+  border-width: 0 15px 15px 0;
+  border-color: transparent transparent var(--border-strong) transparent;
+}
+.card-link:hover::before { border-width: 0 21px 21px 0; }
+.card-link:hover::after { border-width: 0 20px 20px 0; }
 
 /* tool page */
 main h1 {
@@ -188,8 +249,9 @@ main .desc {
 
 /* dropzone */
 .drop {
-  border: 1.5px dashed var(--border);
-  border-radius: 12px;
+  position: relative;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius);
   padding: 2.25rem 1.25rem;
   text-align: center;
   color: var(--muted);
@@ -198,18 +260,18 @@ main .desc {
 }
 .drop:hover,
 .drop.over {
-  border-color: var(--border-stronger);
+  border-color: var(--accent);
   background: var(--hover);
 }
 .drop:focus-visible {
-  outline: 2px solid var(--fg);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 .drop .filelist {
   list-style: none;
   padding: 0;
   margin: .75rem 0 0;
-  font-size: .85rem;
+  font-size: .8rem;
   color: var(--fg);
 }
 .drop .filelist li { margin-top: .15rem; }
@@ -222,6 +284,21 @@ main .desc {
   white-space: nowrap;
 }
 
+/* same dog-ear treatment as .card-link, sized down slightly since the
+   dropzone border is dashed rather than solid */
+.drop::before {
+  border-width: 0 14px 14px 0;
+  border-color: transparent var(--bg) transparent transparent;
+}
+.drop::after {
+  border-width: 0 13px 13px 0;
+  border-color: transparent transparent var(--border-strong) transparent;
+}
+.drop:hover::before,
+.drop.over::before { border-width: 0 18px 18px 0; }
+.drop:hover::after,
+.drop.over::after { border-width: 0 17px 17px 0; }
+
 /* signature pad */
 .signpad { display: inline-block; max-width: 100%; }
 .signcanvas {
@@ -230,8 +307,8 @@ main .desc {
   max-width: 100%;
   height: 160px;
   background: #ffffff;
-  border: 1.5px dashed var(--border);
-  border-radius: 12px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius);
   touch-action: none;
   cursor: crosshair;
 }
@@ -253,7 +330,7 @@ select,
 textarea {
   font: inherit;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: .5rem .6rem;
   background: var(--bg);
   color: var(--fg);
@@ -265,14 +342,14 @@ input[type="text"]:focus-visible,
 input[type="number"]:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--fg);
+  outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
 input[type="checkbox"],
 input[type="radio"],
 input[type="range"] {
-  accent-color: var(--fg);
+  accent-color: var(--accent);
 }
 
 .checkline {
@@ -285,7 +362,7 @@ input[type="range"] {
 
 .hint {
   color: var(--muted);
-  font-size: .82rem;
+  font-size: .78rem;
   margin: .3rem 0 0;
 }
 
@@ -295,20 +372,21 @@ button.primary {
   background: var(--fg);
   color: var(--bg);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: .6rem 1.25rem;
   font: inherit;
-  font-weight: 550;
+  font-weight: 600;
   cursor: pointer;
+  transition: background .12s, color .12s;
 }
-button.primary:hover { opacity: .88; }
+button.primary:hover:not(:disabled) { background: var(--accent); color: var(--accent-contrast); }
 button.primary:disabled { opacity: .45; cursor: default; }
 
 button.secondary {
   background: none;
   border: 1px solid var(--border);
   color: var(--fg);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: .4rem .8rem;
   font: inherit;
   font-size: .85rem;
@@ -318,27 +396,38 @@ button.secondary:hover { background: var(--hover); }
 button.secondary:disabled { opacity: .45; cursor: default; }
 
 :focus-visible {
-  outline: 2px solid var(--fg);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
 /* status / errors / links */
-#status { color: var(--muted); font-size: .9rem; }
+#status {
+  color: var(--muted);
+  font-size: .82rem;
+}
 .err { color: var(--err); margin-top: 1rem; min-height: 1.2em; }
-.back { color: var(--muted); text-decoration: none; font-size: .9rem; }
+.back {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: .8rem;
+}
 .back:hover { color: var(--fg); }
 
 .result {
-  font-size: .85rem;
+  font-size: .8rem;
   color: var(--muted);
   margin-top: 1rem;
 }
 
 dl.info { margin: 0; }
-dl.info dt { font-size: .78rem; color: var(--muted); margin-top: .75rem; }
+dl.info dt {
+  font-size: .74rem;
+  color: var(--muted);
+  margin-top: .75rem;
+}
 dl.info dd { margin: .1rem 0 0; font-size: .98rem; }
 .pagesizes {
-  font-size: .8rem;
+  font-size: .76rem;
   color: var(--muted);
   white-space: pre-wrap;
   margin: .75rem 0 0;
@@ -351,7 +440,7 @@ footer {
   padding: 2rem 1.25rem;
   border-top: 1px solid var(--border);
   color: var(--muted);
-  font-size: .85rem;
+  font-size: .78rem;
   text-align: center;
 }
 
@@ -381,7 +470,7 @@ footer {
 .thumbcell {
   position: relative;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: .35rem;
   background: var(--bg);
   cursor: pointer;
@@ -389,18 +478,18 @@ footer {
   transition: border-color .12s, opacity .12s, box-shadow .12s;
 }
 .thumbcell:hover { border-color: var(--border-stronger); }
-.thumbcell canvas { display: block; width: 100%; height: auto; border-radius: 4px; }
+.thumbcell canvas { display: block; width: 100%; height: auto; border-radius: 2px; }
 .thumbcell .thumbnum {
   display: block;
   text-align: center;
-  font-size: .75rem;
+  font-size: .72rem;
   color: var(--muted);
   margin-top: .3rem;
 }
 .thumbcell[draggable="true"] { cursor: grab; }
 .thumbcell.dragging { opacity: .4; }
-.thumbcell.dragover-before { box-shadow: -3px 0 0 var(--fg); }
-.thumbcell.dragover-after { box-shadow: 3px 0 0 var(--fg); }
+.thumbcell.dragover-before { box-shadow: -3px 0 0 var(--accent); }
+.thumbcell.dragover-after { box-shadow: 3px 0 0 var(--accent); }
 .thumbcell.removed { opacity: .35; }
 .thumbcell.removed::after {
   content: "\2715";
@@ -413,7 +502,7 @@ footer {
   color: var(--err);
   pointer-events: none;
 }
-.thumbcell.selected { border-color: var(--fg); box-shadow: 0 0 0 2px var(--fg) inset; }
+.thumbcell.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
 
 /* PWA "Open with which tool?" chooser (file-handler launch on the index page) */
 .launch-overlay {
@@ -430,7 +519,8 @@ footer {
   background: var(--bg);
   color: var(--fg);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
+  box-shadow: var(--sheet-shadow-hover);
   padding: 1.5rem;
   max-width: 420px;
   width: 100%;

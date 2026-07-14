@@ -1,6 +1,6 @@
 // Service worker for offline support. Bump CACHE to invalidate old entries
 // on the next deploy.
-const CACHE = "pt-v3";
+const CACHE = "pt-v4";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

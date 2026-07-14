@@ -2,7 +2,7 @@
   margin: 1.5rem 0;
   padding: 1rem;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--bg);
 }
 
@@ -21,7 +21,7 @@
 .result-preview-render-error {
   margin: .75rem 0 0;
   padding: .65rem .75rem;
-  border-radius: 8px;
+  border-radius: 3px;
   color: var(--err);
   background: color-mix(in srgb, var(--err) 9%, transparent);
   font-size: .875rem;
@@ -44,7 +44,7 @@
   padding: .75rem;
   overflow: auto;
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 3px;
   background: var(--surface, var(--bg));
 }
 
@@ -131,7 +131,7 @@
     gap: .35rem;
     margin-top: 1rem;
     padding: .25rem;
-    border-radius: 9px;
+    border-radius: 3px;
     background: color-mix(in srgb, var(--fg) 6%, transparent);
   }
 
