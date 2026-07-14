@@ -9,6 +9,8 @@ const files = [];
 async function walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
+    // Vendored wasm (web/vendor/**) is pinned by sha256 in each vendor dir's SOURCES.txt; this budget guards our own built engines.
+    if (entry.isDirectory() && entry.name === "vendor") continue;
     if (entry.isDirectory()) await walk(path);
     else if (entry.name.endsWith(".wasm")) files.push([path, (await stat(path)).size]);
   }

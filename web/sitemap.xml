@@ -397,6 +397,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/mdedit/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/typst/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/typst/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/typst/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/typst/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/typst/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/typst/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/typst/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/stamp/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
@@ -923,6 +935,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/mdedit/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/mdedit/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/mdedit/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/ko/typst/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/typst/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/typst/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/typst/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/typst/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/typst/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/typst/"/>
   </url>
   <url>
     <loc>https://papertools.dev/ko/stamp/</loc>
@@ -1453,6 +1477,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/mdedit/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/ja/typst/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/typst/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/typst/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/typst/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/typst/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/typst/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/typst/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/ja/stamp/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
@@ -1979,6 +2015,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/mdedit/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/mdedit/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/mdedit/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/zh/typst/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/typst/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/typst/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/typst/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/typst/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/typst/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/typst/"/>
   </url>
   <url>
     <loc>https://papertools.dev/zh/stamp/</loc>
@@ -2509,6 +2557,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/mdedit/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/es/typst/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/typst/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/typst/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/typst/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/typst/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/typst/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/typst/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/es/stamp/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
@@ -3037,6 +3097,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/mdedit/"/>
   </url>
   <url>
+    <loc>https://papertools.dev/fr/typst/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/typst/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/typst/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/typst/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/typst/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/typst/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/typst/"/>
+  </url>
+  <url>
     <loc>https://papertools.dev/fr/stamp/</loc>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/stamp/"/>
@@ -3563,6 +3635,18 @@
     <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/mdedit/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/mdedit/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/mdedit/"/>
+  </url>
+  <url>
+    <loc>https://papertools.dev/de/typst/</loc>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papertools.dev/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/typst/"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/typst/"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/typst/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://papertools.dev/es/typst/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/typst/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://papertools.dev/de/typst/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papertools.dev/typst/"/>
   </url>
   <url>
     <loc>https://papertools.dev/de/stamp/</loc>

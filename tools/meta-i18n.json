@@ -1,11 +1,11 @@
 {
   "": {
-    "ko": {"title": "Paper Tools — 브라우저 속 PDF 도구", "description": "42가지 파일 도구. 업로드도 설치도 필요 없이, 이 탭에서 바로 사용하세요."},
-    "ja": {"title": "Paper Tools — ブラウザ内のPDFツール", "description": "42種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。"},
-    "zh": {"title": "Paper Tools — 浏览器内的PDF工具", "description": "42 款文件工具。无需上传,无需安装——就在这个标签页中直接使用。"},
-    "es": {"title": "Paper Tools — PDF en tu navegador", "description": "42 herramientas de archivos. Sin subidas ni instalaciones: todo aquí mismo, en esta pestaña."},
-    "fr": {"title": "Paper Tools — PDF dans votre navigateur", "description": "42 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet."},
-    "de": {"title": "Paper Tools — PDF-Tools im Browser", "description": "42 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab."}
+    "ko": {"title": "Paper Tools — 브라우저 속 PDF 도구", "description": "43가지 파일 도구. 업로드도 설치도 필요 없이, 이 탭에서 바로 사용하세요."},
+    "ja": {"title": "Paper Tools — ブラウザ内のPDFツール", "description": "43種類のファイルツール。アップロードもインストールも不要、このタブ内で完結します。"},
+    "zh": {"title": "Paper Tools — 浏览器内的PDF工具", "description": "43 款文件工具。无需上传,无需安装——就在这个标签页中直接使用。"},
+    "es": {"title": "Paper Tools — PDF en tu navegador", "description": "43 herramientas de archivos. Sin subidas ni instalaciones: todo aquí mismo, en esta pestaña."},
+    "fr": {"title": "Paper Tools — PDF dans votre navigateur", "description": "43 outils de fichiers. Pas d'envoi, pas d'installation — tout se passe directement dans cet onglet."},
+    "de": {"title": "Paper Tools — PDF-Tools im Browser", "description": "43 Datei-Tools. Kein Upload, keine Installation — alles direkt in diesem Tab."}
   },
   "privacy": {
     "ko": {"title": "개인정보 처리방침 — Paper Tools", "description": "Paper Tools가 파일을 다루는 방식: 모든 작업이 브라우저에서 실행되며, 어떤 파일도 업로드되지 않습니다."},
@@ -350,5 +350,13 @@
     "es": {"title": "Editor de Markdown — gratis y privado | Paper Tools", "description": "Escribe Markdown y observa la vista previa renderizada al instante. Descárgalo como .md o como HTML independiente. Funciona sin conexión en tu navegador."},
     "fr": {"title": "Éditeur Markdown — gratuit et privé | Paper Tools", "description": "Rédigez du Markdown et voyez l'aperçu rendu instantanément. Téléchargez au format .md ou en HTML autonome. Fonctionne hors ligne dans votre navigateur."},
     "de": {"title": "Markdown-Editor — kostenlos & privat | Paper Tools", "description": "Schreibe Markdown und sieh die gerenderte Vorschau sofort. Lade es als .md oder eigenständiges HTML herunter. Funktioniert offline in deinem Browser."}
+  },
+  "typst": {
+    "ko": {"title": "타이프스트 편집기 — 무료·비공개 | Paper Tools", "description": "타이프스트를 작성하면 조판된 미리보기를 즉시 확인할 수 있습니다 — 수식, 레이아웃 등을 지원합니다. .typ 또는 PDF로 다운로드하세요. 브라우저에서 오프라인으로도 동작합니다."},
+    "ja": {"title": "Typstエディター — 無料・非公開 | Paper Tools", "description": "Typstを書くと、組版されたプレビューを即座に確認できます — 数式やレイアウトなどに対応。.typまたはPDFとしてダウンロードできます。ブラウザ内でオフラインでも動作します。"},
+    "zh": {"title": "Typst 编辑器 — 免费且私密 | Paper Tools", "description": "编写 Typst 并即时查看排版预览 — 支持数学公式、排版等。可下载为 .typ 或 PDF 文件。在浏览器中离线也可使用。"},
+    "es": {"title": "Editor de Typst — gratis y privado | Paper Tools", "description": "Escribe Typst y observa la vista previa tipografiada al instante — fórmulas matemáticas, maquetación y más. Descárgalo como .typ o PDF. Funciona sin conexión en tu navegador."},
+    "fr": {"title": "Éditeur Typst — gratuit et privé | Paper Tools", "description": "Rédigez du Typst et voyez l'aperçu typographié instantanément — mathématiques, mise en page et plus encore. Téléchargez au format .typ ou PDF. Fonctionne hors ligne dans votre navigateur."},
+    "de": {"title": "Typst-Editor — kostenlos & privat | Paper Tools", "description": "Schreibe Typst und sieh die gesetzte Vorschau sofort — Mathematik, Layout und mehr. Lade es als .typ oder PDF herunter. Funktioniert offline in deinem Browser."}
   }
 }

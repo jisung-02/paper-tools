@@ -17,7 +17,7 @@ are never uploaded — every conversion happens locally on your device.
 
 ## What it is
 
-42 client-side tools for PDFs, images, and office documents. Open a tool,
+43 client-side tools for PDFs, images, and office documents. Open a tool,
 drop a file, get a result — nothing leaves the browser tab. No server, no
 uploads, no account.
 
@@ -119,8 +119,8 @@ go test -run '^$' -bench . -benchmem ./pdf
 ```
 
 `tools/verify-vendor.mjs` checks the SHA-256 manifest for every vendored
-Tesseract runtime and language asset. Run it after replacing any file under
-`web/vendor/tesseract/`.
+runtime and asset (Tesseract, Typst, and friends). Run it after replacing any
+file under `web/vendor/`.
 
 CI also runs deterministic PDF benchmarks (`go test -run '^$' -bench . -benchmem
 ./pdf`). Deploy stages `web/` with `tools/stage-assets.mjs`; same-filesystem

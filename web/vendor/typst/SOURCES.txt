@@ -1,0 +1,198 @@
+Vendored Typst compiler + renderer (WebAssembly) and fonts for the Typst tool
+(web/typst/).
+Fetched: 2026-07-14
+
+## Engine: typst.ts@0.7.0 (npm)
+
+Three packages from the typst.ts project, all pinned at the same 0.7.0
+release:
+
+  @myriaddreamin/typst.ts@0.7.0              - JS/TS glue (ESM, dist/esm/)
+  @myriaddreamin/typst-ts-web-compiler@0.7.0 - compiler WASM (pkg/)
+  @myriaddreamin/typst-ts-renderer@0.7.0     - renderer WASM (pkg/)
+
+Source: https://registry.npmjs.org/@myriaddreamin/typst.ts/-/typst.ts-0.7.0.tgz
+        https://registry.npmjs.org/@myriaddreamin/typst-ts-web-compiler/-/typst-ts-web-compiler-0.7.0.tgz
+        https://registry.npmjs.org/@myriaddreamin/typst-ts-renderer/-/typst-ts-renderer-0.7.0.tgz
+License: Apache-2.0 (see ./LICENSE, from the typst.ts package's own LICENSE
+  file; the compiler and renderer packages ship no separate LICENSE file and
+  are covered by the same upstream repo license).
+
+Used with a raw `createTypstCompiler()` + `getWrapper()`/`getModule()` +
+`loadFonts(..., { assets: false })` integration (see web/typst/): no
+`$typst` singleton, no access-model / filesystem layer, no package registry
+installed. That integration code lives in web/typst/ (owned separately from
+this vendor directory) and is what determines which of the files below are
+actually reachable at runtime.
+
+## Files (from @myriaddreamin/typst.ts dist/esm/)
+
+These are ES modules loaded same-origin via relative imports; the set below
+is the transitive closure of every same-package relative import reachable
+from compiler.mjs and renderer.mjs (verified by walking every `from './...'`
+/ `import('./...')` specifier recursively — a few files beyond the obvious
+entry points turned out to be required: renderer.mjs statically imports
+dom.mjs and render/canvas/view.mjs, and dom.mjs in turn statically imports
+contrib/dom/typst-doc.mjs and contrib/dom/typst-cancel.mjs. Static ESM
+imports execute at module-load time regardless of whether the integration
+code calls the exports they define, so all of them must be present on disk
+even though the current web/typst/ integration only exercises the compiler
+path (RenderView / TypstDomDocument / TypstDocumentContext go unused).
+
+  compiler.mjs                      46,043 bytes
+    sha256: 177542abd7f2e7bac627242151034a02a2b48663165a9a3af213af5e9ef0e8a8
+  init.mjs                          13,492 bytes
+    sha256: c5d8390f2cb1a91b29b6f2d539ea5b19ed67247aa41ba35b76d14bc5244926f3
+  internal.types.mjs                 3,663 bytes
+    sha256: 949173641e52b965e42e53f5f834f2ba23295aae6bfdda211728b2b6d501c68d
+  options.init.mjs                  27,656 bytes
+    sha256: 980a5ddd6f022c379264d23140346b6248fec3bc7df4a17e6931598f97920ed2
+  wasm.mjs                            3,755 bytes
+    sha256: ea7b0961cd5c9b2d3ef3b9d92fb881f84db1b756f2664ab817bba1e51c311dcc
+  utils.mjs                            776 bytes
+    sha256: 8bd06899cb1bddbc0f600c2bbd774bec8788095faddaddaf8e5f30e5c18a3245
+  renderer.mjs                      80,414 bytes
+    sha256: 929f96b125f51f04a5bffeeabb31b47e97b3a26e2d7a919936131ad26731a941
+  options.render.mjs                 8,962 bytes
+    sha256: 56a2c796d3d404065f5d8736739f428bc6288b18f423a14b8f2abf870a8fd05c
+  dom.mjs                           31,652 bytes
+    sha256: a3aaa30432dde32ab76c1387945cac71ee62b1bee5fb4b7d8385e860ba276733
+  render/svg/patch.mjs              49,936 bytes
+    sha256: 7350057077cc784c3ae685eb5487f17b0c65166609e804c2696f5ae0aa4c8785
+  render/canvas/view.mjs            17,693 bytes
+    sha256: c6279caf9d902f0f06bfdef76789d88cf5d30ef3f1435db1fb54c26c4424a8cd
+  contrib/dom/typst-doc.mjs         59,383 bytes
+    sha256: 00eb10f4928b131c199347572b56828ae952d106d7e4de2d5b3f19bbc28b4186
+  contrib/dom/typst-cancel.mjs       3,561 bytes
+    sha256: eafe65a5175eb933c45797dd1609e4653bd72bbac21103a289c67b4e631f8f9c
+
+Not vendored (unreachable from the files above, or dev/Node-only):
+  dist/esm/doc.mjs, dist/esm/index.mjs, dist/esm/main.mjs,
+  dist/esm/main.bundle.js and dist/esm/contrib/*.bundle.js (bundled
+  all-in-one builds meant for CDN <script> usage, unused here),
+  dist/esm/fs/** (Node filesystem/access-model layer, not imported by the
+  compiler/renderer entry points), dist/esm/render/canvas/viewport.mjs
+  (present on disk next to view.mjs but not imported by anything in the
+  closure above), and all *.d.mts TypeScript declaration files.
+
+## pkg-compiler/ (from @myriaddreamin/typst-ts-web-compiler@0.7.0, pkg/)
+
+  typst_ts_web_compiler.mjs         59,874 bytes
+    sha256: 96735c6da3dd220255ba368e34c695227fc67e0b4104e7a8e039dd9bc2fc5312
+  typst_ts_web_compiler_bg.wasm  28,325,178 bytes
+    sha256: 1fc968438a672366dfec39c96c842c26ed29caff4eb1bcaab19a6c60867de5fd
+  wasm-pack-shim.mjs                   652 bytes
+    sha256: 0023261749a0ad3276dc7718d163d9967d9e5cf8b882a4ea60173e5cd8cac921
+
+wasm-pack-shim.mjs only imports from the co-located typst_ts_web_compiler.mjs
+(no other relative imports); its Node.js `readFileSync` branch is dead code
+in the browser (guarded by an `isNode` check that is always false here).
+
+Not vendored: typst_ts_web_compiler.d.ts, typst_ts_web_compiler_bg.wasm.d.ts
+(TypeScript declarations, unused at runtime).
+
+## pkg-renderer/ (from @myriaddreamin/typst-ts-renderer@0.7.0, pkg/)
+
+  typst_ts_renderer.mjs             96,576 bytes
+    sha256: a2ef629939e31555159bc4b50b1ef970fa595117c21d11e257c9349895016c42
+  typst_ts_renderer_bg.wasm        972,425 bytes
+    sha256: 5a93d7a8b3b7b43b0e679f3dafed966f74fc1653cc7ed6623f04a8a6550da725
+  wasm-pack-shim.mjs                   640 bytes
+    sha256: a5af349b13ac154c3f45c42b65c736b18b5a92607b4f3841d60f923e8b54d0c9
+
+Same shim shape/behavior as pkg-compiler/ above.
+
+Not vendored: typst_ts_renderer.d.ts, typst_ts_renderer_bg.wasm.d.ts
+(TypeScript declarations, unused at runtime).
+
+Both .wasm files were verified to start with the `\0asm` WebAssembly magic
+bytes (00 61 73 6d) before vendoring.
+
+## fonts/ (typst/typst-assets @ tag v0.13.1)
+
+Source: https://raw.githubusercontent.com/typst/typst-assets/v0.13.1/files/fonts/<name>
+License: see per-family LICENSE-*.txt below, extracted verbatim from the
+  typst-assets NOTICE file at the same tag
+  (https://github.com/typst/typst-assets/blob/v0.13.1/NOTICE). The repo's
+  top-level LICENSE (Apache-2.0) covers the typst-assets repo's own code
+  (src/lib.rs etc.), not the bundled fonts -- NOTICE is the authoritative
+  per-font license text and is what's mirrored here.
+
+  LibertinusSerif-Regular.otf      337,132 bytes
+    sha256: fcf06307a77367394fcb0ccb241e59eea70dba3d732be309647611224679c733
+  LibertinusSerif-Bold.otf         293,908 bytes
+    sha256: 0264914210ed51b3231ebc92ce529e9f2e166ba9eebf0cd4a579558690a27b64
+  LibertinusSerif-Italic.otf       332,312 bytes
+    sha256: 9a393d63d6e05f620d3dc0190dfd35a8ede58c0808cf0fc9de7fcb9c723e4c24
+  LibertinusSerif-BoldItalic.otf   259,176 bytes
+    sha256: 47a665259f09f554f5d133d7718cdad43ff462c6a6b2328f38023465e62d57ce
+  NewCMMath-Regular.otf          1,150,844 bytes
+    sha256: bfd2f9b22caacd41b8b29cfe3f6d72f976f221a65362e07eda35cbae863721b7
+  DejaVuSansMono.ttf               340,712 bytes
+    sha256: b4a6c3e4faab8773f4ff761d56451646409f29abedd68f05d38c2df667d3c582
+
+  LICENSE-LibertinusSerif.txt (SIL OFL 1.1)      4,370 bytes
+    sha256: 5ebbb4d67ede428e015cfff477dfe34be60a5ae25708888e656f5097c24c8888
+  LICENSE-NewCMMath.txt (GUST Font License 1.0)  1,477 bytes
+    sha256: d8a53cd6f63dd513dac3ffc1194062842c25028ea4272cc4a7d6247a691be922
+  LICENSE-DejaVuSansMono.txt (Bitstream Vera +
+    Arev Fonts license)                          8,934 bytes
+    sha256: 0b4ff86cc079f5a514c868759430de92e43d3795a00db1068a0514e18ba0fba1
+
+Korean text is served by the repo's existing web/NanumGothic-Regular.ttf and
+is intentionally NOT duplicated here.
+
+Not vendored: LibertinusSerif-Semibold(Italic).otf, NewCM10-*.otf,
+NewCMMath-Bold.otf, NewCMMath-Book.otf, DejaVuSansMono-Bold.ttf,
+DejaVuSansMono-BoldOblique.ttf, DejaVuSansMono-Oblique.ttf (present in
+typst-assets but not part of the fixed font set web/typst/ registers),
+files/icc/** and files/icu/** (unrelated typst-assets payloads, CC0/other,
+not fonts).
+
+## Loading
+
+The .mjs files above are loaded same-origin as ES modules, and
+pkg-compiler/typst_ts_web_compiler_bg.wasm / pkg-renderer/typst_ts_renderer_bg.wasm
+are fetched same-origin by their paired .mjs wrapper on first use -- all
+lazily loaded by /typst/ only when the tool page is opened, never at
+site-wide page load. The font files under fonts/ are likewise fetched
+same-origin, on demand, and registered explicitly via
+`loadFonts([...], { assets: false })` in the integration code -- never
+pulled from typst.ts's default jsDelivr font-asset URLs.
+
+Nothing here is ever fetched from a third-party CDN at runtime, and nothing
+here ever sends data anywhere: compilation and rendering happen entirely
+client-side in WebAssembly, same as every other vendored engine in
+web/vendor/.
+
+## CDN strings found in the vendored source (grep for jsdelivr / https:// /
+## packages.typst.org), and why none of them are reachable at runtime
+
+  options.init.mjs:56-57  -- two jsdelivr URL constants
+    ('https://cdn.jsdelivr.net/gh/typst/typst-assets@v0.13.1/files/fonts/'
+    and the '-dev-assets' equivalent) used only inside `_resolveAssets()` as
+    the *default* `assetUrlPrefix` when `options.assets` is a truthy
+    non-empty array. The integration code always calls
+    `loadFonts(fonts, { assets: false })`, so `_resolveAssets` takes its
+    `options?.assets !== false` guard clause to false and returns `[]`
+    before ever touching these constants -- dead code on our call path,
+    kept only because we vendor byte-identical artifacts rather than
+    patching the source.
+  options.init.mjs:107,122 -- 'https://fonts.gstatic.com/...' -- inside a
+    /** JSDoc example comment */, never executed.
+  render/svg/patch.mjs:258 -- a StackOverflow URL inside a `//` comment,
+    never executed.
+
+No other `https://`, `jsdelivr`, or `packages.typst.org` occurrences exist
+in any vendored .mjs file. (typst.ts's `fs/package.mjs`, which builds
+`https://packages.typst.org/preview/...` package-registry URLs, and the
+bundled `main.bundle.js` / `contrib/*.bundle.js` all-in-one builds, both
+contain such strings but are not vendored here -- see "Not vendored" above
+-- and no package registry is installed by the integration code regardless.)
+
+## Size guard
+
+web/vendor/ wasm is excluded from tools/check-wasm-size.mjs's walk (see the
+comment in that file) because it is pinned by the sha256 list above, not
+built by this repo's own CI -- the 32MiB/2MiB-per-file budget guards our own
+compiled engines, not third-party vendored payloads.

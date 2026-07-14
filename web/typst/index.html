@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>Typst Editor — free & private | Paper Tools</title>
+<script src="/theme.js"></script>
+<link rel="stylesheet" href="../style.css">
+<link rel="modulepreload" href="/vendor/typst/compiler.mjs">
+<link rel="modulepreload" href="/typst/typst.mjs">
+<meta name="description" content="Write Typst and see the typeset preview instantly — math, layout and more. Download as .typ or PDF. Works offline in your browser.">
+<link rel="canonical" href="https://papertools.dev/typst/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Paper Tools">
+<meta property="og:title" content="Typst Editor — Paper Tools">
+<meta property="og:description" content="Write Typst and see the typeset preview instantly — math, layout and more. Download as .typ or PDF. Works offline in your browser.">
+<meta property="og:url" content="https://papertools.dev/typst/">
+<meta property="og:image" content="https://papertools.dev/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Typst Editor — Paper Tools">
+<meta name="twitter:description" content="Write Typst and see the typeset preview instantly — math, layout and more. Download as .typ or PDF. Works offline in your browser.">
+<meta name="twitter:image" content="https://papertools.dev/og.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Typst Editor — Paper Tools","url":"https://papertools.dev/typst/","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","browserRequirements":"Requires a modern browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Write Typst and see the typeset preview instantly — math, layout and more. Download as .typ or PDF. Works offline in your browser.","isPartOf":{"@type":"WebSite","name":"Paper Tools","url":"https://papertools.dev/"}}
+</script>
+<!-- hreflang -->
+<link rel="alternate" hreflang="en" href="https://papertools.dev/typst/">
+<link rel="alternate" hreflang="ko" href="https://papertools.dev/ko/typst/">
+<link rel="alternate" hreflang="ja" href="https://papertools.dev/ja/typst/">
+<link rel="alternate" hreflang="zh" href="https://papertools.dev/zh/typst/">
+<link rel="alternate" hreflang="es" href="https://papertools.dev/es/typst/">
+<link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/typst/">
+<link rel="alternate" hreflang="de" href="https://papertools.dev/de/typst/">
+<link rel="alternate" hreflang="x-default" href="https://papertools.dev/typst/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"How to use the Typst editor","step":[{"@type":"HowToStep","position":1,"name":"Type or paste Typst in the editor, or drop a .typ or .txt file onto it."},{"@type":"HowToStep","position":2,"name":"Watch the live typeset preview update as you type."},{"@type":"HowToStep","position":3,"name":"Click \"Download .typ\" or \"Download PDF\" to save your document."}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is my Typst document uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No — everything runs locally in your browser; your Typst source never leaves your device."}},{"@type":"Question","name":"Can I use Typst packages (@preview) offline?","acceptedAnswer":{"@type":"Answer","text":"No. Package imports need to fetch code over the network, so they aren't available in this offline editor — write self-contained documents without @preview imports."}},{"@type":"Question","name":"Why does the editor download something the first time I use it?","acceptedAnswer":{"@type":"Answer","text":"The Typst compiler is a roughly 10 MB engine that loads once per browser and is cached afterward, so later visits and page reloads start instantly."}}]}
+</script>
+</head>
+<body>
+
+<header>
+  <a class="wordmark" href="../">Paper Tools</a>
+  <nav class="langtoggle">
+    <button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button>
+  </nav>
+</header>
+
+<main class="wide">
+<a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
+
+<h1 data-i18n data-en="Typst Editor" data-ko="타이프스트 편집기">Typst Editor</h1>
+<p class="desc" data-i18n data-en="Write Typst on the left and watch it typeset live on the right." data-ko="왼쪽에 타이프스트를 작성하면 오른쪽에 실시간으로 조판됩니다.">Write Typst on the left and watch it typeset live on the right.</p>
+<p id="status">Loading tool…</p>
+
+<div class="drop" id="fileDrop">
+  <span data-i18n data-en="Drag a .typ or .txt file here, or click to choose" data-ko="타이프스트 파일(.typ, .txt)을 끌어다 놓거나 클릭해서 선택">Drag a .typ or .txt file here, or click to choose</span>
+  <input type="file" accept=".typ,.txt,text/plain">
+  <ul class="filelist"></ul>
+</div>
+
+<div class="mdsplit">
+  <div class="mdpane">
+    <label for="typstsrc" data-i18n data-en="Typst source" data-ko="타이프스트 원본">Typst source</label>
+    <textarea id="typstsrc" spellcheck="false" data-en-placeholder="= Welcome to Typst
+
+Write *Typst* here — headings, _emphasis_ and math are all supported.
+
+$ integral_0^1 x^2 dif x = 1/3 $
+
+- One
+- Two
+- Three
+
+한국어도 잘 표시됩니다 — Paper Tools" data-ko-placeholder="= 타이프스트에 오신 것을 환영합니다
+
+여기에 *타이프스트*를 작성하세요 — 제목, _강조_, 수식을 모두 지원합니다.
+
+$ integral_0^1 x^2 dif x = 1/3 $
+
+- 하나
+- 둘
+- 셋
+
+한국어도 잘 표시됩니다 — Paper Tools" placeholder="= Welcome to Typst
+
+Write *Typst* here — headings, _emphasis_ and math are all supported.
+
+$ integral_0^1 x^2 dif x = 1/3 $
+
+- One
+- Two
+- Three
+
+한국어도 잘 표시됩니다 — Paper Tools"></textarea>
+  </div>
+  <div class="mdpane">
+    <span class="hint" data-i18n data-en="Preview" data-ko="미리보기">Preview</span>
+    <div class="mdpreview" id="typstout" aria-live="polite" data-en-aria="Typst preview" data-ko-aria="타이프스트 미리보기" aria-label="Typst preview"></div>
+  </div>
+</div>
+
+<div class="mdbuttons">
+  <button class="secondary" id="dltyp" data-i18n data-en="Download .typ" data-ko=".typ 다운로드">Download .typ</button>
+  <button class="primary" id="dlpdf" data-needs-wasm disabled data-i18n data-en="Download PDF" data-ko="PDF 다운로드">Download PDF</button>
+</div>
+<p class="err" id="err"></p>
+
+<section class="page-info">
+<h2 data-i18n data-en="How to use the Typst editor" data-ko="타이프스트 편집기 사용법">How to use the Typst editor</h2>
+<ol>
+  <li data-i18n data-en="Type or paste Typst in the editor, or drop a .typ or .txt file onto it." data-ko="타이프스트를 입력하거나 붙여넣거나, .typ 또는 .txt 파일을 편집기에 드롭하세요.">Type or paste Typst in the editor, or drop a .typ or .txt file onto it.</li>
+  <li data-i18n data-en="Watch the live typeset preview update as you type." data-ko="입력하는 동안 오른쪽 미리보기가 실시간으로 조판됩니다.">Watch the live typeset preview update as you type.</li>
+  <li data-i18n data-en="Click &quot;Download .typ&quot; or &quot;Download PDF&quot; to save your document." data-ko="&quot;.typ 다운로드&quot; 또는 &quot;PDF 다운로드&quot; 버튼을 클릭해 문서를 저장하세요.">Click "Download .typ" or "Download PDF" to save your document.</li>
+</ol>
+<h2 data-i18n data-en="FAQ" data-ko="자주 묻는 질문">FAQ</h2>
+<h3 data-i18n data-en="Is my Typst document uploaded to a server?" data-ko="타이프스트 문서가 서버에 업로드되나요?">Is my Typst document uploaded to a server?</h3>
+<p data-i18n data-en="No — everything runs locally in your browser; your Typst source never leaves your device." data-ko="아니요 — 모든 처리는 브라우저 안에서만 이루어지며, 타이프스트 원본은 기기 밖으로 나가지 않습니다.">No — everything runs locally in your browser; your Typst source never leaves your device.</p>
+<h3 data-i18n data-en="Can I use Typst packages (@preview) offline?" data-ko="타이프스트 패키지(@preview)를 오프라인에서 쓸 수 있나요?">Can I use Typst packages (@preview) offline?</h3>
+<p data-i18n data-en="No. Package imports need to fetch code over the network, so they aren't available in this offline editor — write self-contained documents without @preview imports." data-ko="아니요. 패키지 가져오기는 네트워크로 코드를 내려받아야 하므로 이 오프라인 편집기에서는 사용할 수 없습니다 — @preview 가져오기 없이 독립적인 문서를 작성하세요.">No. Package imports need to fetch code over the network, so they aren't available in this offline editor — write self-contained documents without @preview imports.</p>
+<h3 data-i18n data-en="Why does the editor download something the first time I use it?" data-ko="처음 사용할 때 왜 무언가를 내려받나요?">Why does the editor download something the first time I use it?</h3>
+<p data-i18n data-en="The Typst compiler is a roughly 10 MB engine that loads once per browser and is cached afterward, so later visits and page reloads start instantly." data-ko="타이프스트 컴파일러는 약 10MB 크기의 엔진으로, 브라우저마다 한 번만 내려받아 캐시되므로 이후 방문이나 새로고침에서는 바로 시작됩니다.">The Typst compiler is a roughly 10 MB engine that loads once per browser and is cached afterward, so later visits and page reloads start instantly.</p>
+</section>
+</main>
+
+<footer>
+  <span data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</span>
+  · <a href="../privacy/" data-i18n data-en="Privacy" data-ko="개인정보처리방침">Privacy</a>
+</footer>
+
+<script src="../app.js"></script>
+<script type="module" src="/typst/typst.mjs"></script>
+</body>
+</html>
