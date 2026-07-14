@@ -53,11 +53,15 @@ if (hash) {
     const dot = name.lastIndexOf(".");
     mapping.set(name, `${name.slice(0, dot)}-${digest}${name.slice(dot)}`);
   }
+  // Longest names first: a basename that is a suffix of another
+  // ("init.mjs" in "options.init.mjs") must not fire before the longer
+  // one, or the longer reference is rewritten with the wrong digest.
+  const ordered = [...mapping].sort(([a], [b]) => b.length - a.length);
   for (const file of await files(dst)) {
     if (!/\.(?:html?|js|mjs|css)$/i.test(file)) continue;
     if (file.split("/").pop() === "sw.js") continue;
     let body = await readFile(file, "utf8");
-    for (const [from, to] of mapping) body = body.replaceAll(from, to);
+    for (const [from, to] of ordered) body = body.replaceAll(from, to);
     await writeFile(file, body);
   }
 }
