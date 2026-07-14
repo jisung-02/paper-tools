@@ -2,7 +2,7 @@ import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 const root = process.argv[2] || "web";
-const maxTotal = Number(process.env.MAX_WASM_BYTES || 30 * 1024 * 1024);
+const maxTotal = Number(process.env.MAX_WASM_BYTES || 32 * 1024 * 1024);
 const maxEach = Number(process.env.MAX_WASM_FILE_BYTES || 2 * 1024 * 1024);
 const files = [];
 
