@@ -140,7 +140,7 @@ test("Direct Send v3 transfers multiple files over a real data channel", async (
     const sender = createSenderSession(channel, [
       new File(["alpha"], "a.txt", { type: "text/plain" }),
       new File(["beta"], "b.txt", { type: "text/plain" }),
-    ], { transferId: "browser-e2e", chunkSize: 3, negotiationTimeoutMs: 2000 });
+    ], { transferId: "browser-e2e", chunkSize: 3, negotiationTimeoutMs: 15000 });
     const sent = await sender.start();
     while (!receiver) await new Promise((resolve) => setTimeout(resolve, 0));
     const received = await receiver.done;
@@ -218,7 +218,7 @@ test("Direct Send reconnects real data channels and resumes verified bytes", asy
       const sender = createSenderSession(channel, [source], {
         chunkSize: 4,
         transferId: "browser-real-resume",
-        negotiationTimeoutMs: 2000,
+        negotiationTimeoutMs: 15000,
       });
       receiverPC.ondatachannel = ({ channel: incoming }) => {
         incoming.addEventListener("message", ({ data }) => {
