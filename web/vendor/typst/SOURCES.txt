@@ -79,14 +79,28 @@ Not vendored (unreachable from the files above, or dev/Node-only):
 
   typst_ts_web_compiler.mjs         59,874 bytes
     sha256: 96735c6da3dd220255ba368e34c695227fc67e0b4104e7a8e039dd9bc2fc5312
-  typst_ts_web_compiler_bg.wasm  28,325,178 bytes
-    sha256: 1fc968438a672366dfec39c96c842c26ed29caff4eb1bcaab19a6c60867de5fd
+  typst_ts_web_compiler_bg.wasm.gz  10,733,195 bytes (gzip -9 -n of the
+    original 28,325,178-byte wasm; stored compressed because Cloudflare
+    Pages enforces a 25 MiB per-file limit and the uncompressed wasm is
+    ~27 MiB. Decompressed client-side in web/typst/typst.mjs's getModule
+    via DecompressionStream("gzip") before being handed to the compiler's
+    wasm-bindgen loader. gunzip'ing this file reproduces the original
+    upstream artifact byte-for-byte -- verified against the uncompressed
+    sha256 below before the uncompressed copy was deleted from this repo.)
+    sha256 (of the .gz file):        9e247ed060c3bd4d378dcb04eb1d7969de5834480d2d6f690088bd981b024d30
+    sha256 (of the decompressed,
+      original upstream .wasm):      1fc968438a672366dfec39c96c842c26ed29caff4eb1bcaab19a6c60867de5fd
   wasm-pack-shim.mjs                   652 bytes
     sha256: 0023261749a0ad3276dc7718d163d9967d9e5cf8b882a4ea60173e5cd8cac921
 
 wasm-pack-shim.mjs only imports from the co-located typst_ts_web_compiler.mjs
 (no other relative imports); its Node.js `readFileSync` branch is dead code
-in the browser (guarded by an `isNode` check that is always false here).
+in the browser (guarded by an `isNode` check that is always false here) --
+this is also the branch that would call `importWasmModule('typst_ts_web_compiler_bg.wasm',
+import.meta.url)` inside typst_ts_web_compiler.mjs's __wbg_init() when no
+module_or_path is supplied; our integration always supplies getModule, so
+that default-path branch is unreachable dead code regardless of the
+gzip change above.
 
 Not vendored: typst_ts_web_compiler.d.ts, typst_ts_web_compiler_bg.wasm.d.ts
 (TypeScript declarations, unused at runtime).
@@ -152,11 +166,13 @@ not fonts).
 ## Loading
 
 The .mjs files above are loaded same-origin as ES modules, and
-pkg-compiler/typst_ts_web_compiler_bg.wasm / pkg-renderer/typst_ts_renderer_bg.wasm
+pkg-compiler/typst_ts_web_compiler_bg.wasm.gz / pkg-renderer/typst_ts_renderer_bg.wasm
 are fetched same-origin by their paired .mjs wrapper on first use -- all
 lazily loaded by /typst/ only when the tool page is opened, never at
-site-wide page load. The font files under fonts/ are likewise fetched
-same-origin, on demand, and registered explicitly via
+site-wide page load. The pkg-compiler wasm is additionally gunzipped
+client-side (DecompressionStream) before being handed to the wasm-bindgen
+loader -- see the pkg-compiler/ section above. The font files under fonts/
+are likewise fetched same-origin, on demand, and registered explicitly via
 `loadFonts([...], { assets: false })` in the integration code -- never
 pulled from typst.ts's default jsDelivr font-asset URLs.
 

@@ -24,7 +24,7 @@
   "web/vendor/typst/LICENSE": "06292ffcdd7d313747999255a8411e14933df33e24427a46d169cc5ff845227c",
   "web/vendor/typst/options.init.mjs": "980a5ddd6f022c379264d23140346b6248fec3bc7df4a17e6931598f97920ed2",
   "web/vendor/typst/options.render.mjs": "56a2c796d3d404065f5d8736739f428bc6288b18f423a14b8f2abf870a8fd05c",
-  "web/vendor/typst/pkg-compiler/typst_ts_web_compiler_bg.wasm": "1fc968438a672366dfec39c96c842c26ed29caff4eb1bcaab19a6c60867de5fd",
+  "web/vendor/typst/pkg-compiler/typst_ts_web_compiler_bg.wasm.gz": "9e247ed060c3bd4d378dcb04eb1d7969de5834480d2d6f690088bd981b024d30",
   "web/vendor/typst/pkg-compiler/typst_ts_web_compiler.mjs": "96735c6da3dd220255ba368e34c695227fc67e0b4104e7a8e039dd9bc2fc5312",
   "web/vendor/typst/pkg-compiler/wasm-pack-shim.mjs": "0023261749a0ad3276dc7718d163d9967d9e5cf8b882a4ea60173e5cd8cac921",
   "web/vendor/typst/pkg-renderer/typst_ts_renderer_bg.wasm": "5a93d7a8b3b7b43b0e679f3dafed966f74fc1653cc7ed6623f04a8a6550da725",

@@ -69,7 +69,21 @@ const engineInit = (async () => {
   compiler = createTypstCompiler();
   await compiler.init({
     getWrapper: () => import("/vendor/typst/pkg-compiler/typst_ts_web_compiler.mjs"),
-    getModule: () => "/vendor/typst/pkg-compiler/typst_ts_web_compiler_bg.wasm",
+    // The compiler wasm is ~27 MiB uncompressed, over Cloudflare Pages' 25 MiB
+    // per-file limit, so it's vendored gzipped and decompressed here at
+    // runtime. The Response we hand back carries an explicit application/wasm
+    // Content-Type so __wbg_load()'s WebAssembly.instantiateStreaming() path
+    // still applies to the decompressed bytes (see wasm.mjs's
+    // WebAssemblyModuleRef type: a Response is an accepted getModule return).
+    getModule: async () => {
+      const resp = await fetch("/vendor/typst/pkg-compiler/typst_ts_web_compiler_bg.wasm.gz");
+      if (!resp.ok) throw new Error("engine download failed");
+      if (typeof DecompressionStream === "undefined") {
+        throw new Error("this browser cannot decompress the Typst engine");
+      }
+      const stream = resp.body.pipeThrough(new DecompressionStream("gzip"));
+      return new Response(stream, { headers: { "Content-Type": "application/wasm" } });
+    },
     beforeBuild: [loadFonts([
       "/vendor/typst/fonts/LibertinusSerif-Regular.otf",
       "/vendor/typst/fonts/LibertinusSerif-Bold.otf",
