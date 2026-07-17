@@ -6,7 +6,9 @@ import { createHash } from "node:crypto";
 import { join, relative, resolve } from "node:path";
 
 const immutable = /\.(?:js|mjs|css|wasm|woff2?|ttf|otf|png|jpe?g|gif|svg|ico)$/i;
-const fixed = new Set(["app.js", "sw.js", "wasm_exec.js"]);
+// These are requested at canonical URLs (manifest icons, iOS touch icon,
+// og:image) and must keep stable names across deploys.
+const fixed = new Set(["app.js", "sw.js", "wasm_exec.js", "favicon.svg", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "og.png"]);
 const files = async dir => (await readdir(dir, { withFileTypes: true })).flatMap(async e => {
   const p = join(dir, e.name);
   return e.isDirectory() ? (await Promise.all(await files(p))).flat() : [p];
@@ -56,12 +58,16 @@ if (hash) {
   // Longest names first: a basename that is a suffix of another
   // ("init.mjs" in "options.init.mjs") must not fire before the longer
   // one, or the longer reference is rewritten with the wrong digest.
-  const ordered = [...mapping].sort(([a], [b]) => b.length - a.length);
+  // Each match is boundary-checked so a name can't fire inside a larger
+  // word (e.g. "de.js" inside "Node.js" or "style.css" inside "style.cssText").
+  const ordered = [...mapping]
+    .sort(([a], [b]) => b.length - a.length)
+    .map(([from, to]) => [new RegExp(`(?<![\\w.-])${from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w.])`, "g"), to]);
   for (const file of await files(dst)) {
     if (!/\.(?:html?|js|mjs|css)$/i.test(file)) continue;
     if (file.split("/").pop() === "sw.js") continue;
     let body = await readFile(file, "utf8");
-    for (const [from, to] of ordered) body = body.replaceAll(from, to);
+    for (const [re, to] of ordered) body = body.replace(re, to);
     await writeFile(file, body);
   }
 }
