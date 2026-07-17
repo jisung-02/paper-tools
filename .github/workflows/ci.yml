@@ -13,8 +13,41 @@ env:
   TINYGO_AMD64_SHA256: 901fbccffc61adb111656d1f907dfc21b6c499ca841b115866a0d6de2d835fbe
 
 jobs:
-  verify:
+  go:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+      - name: Install TinyGo
+        run: |
+          curl -fsSL -o /tmp/tinygo.deb https://github.com/tinygo-org/tinygo/releases/download/v${TINYGO_VERSION}/tinygo_${TINYGO_VERSION}_amd64.deb
+          echo "${TINYGO_AMD64_SHA256}  /tmp/tinygo.deb" | sha256sum -c -
+          sudo dpkg -i /tmp/tinygo.deb
+      - name: Cache Go/TinyGo build cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/.cache/tinygo
+          key: tinygo-build-${{ env.TINYGO_VERSION }}-${{ hashFiles('go.sum') }}-${{ hashFiles('**/*.go') }}
+          restore-keys: |
+            tinygo-build-${{ env.TINYGO_VERSION }}-${{ hashFiles('go.sum') }}-
+            tinygo-build-${{ env.TINYGO_VERSION }}-
+      - run: go test ./...
+      - run: go test -race ./...
+      - run: go vet ./...
+      - run: tinygo test ./pdf ./xlsx ./imgconv
+      - run: GOOS=js GOARCH=wasm go build ./wasm/...
+      - run: go test -run '^$' -bench . -benchmem ./pdf
+
+  build-wasm:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
@@ -40,14 +73,53 @@ jobs:
           restore-keys: |
             tinygo-build-${{ env.TINYGO_VERSION }}-${{ hashFiles('go.sum') }}-
             tinygo-build-${{ env.TINYGO_VERSION }}-
-      - run: go test ./...
-      - run: go test -race ./...
-      - run: go vet ./...
-      - run: tinygo test ./pdf ./xlsx ./imgconv
-      - run: GOOS=js GOARCH=wasm go build ./wasm/...
-      - name: Build deployment WebAssembly
-        run: ./build.sh
+      - name: Build deployment WebAssembly (shard)
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          ./build.sh $(node -e 'const c=require("./tools/operation-catalog.json");const s=Number(process.env.SHARD);process.stdout.write(c.filter(t=>t.engine==="wasm").map(t=>t.id).filter((_,i)=>i%4===s).join(" "))')
+      - name: Upload wasm shard (with wasm_exec.js)
+        if: matrix.shard == 0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wasm-shard-${{ matrix.shard }}
+          path: |
+            web/*/*.wasm
+            web/wasm_exec.js
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+      - name: Upload wasm shard
+        if: matrix.shard != 0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wasm-shard-${{ matrix.shard }}
+          path: web/*/*.wasm
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  verify:
+    needs: build-wasm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 22
+      - name: Download wasm shards
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: wasm-shard-*
+          merge-multiple: true
+          path: web
+      - run: cp tools/operation-catalog.json web/operation-catalog.json
+      - run: node tools/gen-i18n.mjs
       - run: node tools/check-wasm-size.mjs web
+      - run: node --test
+      - run: node tools/verify-vendor.mjs
+      - run: node tools/stage-assets.mjs --hash web /tmp/yaho-staging/web
+      - run: git diff --check
       - name: Upload deployment WebAssembly
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -58,11 +130,37 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
-      - run: node --test
+
+  e2e:
+    needs: build-wasm
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: chromium
+            browsers: chromium
+            projects: --project=chromium --project=mobile-chromium
+          - name: firefox
+            browsers: firefox
+            projects: --project=firefox
+          - name: webkit
+            browsers: webkit
+            projects: --project=webkit --project=mobile-webkit
+    name: e2e (${{ matrix.name }})
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 22
+      - name: Download wasm shards
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: wasm-shard-*
+          merge-multiple: true
+          path: web
+      - run: cp tools/operation-catalog.json web/operation-catalog.json
+      - run: node tools/gen-i18n.mjs
       - run: npm ci
-      - run: npx playwright install --with-deps chromium firefox webkit
-      - run: npm run test:e2e
-      - run: node tools/verify-vendor.mjs
-      - run: go test -run '^$' -bench . -benchmem ./pdf
-      - run: node tools/stage-assets.mjs --hash web /tmp/yaho-staging/web
-      - run: git diff --check
+      - run: npx playwright install --with-deps ${{ matrix.browsers }}
+      - run: npm run test:e2e -- ${{ matrix.projects }}
