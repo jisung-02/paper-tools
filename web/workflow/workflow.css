@@ -1,9 +1,13 @@
 .workflow-builder { margin:1.5rem 0 }
 .workflow-add,.workflow-actions,.step-actions { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center }
+.workflow-add button,.workflow-actions button,.step-actions button { margin:0 }
+.step-actions button { padding:.3rem .7rem }
+.workflow-add select { align-self:stretch }
 #steps { padding:0; list-style:none; display:grid; gap:.75rem }
 .workflow-step { border:1px solid var(--border); border-radius:.75rem; padding:.8rem; background:var(--bg) }
 .workflow-step header { display:flex; justify-content:space-between; gap:.75rem; align-items:center }
 .workflow-step textarea { width:100%; min-height:5rem; margin-top:.6rem; font-family:ui-monospace,monospace }
-.button-label { display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:.5rem; padding:.55rem .8rem; cursor:pointer }
+.button-label { display:inline-flex; align-items:center; font:inherit; margin:0; border:1px solid var(--border); border-radius:var(--radius); padding:.6rem 1.25rem; cursor:pointer }
+.button-label:hover { background:var(--hover) }
 .button-label input { display:none }
 #resultPreview { width:100%; min-height:55vh; border:1px solid var(--border); border-radius:.5rem; margin:.75rem 0 }

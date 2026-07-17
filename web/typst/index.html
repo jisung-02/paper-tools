@@ -55,20 +55,22 @@
 <main class="wide">
 <a class="back" href="../" data-i18n data-en="← All tools" data-ko="← 모든 도구">← All tools</a>
 
-<h1 data-i18n data-en="Typst Editor" data-ko="타이프스트 편집기">Typst Editor</h1>
-<p class="desc" data-i18n data-en="Write Typst on the left and watch it typeset live on the right." data-ko="왼쪽에 타이프스트를 작성하면 오른쪽에 실시간으로 조판됩니다.">Write Typst on the left and watch it typeset live on the right.</p>
+<h1 data-i18n data-en="Typst Editor" data-ko="Typst 편집기">Typst Editor</h1>
+<p class="desc" data-i18n data-en="Write Typst on the left and watch it typeset live on the right." data-ko="왼쪽에 Typst를 작성하면 오른쪽에 실시간으로 조판됩니다.">Write Typst on the left and watch it typeset live on the right.</p>
 <p id="status">Loading tool…</p>
 
-<div class="drop" id="fileDrop">
-  <span data-i18n data-en="Drag a .typ or .txt file here, or click to choose" data-ko="타이프스트 파일(.typ, .txt)을 끌어다 놓거나 클릭해서 선택">Drag a .typ or .txt file here, or click to choose</span>
+<div class="drop compact" id="fileDrop">
+  <span data-i18n data-en="Drag a .typ or .txt file here, or click to choose" data-ko="Typst 파일(.typ, .txt)을 끌어다 놓거나 클릭해서 선택">Drag a .typ or .txt file here, or click to choose</span>
   <input type="file" accept=".typ,.txt,text/plain">
   <ul class="filelist"></ul>
 </div>
 
-<div class="mdsplit">
-  <div class="mdpane">
-    <label for="typstsrc" data-i18n data-en="Typst source" data-ko="타이프스트 원본">Typst source</label>
-    <textarea id="typstsrc" spellcheck="false" data-en-placeholder="= Welcome to Typst
+<div class="editor-frame">
+  <div class="editor-pane">
+    <div class="editor-pane-head">
+      <label for="typstsrc" data-i18n data-en="Typst source" data-ko="Typst 원본">Typst source</label>
+    </div>
+    <textarea id="typstsrc" class="editor-src" spellcheck="false" data-en-placeholder="= Welcome to Typst
 
 Write *Typst* here — headings, _emphasis_ and math are all supported.
 
@@ -78,9 +80,9 @@ $ integral_0^1 x^2 dif x = 1/3 $
 - Two
 - Three
 
-한국어도 잘 표시됩니다 — Paper Tools" data-ko-placeholder="= 타이프스트에 오신 것을 환영합니다
+한국어도 잘 표시됩니다 — Paper Tools" data-ko-placeholder="= Typst에 오신 것을 환영합니다
 
-여기에 *타이프스트*를 작성하세요 — 제목, _강조_, 수식을 모두 지원합니다.
+여기에 *Typst*를 작성하세요 — 제목, _강조_, 수식을 모두 지원합니다.
 
 $ integral_0^1 x^2 dif x = 1/3 $
 
@@ -100,9 +102,13 @@ $ integral_0^1 x^2 dif x = 1/3 $
 
 한국어도 잘 표시됩니다 — Paper Tools"></textarea>
   </div>
-  <div class="mdpane">
-    <span class="hint" data-i18n data-en="Preview" data-ko="미리보기">Preview</span>
-    <div class="mdpreview" id="typstout" aria-live="polite" data-en-aria="Typst preview" data-ko-aria="타이프스트 미리보기" aria-label="Typst preview"></div>
+  <div class="editor-pane">
+    <div class="editor-pane-head">
+      <span class="hint" data-i18n data-en="Preview" data-ko="미리보기">Preview</span>
+    </div>
+    <div class="mdpreview" id="typstout" aria-live="polite" data-en-aria="Typst preview" data-ko-aria="Typst 미리보기" aria-label="Typst preview">
+      <p class="editor-empty" data-i18n data-en="The preview appears here as you type." data-ko="입력하면 여기에 미리보기가 표시됩니다.">The preview appears here as you type.</p>
+    </div>
   </div>
 </div>
 
@@ -113,19 +119,19 @@ $ integral_0^1 x^2 dif x = 1/3 $
 <p class="err" id="err"></p>
 
 <section class="page-info">
-<h2 data-i18n data-en="How to use the Typst editor" data-ko="타이프스트 편집기 사용법">How to use the Typst editor</h2>
+<h2 data-i18n data-en="How to use the Typst editor" data-ko="Typst 편집기 사용법">How to use the Typst editor</h2>
 <ol>
-  <li data-i18n data-en="Type or paste Typst in the editor, or drop a .typ or .txt file onto it." data-ko="타이프스트를 입력하거나 붙여넣거나, .typ 또는 .txt 파일을 편집기에 드롭하세요.">Type or paste Typst in the editor, or drop a .typ or .txt file onto it.</li>
+  <li data-i18n data-en="Type or paste Typst in the editor, or drop a .typ or .txt file onto it." data-ko="Typst를 입력하거나 붙여넣거나, .typ 또는 .txt 파일을 편집기에 드롭하세요.">Type or paste Typst in the editor, or drop a .typ or .txt file onto it.</li>
   <li data-i18n data-en="Watch the live typeset preview update as you type." data-ko="입력하는 동안 오른쪽 미리보기가 실시간으로 조판됩니다.">Watch the live typeset preview update as you type.</li>
   <li data-i18n data-en="Click &quot;Download .typ&quot; or &quot;Download PDF&quot; to save your document." data-ko="&quot;.typ 다운로드&quot; 또는 &quot;PDF 다운로드&quot; 버튼을 클릭해 문서를 저장하세요.">Click "Download .typ" or "Download PDF" to save your document.</li>
 </ol>
 <h2 data-i18n data-en="FAQ" data-ko="자주 묻는 질문">FAQ</h2>
-<h3 data-i18n data-en="Is my Typst document uploaded to a server?" data-ko="타이프스트 문서가 서버에 업로드되나요?">Is my Typst document uploaded to a server?</h3>
-<p data-i18n data-en="No — everything runs locally in your browser; your Typst source never leaves your device." data-ko="아니요 — 모든 처리는 브라우저 안에서만 이루어지며, 타이프스트 원본은 기기 밖으로 나가지 않습니다.">No — everything runs locally in your browser; your Typst source never leaves your device.</p>
-<h3 data-i18n data-en="Can I use Typst packages (@preview) offline?" data-ko="타이프스트 패키지(@preview)를 오프라인에서 쓸 수 있나요?">Can I use Typst packages (@preview) offline?</h3>
+<h3 data-i18n data-en="Is my Typst document uploaded to a server?" data-ko="Typst 문서가 서버에 업로드되나요?">Is my Typst document uploaded to a server?</h3>
+<p data-i18n data-en="No — everything runs locally in your browser; your Typst source never leaves your device." data-ko="아니요 — 모든 처리는 브라우저 안에서만 이루어지며, Typst 원본은 기기 밖으로 나가지 않습니다.">No — everything runs locally in your browser; your Typst source never leaves your device.</p>
+<h3 data-i18n data-en="Can I use Typst packages (@preview) offline?" data-ko="Typst 패키지(@preview)를 오프라인에서 쓸 수 있나요?">Can I use Typst packages (@preview) offline?</h3>
 <p data-i18n data-en="No. Package imports need to fetch code over the network, so they aren't available in this offline editor — write self-contained documents without @preview imports." data-ko="아니요. 패키지 가져오기는 네트워크로 코드를 내려받아야 하므로 이 오프라인 편집기에서는 사용할 수 없습니다 — @preview 가져오기 없이 독립적인 문서를 작성하세요.">No. Package imports need to fetch code over the network, so they aren't available in this offline editor — write self-contained documents without @preview imports.</p>
 <h3 data-i18n data-en="Why does the editor download something the first time I use it?" data-ko="처음 사용할 때 왜 무언가를 내려받나요?">Why does the editor download something the first time I use it?</h3>
-<p data-i18n data-en="The Typst compiler is a roughly 10 MB engine that loads once per browser and is cached afterward, so later visits and page reloads start instantly." data-ko="타이프스트 컴파일러는 약 10MB 크기의 엔진으로, 브라우저마다 한 번만 내려받아 캐시되므로 이후 방문이나 새로고침에서는 바로 시작됩니다.">The Typst compiler is a roughly 10 MB engine that loads once per browser and is cached afterward, so later visits and page reloads start instantly.</p>
+<p data-i18n data-en="The Typst compiler is a roughly 10 MB engine that loads once per browser and is cached afterward, so later visits and page reloads start instantly." data-ko="Typst 컴파일러는 약 10MB 크기의 엔진으로, 브라우저마다 한 번만 내려받아 캐시되므로 이후 방문이나 새로고침에서는 바로 시작됩니다.">The Typst compiler is a roughly 10 MB engine that loads once per browser and is cached afterward, so later visits and page reloads start instantly.</p>
 </section>
 </main>
 

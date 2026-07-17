@@ -60,21 +60,37 @@
   <div class="groups">
 
     <div class="group">
-      <h2 data-i18n data-en="Automate" data-ko="자동화">Automate</h2>
+      <h2 data-i18n data-en="Create PDFs" data-ko="PDF 만들기">Create PDFs</h2>
       <div class="grid">
-        <a class="card-link" href="./workflow/">
-          <span class="name" data-i18n data-en="PDF Workflow" data-ko="PDF 작업 파이프라인">PDF Workflow</span>
-          <span class="desc" data-i18n data-en="Chain several operations without reselecting files" data-ko="파일을 다시 고르지 않고 여러 작업 연결">Chain several operations without reselecting files</span>
+        <a class="card-link" href="./img2pdf/">
+          <span class="name" data-i18n data-en="Images → PDF" data-ko="이미지 → PDF">Images → PDF</span>
+          <span class="desc" data-i18n data-en="PNG/JPG to PDF with layout options" data-ko="PNG·JPG를 옵션 있는 PDF로">PNG/JPG to PDF with layout options</span>
         </a>
-        <a class="card-link" href="./batch/">
-          <span class="name" data-i18n data-en="Batch Automation" data-ko="일괄 자동화">Batch Automation</span>
-          <span class="desc" data-i18n data-en="Apply one operation to many PDFs" data-ko="여러 PDF에 같은 작업 적용">Apply one operation to many PDFs</span>
+        <a class="card-link" href="./txt2pdf/">
+          <span class="name" data-i18n data-en="Text → PDF" data-ko="텍스트 → PDF">Text → PDF</span>
+          <span class="desc" data-i18n data-en="Turn text into PDF (Korean supported)" data-ko="한글 포함 글을 PDF로">Turn text into PDF (Korean supported)</span>
+        </a>
+        <a class="card-link" href="./md2pdf/">
+          <span class="name" data-i18n data-en="Markdown → PDF" data-ko="마크다운 → PDF">Markdown → PDF</span>
+          <span class="desc" data-i18n data-en="Turn a .md file into PDF (Korean supported)" data-ko="한글 포함 마크다운을 PDF로">Turn a .md file into PDF (Korean supported)</span>
+        </a>
+        <a class="card-link" href="./docx2pdf/">
+          <span class="name" data-i18n data-en="Word → PDF" data-ko="Word → PDF">Word → PDF</span>
+          <span class="desc" data-i18n data-en="Convert .docx text to PDF (text-focused)" data-ko=".docx 글을 PDF로 (텍스트 위주)">Convert .docx text to PDF (text-focused)</span>
+        </a>
+        <a class="card-link" href="./hwpx2pdf/">
+          <span class="name" data-i18n data-en="Hangul → PDF" data-ko="한글 → PDF">Hangul → PDF</span>
+          <span class="desc" data-i18n data-en="Convert .hwpx text to PDF (text-focused)" data-ko=".hwpx 글을 PDF로 (텍스트 위주)">Convert .hwpx text to PDF (text-focused)</span>
+        </a>
+        <a class="card-link" href="./hwp2pdf/">
+          <span class="name" data-i18n data-en="Old Hangul → PDF" data-ko="옛한글 → PDF">Old Hangul → PDF</span>
+          <span class="desc" data-i18n data-en="Convert .hwp text to PDF (text-focused)" data-ko=".hwp 글을 PDF로 (텍스트 위주)">Convert .hwp text to PDF (text-focused)</span>
         </a>
       </div>
     </div>
 
     <div class="group">
-      <h2 data-i18n data-en="Organize" data-ko="구성">Organize</h2>
+      <h2 data-i18n data-en="Edit Pages" data-ko="페이지 편집">Edit Pages</h2>
       <div class="grid">
         <a class="card-link" href="./merge/">
           <span class="name" data-i18n data-en="Merge" data-ko="병합">Merge</span>
@@ -100,12 +116,6 @@
           <span class="name" data-i18n data-en="Blank Page" data-ko="빈 페이지">Blank Page</span>
           <span class="desc" data-i18n data-en="Insert a blank page anywhere" data-ko="원하는 위치에 백지 끼우기">Insert a blank page anywhere</span>
         </a>
-      </div>
-    </div>
-
-    <div class="group">
-      <h2 data-i18n data-en="Transform" data-ko="변형">Transform</h2>
-      <div class="grid">
         <a class="card-link" href="./rotate/">
           <span class="name" data-i18n data-en="Rotate" data-ko="회전">Rotate</span>
           <span class="desc" data-i18n data-en="Rotate pages 90/180/270°" data-ko="페이지를 90/180/270°">Rotate pages 90/180/270°</span>
@@ -126,12 +136,8 @@
     </div>
 
     <div class="group">
-      <h2 data-i18n data-en="Content" data-ko="콘텐츠">Content</h2>
+      <h2 data-i18n data-en="Page Content" data-ko="내용 추가·삭제">Page Content</h2>
       <div class="grid">
-        <a class="card-link" href="./img2pdf/">
-          <span class="name" data-i18n data-en="Images → PDF" data-ko="이미지 → PDF">Images → PDF</span>
-          <span class="desc" data-i18n data-en="PNG/JPG to PDF with layout options" data-ko="PNG·JPG를 옵션 있는 PDF로">PNG/JPG to PDF with layout options</span>
-        </a>
         <a class="card-link" href="./watermark/">
           <span class="name" data-i18n data-en="Watermark" data-ko="워터마크">Watermark</span>
           <span class="desc" data-i18n data-en="Stamp text across the page" data-ko="글자 도장 찍기">Stamp text across the page</span>
@@ -156,67 +162,19 @@
     </div>
 
     <div class="group">
-      <h2 data-i18n data-en="Convert" data-ko="변환">Convert</h2>
+      <h2 data-i18n data-en="Extract &amp; Recognize" data-ko="추출·인식">Extract &amp; Recognize</h2>
       <div class="grid">
-        <a class="card-link" href="./imgconv/">
-          <span class="name" data-i18n data-en="Image Convert" data-ko="이미지 변환">Image Convert</span>
-          <span class="desc" data-i18n data-en="Convert between PNG, JPG and GIF" data-ko="PNG·JPG·GIF 서로 바꾸기">Convert between PNG, JPG and GIF</span>
-        </a>
-        <a class="card-link" href="./imgresize/">
-          <span class="name" data-i18n data-en="Image Resize" data-ko="이미지 크기 줄이기">Image Resize</span>
-          <span class="desc" data-i18n data-en="Shrink an image to a max width/height" data-ko="최대 너비·높이로 이미지 줄이기">Shrink an image to a max width/height</span>
-        </a>
         <a class="card-link" href="./pdftext/">
           <span class="name" data-i18n data-en="PDF → Text" data-ko="PDF → 텍스트">PDF → Text</span>
           <span class="desc" data-i18n data-en="Extract selectable text to .txt" data-ko="선택 가능한 글자를 .txt로">Extract selectable text to .txt</span>
-        </a>
-        <a class="card-link" href="./ocr/">
-          <span class="name" data-i18n data-en="OCR" data-ko="OCR (문자 인식)">OCR</span>
-          <span class="desc" data-i18n data-en="Read text out of scanned PDFs and images" data-ko="스캔한 PDF·이미지에서 글자 추출">Read text out of scanned PDFs and images</span>
-        </a>
-        <a class="card-link" href="./pdf2img/">
-          <span class="name" data-i18n data-en="PDF → Images" data-ko="PDF → 이미지">PDF → Images</span>
-          <span class="desc" data-i18n data-en="Turn each page into PNG/JPG" data-ko="각 페이지를 PNG/JPG로">Turn each page into PNG/JPG</span>
         </a>
         <a class="card-link" href="./pdfimages/">
           <span class="name" data-i18n data-en="Extract Images" data-ko="PDF 이미지 추출">Extract Images</span>
           <span class="desc" data-i18n data-en="Pull images out into a ZIP" data-ko="그림만 뽑아 ZIP으로">Pull images out into a ZIP</span>
         </a>
-        <a class="card-link" href="./txt2pdf/">
-          <span class="name" data-i18n data-en="Text → PDF" data-ko="텍스트 → PDF">Text → PDF</span>
-          <span class="desc" data-i18n data-en="Turn text into PDF (Korean supported)" data-ko="한글 포함 글을 PDF로">Turn text into PDF (Korean supported)</span>
-        </a>
-        <a class="card-link" href="./md2pdf/">
-          <span class="name" data-i18n data-en="Markdown → PDF" data-ko="마크다운 → PDF">Markdown → PDF</span>
-          <span class="desc" data-i18n data-en="Turn a .md file into PDF (Korean supported)" data-ko="한글 포함 마크다운을 PDF로">Turn a .md file into PDF (Korean supported)</span>
-        </a>
-        <a class="card-link" href="./mdedit/">
-          <span class="name" data-i18n data-en="Markdown Editor" data-ko="마크다운 편집기">Markdown Editor</span>
-          <span class="desc" data-i18n data-en="Write Markdown with a live rendered preview" data-ko="실시간 미리보기로 마크다운 작성">Write Markdown with a live rendered preview</span>
-        </a>
-        <a class="card-link" href="./typst/">
-          <span class="name" data-i18n data-en="Typst Editor" data-ko="타이프스트 편집기">Typst Editor</span>
-          <span class="desc" data-i18n data-en="Write Typst with a live typeset preview" data-ko="실시간 미리보기로 타이프스트 작성">Write Typst with a live typeset preview</span>
-        </a>
-        <a class="card-link" href="./docx2pdf/">
-          <span class="name" data-i18n data-en="Word → PDF" data-ko="Word → PDF">Word → PDF</span>
-          <span class="desc" data-i18n data-en="Convert .docx text to PDF (text-focused)" data-ko=".docx 글을 PDF로 (텍스트 위주)">Convert .docx text to PDF (text-focused)</span>
-        </a>
-        <a class="card-link" href="./hwpx2pdf/">
-          <span class="name" data-i18n data-en="Hangul → PDF" data-ko="한글 → PDF">Hangul → PDF</span>
-          <span class="desc" data-i18n data-en="Convert .hwpx text to PDF (text-focused)" data-ko=".hwpx 글을 PDF로 (텍스트 위주)">Convert .hwpx text to PDF (text-focused)</span>
-        </a>
-        <a class="card-link" href="./hwp2pdf/">
-          <span class="name" data-i18n data-en="Old Hangul → PDF" data-ko="옛한글 → PDF">Old Hangul → PDF</span>
-          <span class="desc" data-i18n data-en="Convert .hwp text to PDF (text-focused)" data-ko=".hwp 글을 PDF로 (텍스트 위주)">Convert .hwp text to PDF (text-focused)</span>
-        </a>
-        <a class="card-link" href="./docx2hwpx/">
-          <span class="name" data-i18n data-en="Word → Hangul" data-ko="Word → 한글">Word → Hangul</span>
-          <span class="desc" data-i18n data-en="Convert .docx to .hwpx (text-focused)" data-ko=".docx를 .hwpx로 (텍스트 위주)">Convert .docx to .hwpx (text-focused)</span>
-        </a>
-        <a class="card-link" href="./hwpx2docx/">
-          <span class="name" data-i18n data-en="Hangul → Word" data-ko="한글 → Word">Hangul → Word</span>
-          <span class="desc" data-i18n data-en="Convert .hwpx to .docx (text-focused)" data-ko=".hwpx를 .docx로 (텍스트 위주)">Convert .hwpx to .docx (text-focused)</span>
+        <a class="card-link" href="./pdf2img/">
+          <span class="name" data-i18n data-en="PDF → Images" data-ko="PDF → 이미지">PDF → Images</span>
+          <span class="desc" data-i18n data-en="Turn each page into PNG/JPG" data-ko="각 페이지를 PNG/JPG로">Turn each page into PNG/JPG</span>
         </a>
         <a class="card-link" href="./pdf2docx/">
           <span class="name" data-i18n data-en="PDF → Word" data-ko="PDF → Word(.docx)">PDF → Word</span>
@@ -226,27 +184,31 @@
           <span class="name" data-i18n data-en="PDF → Hangul" data-ko="PDF → 한글(.hwpx)">PDF → Hangul</span>
           <span class="desc" data-i18n data-en="Extract PDF text into .hwpx" data-ko="PDF 글을 .hwpx로">Extract PDF text into .hwpx</span>
         </a>
-        <a class="card-link" href="./xlsx2csv/">
-          <span class="name" data-i18n data-en="Excel → CSV" data-ko="엑셀 → CSV">Excel → CSV</span>
-          <span class="desc" data-i18n data-en="Convert .xlsx sheets to CSV" data-ko=".xlsx 시트를 CSV로">Convert .xlsx sheets to CSV</span>
+        <a class="card-link" href="./ocr/">
+          <span class="name" data-i18n data-en="OCR" data-ko="OCR (문자 인식)">OCR</span>
+          <span class="desc" data-i18n data-en="Read text out of scanned PDFs and images" data-ko="스캔한 PDF·이미지에서 글자 추출">Read text out of scanned PDFs and images</span>
         </a>
       </div>
     </div>
 
     <div class="group">
-      <h2 data-i18n data-en="Document" data-ko="파일">Document</h2>
+      <h2 data-i18n data-en="Manage &amp; Protect" data-ko="관리·보안">Manage &amp; Protect</h2>
       <div class="grid">
         <a class="card-link" href="./compress/">
           <span class="name" data-i18n data-en="Compress" data-ko="압축">Compress</span>
           <span class="desc" data-i18n data-en="Shrink file size by recompressing images" data-ko="이미지 재압축으로 용량 줄이기">Shrink file size by recompressing images</span>
         </a>
+        <a class="card-link" href="./info/">
+          <span class="name" data-i18n data-en="PDF Info" data-ko="PDF 정보">PDF Info</span>
+          <span class="desc" data-i18n data-en="Page count, size, metadata" data-ko="페이지 수·크기·메타데이터">Page count, size, metadata</span>
+        </a>
         <a class="card-link" href="./metadata/">
           <span class="name" data-i18n data-en="Metadata" data-ko="메타데이터">Metadata</span>
           <span class="desc" data-i18n data-en="Edit or remove title, author, etc." data-ko="제목·작성자 수정/제거">Edit or remove title, author, etc.</span>
         </a>
-        <a class="card-link" href="./info/">
-          <span class="name" data-i18n data-en="PDF Info" data-ko="PDF 정보">PDF Info</span>
-          <span class="desc" data-i18n data-en="Page count, size, metadata" data-ko="페이지 수·크기·메타데이터">Page count, size, metadata</span>
+        <a class="card-link" href="./pdfdiff/">
+          <span class="name" data-i18n data-en="Compare PDFs" data-ko="PDF 비교">Compare PDFs</span>
+          <span class="desc" data-i18n data-en="See what text changed between two PDFs" data-ko="두 PDF의 달라진 텍스트 확인">See what text changed between two PDFs</span>
         </a>
         <a class="card-link" href="./protect/">
           <span class="name" data-i18n data-en="Protect" data-ko="암호 설정">Protect</span>
@@ -256,13 +218,63 @@
           <span class="name" data-i18n data-en="Unlock" data-ko="암호 해제">Unlock</span>
           <span class="desc" data-i18n data-en="Remove a password you know" data-ko="아는 암호 제거하기">Remove a password you know</span>
         </a>
-        <a class="card-link" href="./pdfdiff/">
-          <span class="name" data-i18n data-en="Compare PDFs" data-ko="PDF 비교">Compare PDFs</span>
-          <span class="desc" data-i18n data-en="See what text changed between two PDFs" data-ko="두 PDF의 달라진 텍스트 확인">See what text changed between two PDFs</span>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2 data-i18n data-en="Documents &amp; Images" data-ko="문서·이미지 변환">Documents &amp; Images</h2>
+      <div class="grid">
+        <a class="card-link" href="./docx2hwpx/">
+          <span class="name" data-i18n data-en="Word → Hangul" data-ko="Word → 한글">Word → Hangul</span>
+          <span class="desc" data-i18n data-en="Convert .docx to .hwpx (text-focused)" data-ko=".docx를 .hwpx로 (텍스트 위주)">Convert .docx to .hwpx (text-focused)</span>
         </a>
+        <a class="card-link" href="./hwpx2docx/">
+          <span class="name" data-i18n data-en="Hangul → Word" data-ko="한글 → Word">Hangul → Word</span>
+          <span class="desc" data-i18n data-en="Convert .hwpx to .docx (text-focused)" data-ko=".hwpx를 .docx로 (텍스트 위주)">Convert .hwpx to .docx (text-focused)</span>
+        </a>
+        <a class="card-link" href="./xlsx2csv/">
+          <span class="name" data-i18n data-en="Excel → CSV" data-ko="엑셀 → CSV">Excel → CSV</span>
+          <span class="desc" data-i18n data-en="Convert .xlsx sheets to CSV" data-ko=".xlsx 시트를 CSV로">Convert .xlsx sheets to CSV</span>
+        </a>
+        <a class="card-link" href="./imgconv/">
+          <span class="name" data-i18n data-en="Image Convert" data-ko="이미지 변환">Image Convert</span>
+          <span class="desc" data-i18n data-en="Convert between PNG, JPG and GIF" data-ko="PNG·JPG·GIF 서로 바꾸기">Convert between PNG, JPG and GIF</span>
+        </a>
+        <a class="card-link" href="./imgresize/">
+          <span class="name" data-i18n data-en="Image Resize" data-ko="이미지 크기 줄이기">Image Resize</span>
+          <span class="desc" data-i18n data-en="Shrink an image to a max width/height" data-ko="최대 너비·높이로 이미지 줄이기">Shrink an image to a max width/height</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2 data-i18n data-en="Editors" data-ko="에디터">Editors</h2>
+      <div class="grid">
+        <a class="card-link" href="./mdedit/">
+          <span class="name" data-i18n data-en="Markdown Editor" data-ko="마크다운 편집기">Markdown Editor</span>
+          <span class="desc" data-i18n data-en="Write Markdown with a live rendered preview" data-ko="실시간 미리보기로 마크다운 작성">Write Markdown with a live rendered preview</span>
+        </a>
+        <a class="card-link" href="./typst/">
+          <span class="name" data-i18n data-en="Typst Editor" data-ko="Typst 편집기">Typst Editor</span>
+          <span class="desc" data-i18n data-en="Write Typst with a live typeset preview" data-ko="실시간 미리보기로 Typst 작성">Write Typst with a live typeset preview</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2 data-i18n data-en="Send &amp; Automate" data-ko="전송·자동화">Send &amp; Automate</h2>
+      <div class="grid">
         <a class="card-link" href="./send/">
           <span class="name" data-i18n data-en="Direct Send" data-ko="직접 전송">Direct Send</span>
           <span class="desc" data-i18n data-en="Send a file straight to another device" data-ko="다른 기기로 파일 바로 보내기">Send a file straight to another device</span>
+        </a>
+        <a class="card-link" href="./workflow/">
+          <span class="name" data-i18n data-en="PDF Workflow" data-ko="PDF 작업 파이프라인">PDF Workflow</span>
+          <span class="desc" data-i18n data-en="Chain several operations without reselecting files" data-ko="파일을 다시 고르지 않고 여러 작업 연결">Chain several operations without reselecting files</span>
+        </a>
+        <a class="card-link" href="./batch/">
+          <span class="name" data-i18n data-en="Batch Automation" data-ko="일괄 자동화">Batch Automation</span>
+          <span class="desc" data-i18n data-en="Apply one operation to many PDFs" data-ko="여러 PDF에 같은 작업 적용">Apply one operation to many PDFs</span>
         </a>
       </div>
     </div>

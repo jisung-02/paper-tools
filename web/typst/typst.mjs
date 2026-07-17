@@ -26,6 +26,14 @@ function showLoadingPreview() {
   out.appendChild(p);
 }
 
+function showEmptyPreview() {
+  out.innerHTML = "";
+  const p = document.createElement("p");
+  p.className = "editor-empty";
+  p.textContent = window.t("The preview appears here as you type.", "입력하면 여기에 미리보기가 표시됩니다.");
+  out.appendChild(p);
+}
+
 function showDiagnostics(diagnostics) {
   err.style.whiteSpace = "pre-wrap";
   window.showErr(err, diagnostics.join("\n"));
@@ -63,7 +71,7 @@ const engineInit = (async () => {
   }
   setStatus(window.t(
     "Loading Typst engine (~10 MB, cached after first use)…",
-    "타이프스트 엔진 다운로드 중 (~10 MB, 최초 1회만)…"
+    "Typst 엔진 다운로드 중 (~10 MB, 최초 1회만)…"
   ));
 
   compiler = createTypstCompiler();
@@ -148,7 +156,7 @@ function scheduleRender() {
 function triggerRender() {
   const text = src.value;
   if (!text.trim()) {
-    out.innerHTML = "";
+    showEmptyPreview();
     clearErr();
     queuedPreviewText = null;
     return;
@@ -246,7 +254,7 @@ document.getElementById("fileDrop").addEventListener("dz:files", async ({ detail
 dlTypBtn.addEventListener("click", () => window.run(dlTypBtn, async () => {
   const text = src.value;
   if (!text.trim()) {
-    showPlainErr(window.t("Write some Typst first.", "먼저 타이프스트를 작성하세요."));
+    showPlainErr(window.t("Write some Typst first.", "먼저 Typst를 작성하세요."));
     return;
   }
   window.download(new TextEncoder().encode(text), "document.typ", "text/x-typst;charset=utf-8");
@@ -255,7 +263,7 @@ dlTypBtn.addEventListener("click", () => window.run(dlTypBtn, async () => {
 dlPdfBtn.addEventListener("click", () => window.run(dlPdfBtn, async () => {
   const text = src.value;
   if (!text.trim()) {
-    showPlainErr(window.t("Write some Typst first.", "먼저 타이프스트를 작성하세요."));
+    showPlainErr(window.t("Write some Typst first.", "먼저 Typst를 작성하세요."));
     return;
   }
   const { result: pdfBytes, diagnostics } = await withCompiler(async () => {

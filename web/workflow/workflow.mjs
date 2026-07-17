@@ -66,6 +66,7 @@ function renderSteps() {
     for (const [label, delta] of [["↑", -1], ["↓", 1]]) {
       const move = document.createElement("button");
       move.type = "button";
+      move.className = "secondary";
       move.textContent = label;
       move.disabled = index + delta < 0 || index + delta >= steps.length;
       move.addEventListener("click", () => { const target = index + delta; [steps[index], steps[target]] = [steps[target], steps[index]]; renderSteps(); });
@@ -73,6 +74,7 @@ function renderSteps() {
     }
     const remove = document.createElement("button");
     remove.type = "button";
+    remove.className = "secondary";
     remove.textContent = "×";
     remove.setAttribute("aria-label", "Remove step");
     remove.addEventListener("click", () => { steps.splice(index, 1); renderSteps(); });

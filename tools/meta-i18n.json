@@ -352,7 +352,7 @@
     "de": {"title": "Markdown-Editor — kostenlos & privat | Paper Tools", "description": "Schreibe Markdown und sieh die gerenderte Vorschau sofort. Lade es als .md oder eigenständiges HTML herunter. Funktioniert offline in deinem Browser."}
   },
   "typst": {
-    "ko": {"title": "타이프스트 편집기 — 무료·비공개 | Paper Tools", "description": "타이프스트를 작성하면 조판된 미리보기를 즉시 확인할 수 있습니다 — 수식, 레이아웃 등을 지원합니다. .typ 또는 PDF로 다운로드하세요. 브라우저에서 오프라인으로도 동작합니다."},
+    "ko": {"title": "Typst 편집기 — 무료·비공개 | Paper Tools", "description": "Typst를 작성하면 조판된 미리보기를 즉시 확인할 수 있습니다 — 수식, 레이아웃 등을 지원합니다. .typ 또는 PDF로 다운로드하세요. 브라우저에서 오프라인으로도 동작합니다."},
     "ja": {"title": "Typstエディター — 無料・非公開 | Paper Tools", "description": "Typstを書くと、組版されたプレビューを即座に確認できます — 数式やレイアウトなどに対応。.typまたはPDFとしてダウンロードできます。ブラウザ内でオフラインでも動作します。"},
     "zh": {"title": "Typst 编辑器 — 免费且私密 | Paper Tools", "description": "编写 Typst 并即时查看排版预览 — 支持数学公式、排版等。可下载为 .typ 或 PDF 文件。在浏览器中离线也可使用。"},
     "es": {"title": "Editor de Typst — gratis y privado | Paper Tools", "description": "Escribe Typst y observa la vista previa tipografiada al instante — fórmulas matemáticas, maquetación y más. Descárgalo como .typ o PDF. Funciona sin conexión en tu navegador."},

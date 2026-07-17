@@ -104,23 +104,24 @@ header {
 .langsel {
   font: inherit;
   font-size: .85rem;
+  line-height: 1.3;
   color: var(--muted);
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: .15rem .4rem;
+  padding: .2rem .5rem;
   cursor: pointer;
 }
 
 .themetoggle {
   font: inherit;
   font-size: .85rem;
-  line-height: 1;
+  line-height: 1.3;
   color: var(--muted);
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: .2rem .45rem;
+  padding: .2rem .5rem;
   cursor: pointer;
 }
 .themetoggle:hover {
@@ -326,12 +327,13 @@ label:first-of-type { margin-top: 0; }
 
 input[type="text"],
 input[type="number"],
+input[type="password"],
 select,
 textarea {
   font: inherit;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: .5rem .6rem;
+  padding: .6rem .6rem;
   background: var(--bg);
   color: var(--fg);
   width: auto;
@@ -340,6 +342,7 @@ textarea { width: 100%; resize: vertical; }
 
 input[type="text"]:focus-visible,
 input[type="number"]:focus-visible,
+input[type="password"]:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--accent);
@@ -371,7 +374,7 @@ button.primary {
   margin-top: 1.5rem;
   background: var(--fg);
   color: var(--bg);
-  border: none;
+  border: 1px solid transparent;
   border-radius: var(--radius);
   padding: .6rem 1.25rem;
   font: inherit;
@@ -387,9 +390,8 @@ button.secondary {
   border: 1px solid var(--border);
   color: var(--fg);
   border-radius: var(--radius);
-  padding: .4rem .8rem;
+  padding: .6rem 1.25rem;
   font: inherit;
-  font-size: .85rem;
   cursor: pointer;
 }
 button.secondary:hover { background: var(--hover); }
@@ -504,41 +506,82 @@ footer {
 }
 .thumbcell.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
 
-/* mdedit: split editor/preview layout */
-.mdsplit {
+/* split editor workspace (mdedit, typst) */
+.editor-frame {
+  --editor-h: clamp(480px, 72vh, 900px);
+  width: min(1520px, calc(100vw - 4rem));
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
   margin: 1.25rem 0;
-}
-@media (max-width: 900px) {
-  .mdsplit { grid-template-columns: 1fr; }
-}
-.mdpane label,
-.mdpane .hint {
-  display: block;
-  margin: 0 0 .35rem;
-  font-family: var(--mono);
-  font-size: .78rem;
-  font-weight: 400;
-  color: var(--muted);
-}
-
-#mdsrc {
-  font-family: var(--mono);
-  min-height: 380px;
-}
-
-.mdpreview {
-  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--sheet-shadow);
-  padding: 20px 22px;
-  min-height: 380px;
-  max-height: 380px;
+  background: var(--bg);
+  overflow: hidden;
+}
+.editor-pane { display: flex; flex-direction: column; min-width: 0; }
+.editor-pane + .editor-pane { border-left: 1px solid var(--border); }
+.editor-pane-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .5rem .95rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.editor-pane-head label,
+.editor-pane-head .hint { font: inherit; color: inherit; margin: 0; display: inline; }
+.editor-src {
+  flex: 1;
+  width: 100%;
+  height: var(--editor-h);
+  border: none;
+  border-radius: 0;
+  resize: none;
+  background: transparent;
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: .9rem;
+  line-height: 1.6;
+  padding: 16px 18px;
+  tab-size: 2;
+  box-sizing: border-box;
+}
+.editor-src:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.mdpreview {
+  height: var(--editor-h);
   overflow-y: auto;
   overflow-wrap: anywhere;
+  padding: 20px 22px;
+}
+.editor-empty {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: .85rem;
+}
+.drop.compact { padding: .6rem 1rem; font-size: .85rem; }
+@media (max-width: 900px) {
+  .editor-frame {
+    grid-template-columns: 1fr;
+    --editor-h: clamp(280px, 42vh, 520px);
+    width: 100%;
+    left: 0;
+    transform: none;
+  }
+  .editor-pane + .editor-pane { border-left: none; border-top: 1px solid var(--border); }
 }
 
 .mdpreview h1, .mdpreview h2, .mdpreview h3, .mdpreview h4 {

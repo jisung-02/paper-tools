@@ -58,16 +58,18 @@
 <p class="desc" data-i18n data-en="Write Markdown on the left and watch it render live on the right." data-ko="왼쪽에 마크다운을 작성하면 오른쪽에 실시간으로 렌더링됩니다.">Write Markdown on the left and watch it render live on the right.</p>
 <p id="status">Loading tool…</p>
 
-<div class="drop" id="fileDrop">
+<div class="drop compact" id="fileDrop">
   <span data-i18n data-en="Drag a .md, .markdown or .txt file here, or click to choose" data-ko="마크다운 파일(.md, .markdown, .txt)을 끌어다 놓거나 클릭해서 선택">Drag a .md, .markdown or .txt file here, or click to choose</span>
   <input type="file" accept=".md,.markdown,.txt,text/markdown,text/plain">
   <ul class="filelist"></ul>
 </div>
 
-<div class="mdsplit">
-  <div class="mdpane">
-    <label for="mdsrc" data-i18n data-en="Markdown source" data-ko="마크다운 원본">Markdown source</label>
-    <textarea id="mdsrc" spellcheck="false" data-en-placeholder="# Welcome
+<div class="editor-frame">
+  <div class="editor-pane">
+    <div class="editor-pane-head">
+      <label for="mdsrc" data-i18n data-en="Markdown source" data-ko="마크다운 원본">Markdown source</label>
+    </div>
+    <textarea id="mdsrc" class="editor-src" spellcheck="false" data-en-placeholder="# Welcome
 
 Write **Markdown** here — headings, *emphasis*, `code` and lists are all supported.
 
@@ -93,9 +95,13 @@ Write **Markdown** here — headings, *emphasis*, `code` and lists are all suppo
 
 [Paper Tools](https://papertools.dev)"></textarea>
   </div>
-  <div class="mdpane">
-    <span class="hint" data-i18n data-en="Preview" data-ko="미리보기">Preview</span>
-    <div class="mdpreview" id="mdout" aria-live="polite" data-en-aria="Markdown preview" data-ko-aria="마크다운 미리보기" aria-label="Markdown preview"></div>
+  <div class="editor-pane">
+    <div class="editor-pane-head">
+      <span class="hint" data-i18n data-en="Preview" data-ko="미리보기">Preview</span>
+    </div>
+    <div class="mdpreview" id="mdout" aria-live="polite" data-en-aria="Markdown preview" data-ko-aria="마크다운 미리보기" aria-label="Markdown preview">
+      <p class="editor-empty" data-i18n data-en="The preview appears here as you type." data-ko="입력하면 여기에 미리보기가 표시됩니다.">The preview appears here as you type.</p>
+    </div>
   </div>
 </div>
 
@@ -157,10 +163,18 @@ function showLoadingPreview() {
   out.appendChild(p);
 }
 
+function showEmptyPreview() {
+  out.innerHTML = "";
+  const p = document.createElement("p");
+  p.className = "editor-empty";
+  p.textContent = t("The preview appears here as you type.", "입력하면 여기에 미리보기가 표시됩니다.");
+  out.appendChild(p);
+}
+
 async function renderPreview() {
   const text = src.value;
   if (!text.trim()) {
-    out.innerHTML = "";
+    showEmptyPreview();
     return;
   }
   if (!wasmReady) {

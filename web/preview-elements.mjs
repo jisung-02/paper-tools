@@ -445,6 +445,7 @@ export async function createPreviewComparison(options) {
     controls.className = "result-preview-page-controls";
     previous = document.createElement("button");
     previous.type = "button";
+    previous.className = "secondary";
     previous.textContent = "‹";
     previous.setAttribute("aria-label", labels.previous);
     const pageLabel = document.createElement("label");
@@ -459,6 +460,7 @@ export async function createPreviewComparison(options) {
     total.textContent = `/ ${synchronizer.total}`;
     next = document.createElement("button");
     next.type = "button";
+    next.className = "secondary";
     next.textContent = "›";
     next.setAttribute("aria-label", labels.next);
     previous.addEventListener("click", () => { void renderPage(synchronizer.page - 1); });
@@ -479,6 +481,7 @@ export async function createPreviewComparison(options) {
   download.addEventListener("click", () => options.onDownload?.(options.after));
   const close = document.createElement("button");
   close.type = "button";
+  close.className = "secondary";
   close.textContent = labels.close;
   actions.append(download, close);
   section.appendChild(actions);
