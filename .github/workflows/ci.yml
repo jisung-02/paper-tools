@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
@@ -77,7 +77,7 @@ jobs:
         env:
           SHARD: ${{ matrix.shard }}
         run: |
-          ./build.sh $(node -e 'const c=require("./tools/operation-catalog.json");const s=Number(process.env.SHARD);process.stdout.write(c.filter(t=>t.engine==="wasm").map(t=>t.id).filter((_,i)=>i%4===s).join(" "))')
+          ./build.sh $(node tools/shards.mjs "$SHARD" 8)
       - name: Upload wasm shard (with wasm_exec.js)
         if: matrix.shard == 0
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -146,7 +146,10 @@ jobs:
             projects: --project=firefox
           - name: webkit
             browsers: webkit
-            projects: --project=webkit --project=mobile-webkit
+            projects: --project=webkit
+          - name: mobile-webkit
+            browsers: webkit
+            projects: --project=mobile-webkit
     name: e2e (${{ matrix.name }})
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
