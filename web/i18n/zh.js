@@ -630,7 +630,7 @@ window.I18N.zh = {
     "How accurate is the text it finds?": "识别出的文字准确度如何?",
     "It works best on clean, high-resolution scans of printed text. Skewed or low-quality photos will have more errors, and handwriting recognition is hit-or-miss.": "在清晰、高分辨率的印刷文字扫描件上效果最好。倾斜或画质较差的照片错误会更多，手写文字的识别效果并不稳定。",
     "Which languages are supported?": "支持哪些语言?",
-    "English and Korean. English also works reasonably well for many other languages that use the Latin alphabet.": "英语和韩语。英语模型对许多使用拉丁字母的其他语言也有不错的效果。",
+    "English, Korean, Japanese, Chinese (Simplified), Spanish, French and German. English also works reasonably well for many other languages that use the Latin alphabet.": "英语、韩语、日语、中文(简体)、西班牙语、法语和德语。英语模型对许多使用拉丁字母的其他语言也有不错的效果。",
     "Read text out of scanned PDFs and images": "从扫描版 PDF 和图片中读取文字",
     "Select a single PDF, or one or more images — not both.": "请只选择一个 PDF，或选择一张及以上图片(不能同时选择两者)。",
     "Loading OCR engine…": "正在加载 OCR 引擎…",

@@ -630,7 +630,7 @@ window.I18N.ja = {
     "How accurate is the text it finds?": "認識精度はどのくらいですか?",
     "It works best on clean, high-resolution scans of printed text. Skewed or low-quality photos will have more errors, and handwriting recognition is hit-or-miss.": "解像度が高く、きれいな印刷物のスキャンで最も精度が高くなります。傾いた写真や画質の低い写真は誤りが増え、手書き文字の認識精度は安定しません。",
     "Which languages are supported?": "どの言語に対応していますか?",
-    "English and Korean. English also works reasonably well for many other languages that use the Latin alphabet.": "英語と韓国語です。英語モデルはラテン文字を使う他の多くの言語にもある程度使用できます。",
+    "English, Korean, Japanese, Chinese (Simplified), Spanish, French and German. English also works reasonably well for many other languages that use the Latin alphabet.": "英語・韓国語・日本語・中国語(簡体字)・スペイン語・フランス語・ドイツ語です。英語モデルはラテン文字を使う他の多くの言語にもある程度使用できます。",
     "Read text out of scanned PDFs and images": "スキャンしたPDFや画像から文字を読み取ります",
     "Select a single PDF, or one or more images — not both.": "PDFを1つだけ、または画像を1つ以上選択してください(両方は選べません)。",
     "Loading OCR engine…": "OCRエンジンを読み込み中…",

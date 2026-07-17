@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="../style.css">
 <link rel="modulepreload" href="/vendor/pdfjs/pdf.mjs">
 <link rel="modulepreload" href="/ocr/ocr.mjs">
-<meta name="description" content="OCR a scanned PDF or image online — free & private. Download extracted text or a searchable PDF in English or Korean; files never upload.">
+<meta name="description" content="OCR a scanned PDF or image online — free & private. Extract text or a searchable PDF in English, Korean, Japanese, Chinese, Spanish, French or German. No uploads.">
 <link rel="canonical" href="https://papertools.dev/ocr/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Paper Tools">
@@ -40,7 +40,7 @@
 {"@context":"https://schema.org","@type":"HowTo","name":"How to OCR a scanned PDF or image","step":[{"@type":"HowToStep","position":1,"name":"Drop a scanned PDF, or one or more images, into the dropzone."},{"@type":"HowToStep","position":2,"name":"Choose the text language and TXT or searchable PDF output."},{"@type":"HowToStep","position":3,"name":"Click \"Recognize Text\" to run OCR and download the result."}]}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Are my files uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. The OCR engine and language data run and load entirely in your browser, from this site — your PDF or images never leave your device."}},{"@type":"Question","name":"How accurate is the text it finds?","acceptedAnswer":{"@type":"Answer","text":"It works best on clean, high-resolution scans of printed text. Skewed or low-quality photos will have more errors, and handwriting recognition is hit-or-miss."}},{"@type":"Question","name":"Which languages are supported?","acceptedAnswer":{"@type":"Answer","text":"English and Korean. English also works reasonably well for many other languages that use the Latin alphabet."}}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Are my files uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. The OCR engine and language data run and load entirely in your browser, from this site — your PDF or images never leave your device."}},{"@type":"Question","name":"How accurate is the text it finds?","acceptedAnswer":{"@type":"Answer","text":"It works best on clean, high-resolution scans of printed text. Skewed or low-quality photos will have more errors, and handwriting recognition is hit-or-miss."}},{"@type":"Question","name":"Which languages are supported?","acceptedAnswer":{"@type":"Answer","text":"English, Korean, Japanese, Chinese (Simplified), Spanish, French and German. English also works reasonably well for many other languages that use the Latin alphabet."}}]}
 </script>
 </head>
 <body>
@@ -70,6 +70,11 @@
 <select id="lang">
   <option value="eng">English</option>
   <option value="kor">한국어 (Korean)</option>
+  <option value="jpn">日本語 (Japanese)</option>
+  <option value="chi_sim">中文·简体 (Chinese, Simplified)</option>
+  <option value="spa">Español (Spanish)</option>
+  <option value="fra">Français (French)</option>
+  <option value="deu">Deutsch (German)</option>
 </select>
 
 <label for="outputType" data-i18n data-en="Output" data-ko="출력 형식">Output</label>
@@ -97,7 +102,7 @@
 <h3 data-i18n data-en="How accurate is the text it finds?" data-ko="인식 정확도는 어느 정도인가요?">How accurate is the text it finds?</h3>
 <p data-i18n data-en="It works best on clean, high-resolution scans of printed text. Skewed or low-quality photos will have more errors, and handwriting recognition is hit-or-miss." data-ko="깨끗하고 해상도가 높은 인쇄물 스캔에서 가장 잘 동작합니다. 기울어졌거나 화질이 낮은 사진은 오류가 늘어나며, 손글씨 인식은 정확도가 들쭉날쭉합니다.">It works best on clean, high-resolution scans of printed text. Skewed or low-quality photos will have more errors, and handwriting recognition is hit-or-miss.</p>
 <h3 data-i18n data-en="Which languages are supported?" data-ko="어떤 언어를 지원하나요?">Which languages are supported?</h3>
-<p data-i18n data-en="English and Korean. English also works reasonably well for many other languages that use the Latin alphabet." data-ko="영어와 한국어입니다. 영어 모델은 로마자를 사용하는 다른 여러 언어에도 어느 정도 사용할 수 있습니다.">English and Korean. English also works reasonably well for many other languages that use the Latin alphabet.</p>
+<p data-i18n data-en="English, Korean, Japanese, Chinese (Simplified), Spanish, French and German. English also works reasonably well for many other languages that use the Latin alphabet." data-ko="영어·한국어·일본어·중국어(간체)·스페인어·프랑스어·독일어입니다. 영어 모델은 로마자를 사용하는 다른 여러 언어에도 어느 정도 사용할 수 있습니다.">English, Korean, Japanese, Chinese (Simplified), Spanish, French and German. English also works reasonably well for many other languages that use the Latin alphabet.</p>
 </section>
 </main>
 

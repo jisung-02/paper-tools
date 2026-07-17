@@ -630,7 +630,7 @@ window.I18N.es = {
     "How accurate is the text it finds?": "¿Qué tan precisos son los resultados?",
     "It works best on clean, high-resolution scans of printed text. Skewed or low-quality photos will have more errors, and handwriting recognition is hit-or-miss.": "Funciona mejor con escaneos nítidos y de alta resolución de texto impreso. Las fotos torcidas o de baja calidad tendrán más errores, y el reconocimiento de escritura a mano es irregular.",
     "Which languages are supported?": "¿Qué idiomas son compatibles?",
-    "English and Korean. English also works reasonably well for many other languages that use the Latin alphabet.": "Inglés y coreano. El inglés también funciona razonablemente bien con muchos otros idiomas que usan el alfabeto latino.",
+    "English, Korean, Japanese, Chinese (Simplified), Spanish, French and German. English also works reasonably well for many other languages that use the Latin alphabet.": "Inglés, coreano, japonés, chino (simplificado), español, francés y alemán. El inglés también funciona razonablemente bien con muchos otros idiomas que usan el alfabeto latino.",
     "Read text out of scanned PDFs and images": "Lee texto de PDFs escaneados e imágenes",
     "Select a single PDF, or one or more images — not both.": "Selecciona un solo PDF, o una o más imágenes — no ambos.",
     "Loading OCR engine…": "Cargando el motor de OCR…",

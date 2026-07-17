@@ -304,12 +304,12 @@
     "de": {"title": "PDFs vergleichen — kostenlos & privat | Paper Tools", "description": "Vergleiche Text und visuelle Unterschiede zweier PDFs im Browser. Prüfe geänderte Seiten, Pixelbereiche, Heatmaps und JSON-Berichte, ohne Dateien hochzuladen."}
   },
   "ocr": {
-    "ko": {"title": "OCR(문자 인식) — 무료·비공개 | Paper Tools", "description": "스캔한 PDF나 이미지에서 영어·한국어를 인식해 TXT 또는 검색 가능한 PDF를 브라우저에서 만드세요. 파일은 업로드되지 않습니다."},
-    "ja": {"title": "OCR(文字認識) — 無料・非公開 | Paper Tools", "description": "スキャンしたPDFや画像から英語・韓国語を認識し、TXTまたは検索可能なPDFをブラウザ内で作成できます。ファイルはアップロードされません。"},
-    "zh": {"title": "OCR 文字识别 — 免费且私密 | Paper Tools", "description": "在浏览器中识别扫描 PDF 或图片中的英文和韩文，并生成 TXT 或可搜索 PDF。文件绝不会上传。"},
-    "es": {"title": "OCR — extraer texto de escaneos, gratis y privado | Paper Tools", "description": "Reconoce inglés o coreano en un PDF escaneado o una imagen y crea un TXT o PDF con búsqueda en el navegador. Los archivos nunca se suben."},
-    "fr": {"title": "OCR — extraire le texte de scans, gratuit et privé | Paper Tools", "description": "Reconnaissez l'anglais ou le coréen dans un PDF scanné ou une image et créez un TXT ou PDF interrogeable dans le navigateur. Aucun fichier n'est envoyé."},
-    "de": {"title": "OCR — Text aus Scans erkennen, kostenlos & privat | Paper Tools", "description": "Erkenne englischen oder koreanischen Text in Scans und erstelle TXT oder ein durchsuchbares PDF im Browser. Dateien werden nie hochgeladen."}
+    "ko": {"title": "OCR(문자 인식) — 무료·비공개 | Paper Tools", "description": "스캔한 PDF나 이미지에서 영어·한국어·일본어·중국어·스페인어·프랑스어·독일어를 인식해 TXT 또는 검색 가능한 PDF를 브라우저에서 만드세요. 파일은 업로드되지 않습니다."},
+    "ja": {"title": "OCR(文字認識) — 無料・非公開 | Paper Tools", "description": "スキャンしたPDFや画像から英語・韓国語・日本語・中国語・スペイン語・フランス語・ドイツ語を認識し、TXTまたは検索可能なPDFをブラウザ内で作成できます。ファイルはアップロードされません。"},
+    "zh": {"title": "OCR 文字识别 — 免费且私密 | Paper Tools", "description": "在浏览器中识别扫描 PDF 或图片中的英语、韩语、日语、中文、西班牙语、法语和德语，并生成 TXT 或可搜索 PDF。文件绝不会上传。"},
+    "es": {"title": "OCR — extraer texto de escaneos, gratis y privado | Paper Tools", "description": "OCR de PDF o imágenes escaneadas: inglés, coreano, japonés, chino, español, francés o alemán. Crea un TXT o PDF con búsqueda en el navegador. Sin subidas."},
+    "fr": {"title": "OCR — extraire le texte de scans, gratuit et privé | Paper Tools", "description": "OCR de PDF ou images scannées : anglais, coréen, japonais, chinois, espagnol, français ou allemand. TXT ou PDF interrogeable dans le navigateur. Aucun envoi."},
+    "de": {"title": "OCR — Text aus Scans erkennen, kostenlos & privat | Paper Tools", "description": "OCR für gescannte PDFs/Bilder: Englisch, Koreanisch, Japanisch, Chinesisch, Spanisch, Französisch oder Deutsch. TXT oder PDF im Browser. Keine Uploads."}
   },
   "send": {
     "ko": {"title": "다른 기기로 파일 전송 — 무료·비공개 | Paper Tools", "description": "여러 파일을 다른 기기로 직접 보내고 연결이 끊기면 검증된 지점부터 재개하세요. 파일은 두 기기 사이에서만 이동하며 서버에 업로드되지 않습니다."},

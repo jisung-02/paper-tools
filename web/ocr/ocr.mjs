@@ -14,6 +14,11 @@ const RENDER_SCALE = 2;
 const LANG_MODELS = {
   eng: "/vendor/tesseract/eng.traineddata",
   kor: "/vendor/tesseract/kor.traineddata",
+  jpn: "/vendor/tesseract/jpn.traineddata",
+  chi_sim: "/vendor/tesseract/chi_sim.traineddata",
+  spa: "/vendor/tesseract/spa.traineddata",
+  fra: "/vendor/tesseract/fra.traineddata",
+  deu: "/vendor/tesseract/deu.traineddata",
 };
 
 const fileDz = window.dropzone("fileDrop", { multiple: true });

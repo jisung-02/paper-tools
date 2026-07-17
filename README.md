@@ -29,7 +29,7 @@ uploads, no account.
 | **Organize** | Merge · Interleave · Split & Extract · Remove Pages · Reorder · Insert Blank |
 | **Transform** | Rotate · Crop · Resize · N-up |
 | **Content** | Images → PDF · Watermark · Page Numbers · Stamp / Signature (draw or upload) / Text · Flatten PDF · Permanent Redaction |
-| **Convert** | Image Convert (PNG/JPG/GIF) · Image Resize · PDF → Text · OCR (scanned PDFs/images, English/Korean) · PDF → Images (page ranges, PNG/JPG quality, ZIP) · Extract Images (ZIP) · Text → PDF · Markdown → PDF · Word → PDF · Hangul(.hwpx) → PDF · Old Hangul(.hwp) → PDF · Word ↔ Hangul · PDF → Word · PDF → Hangul · Excel → CSV |
+| **Convert** | Image Convert (PNG/JPG/GIF) · Image Resize · PDF → Text · OCR (scanned PDFs/images, English/Korean/Japanese/Chinese/Spanish/French/German) · PDF → Images (page ranges, PNG/JPG quality, ZIP) · Extract Images (ZIP) · Text → PDF · Markdown → PDF · Word → PDF · Hangul(.hwpx) → PDF · Old Hangul(.hwp) → PDF · Word ↔ Hangul · PDF → Word · PDF → Hangul · Excel → CSV |
 | **Document** | Compress (quality/DPI/grayscale) · Metadata · PDF Info · Protect (AES-256/AES-128) · Unlock · Compare PDFs · Direct Send (device-to-device, never uploaded) |
 
 ## Highlights
@@ -151,9 +151,9 @@ dependencies are used.
   content from the result.
 - `Image Resize` (and `Image Convert`) only read/write the first frame of an
   animated GIF; animation isn't preserved.
-- `OCR` supports English and Korean text and works best on clean,
-  high-resolution scans of printed text; handwriting recognition is
-  hit-or-miss.
+- `OCR` supports English, Korean, Japanese, Chinese, Spanish, French and
+  German text and works best on clean, high-resolution scans of printed
+  text; handwriting recognition is hit-or-miss.
 - `Direct Send` needs both devices to be reachable from each other directly
   (usually the same Wi-Fi or local network); it moves the file straight from
   device to device with no server relay, and has no way to help two devices

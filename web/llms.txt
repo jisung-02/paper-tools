@@ -28,7 +28,7 @@ Paper Tools is a collection of 44 client-side file tools, live at https://papert
 - [Unlock](https://papertools.dev/unlock/): Remove a known password from a PDF.
 - [Image Convert](https://papertools.dev/imgconv/): Convert images between PNG, JPG and GIF.
 - [PDF → Text](https://papertools.dev/pdftext/): Extract selectable text from a PDF to a .txt file.
-- [OCR](https://papertools.dev/ocr/): Recognize English or Korean in a scanned PDF or image and download TXT or a searchable PDF.
+- [OCR](https://papertools.dev/ocr/): Recognize English, Korean, Japanese, Chinese, Spanish, French or German in a scanned PDF or image and download TXT or a searchable PDF.
 - [PDF → Images](https://papertools.dev/pdf2img/): Render selected PDF pages as PNG or JPG images in a ZIP, with scale and JPG quality options.
 - [Extract Images](https://papertools.dev/pdfimages/): Pull embedded images out of a PDF into a ZIP.
 - [Text → PDF](https://papertools.dev/txt2pdf/): Turn text into a PDF, with Korean font support.
@@ -62,5 +62,5 @@ Paper Tools is a collection of 44 client-side file tools, live at https://papert
 - PDF → Word and PDF → Hangul are also text-only: the PDF's text is extracted and rebuilt as paragraphs, with no layout, images or tables preserved.
 - Excel → CSV keeps date cells as their raw Excel serial number, not a calendar date.
 - Compare PDFs supports both extracted-text and visual page comparison.
-- OCR supports English and Korean text and works best on clean, high-resolution scans; handwriting recognition is unreliable. Like every other tool, all processing (and loading of any supporting data) stays on papertools.dev — nothing is ever fetched from a third-party server.
+- OCR supports English, Korean, Japanese, Chinese, Spanish, French and German text and works best on clean, high-resolution scans; handwriting recognition is unreliable. Like every other tool, all processing (and loading of any supporting data) stays on papertools.dev — nothing is ever fetched from a third-party server.
 - Direct Send needs both devices to be reachable from each other directly, so it usually only works when they're on the same Wi-Fi or local network; there's no server that helps them find each other across different networks.
