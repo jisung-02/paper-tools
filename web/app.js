@@ -88,6 +88,11 @@ function applyLang() {
     el.setAttribute("aria-label", LANG === "en" ? en : LANG === "ko" ? el.dataset.koAria || en : (I18N[LANG] && I18N[LANG][en]) || en);
   });
 
+  document.querySelectorAll("[data-en-title]").forEach((el) => {
+    const en = el.dataset.enTitle;
+    el.setAttribute("title", LANG === "en" ? en : LANG === "ko" ? el.dataset.koTitle || en : (I18N[LANG] && I18N[LANG][en]) || en);
+  });
+
   const sel = document.querySelector(".langsel");
   if (sel) sel.value = LANG;
 

@@ -14,12 +14,12 @@ test("landing metadata and documentation use the visible catalog count", async (
     readFile(new URL("../README.ko.md", import.meta.url), "utf8"),
     readFile(new URL("../web/llms.txt", import.meta.url), "utf8"),
   ]);
-  assert.equal(visible.length, 43);
-  assert.match(landing, /43 file tools/);
+  assert.equal(visible.length, 44);
+  assert.match(landing, /44 file tools/);
   assert.doesNotMatch(landing, /38 (?:file )?tools/);
-  assert.match(readme, /43 client-side tools/);
-  assert.match(readmeKO, /도구 43종/);
-  assert.match(llms, /43 client-side file tools/);
+  assert.match(readme, /44 client-side tools/);
+  assert.match(readmeKO, /도구 44종/);
+  assert.match(llms, /44 client-side file tools/);
 
   const itemListSource = [...landing.matchAll(/<script type="application\/ld\+json">\s*([\s\S]*?)\s*<\/script>/g)]
     .map((match) => JSON.parse(match[1]))
@@ -38,7 +38,7 @@ test("every visible catalog page has localized metadata with the current count",
     }
   }
   for (const language of ["ko", "ja", "zh", "es", "fr", "de"]) {
-    assert.match(metadata[""][language].description, /43/);
+    assert.match(metadata[""][language].description, /44/);
   }
 });
 

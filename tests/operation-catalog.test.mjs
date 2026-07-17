@@ -5,7 +5,7 @@ import catalog from "../tools/operation-catalog.json" with { type: "json" };
 import { operationArgs } from "../web/operation-adapters.mjs";
 
 test("operation catalog is the complete unique tool inventory", () => {
-  assert.equal(catalog.length, 44);
+  assert.equal(catalog.length, 45);
   const ids = catalog.map((entry) => entry.id);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(catalog.filter((entry) => entry.engine === "wasm").length, 38);

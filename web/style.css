@@ -539,7 +539,7 @@ footer {
 .editor-pane-head label,
 .editor-pane-head .hint { font: inherit; color: inherit; margin: 0; display: inline; }
 .editor-src {
-  flex: 1;
+  flex: 1 1 auto;
   width: 100%;
   height: var(--editor-h);
   border: none;
@@ -572,6 +572,15 @@ footer {
   color: var(--muted);
   font-size: .85rem;
 }
+/* display:flex above beats the UA's [hidden]{display:none}; restore it so
+   htmledit can toggle the hint with the hidden attribute. */
+.editor-empty[hidden] { display: none; }
+/* Direct-child hint (htmledit): give the empty state the same pane height the preview box provides elsewhere. */
+.editor-pane > .editor-empty { height: var(--editor-h); }
+/* htmledit's live-rendered document canvas: white in both themes, same
+   rationale as the typeset page preview and other white "sheet" surfaces. */
+.editor-doc { display: block; width: 100%; height: var(--editor-h); border: 0; background: #fff; }
+.editor-doc[hidden] { display: none; }
 .drop.compact { padding: .6rem 1rem; font-size: .85rem; }
 @media (max-width: 900px) {
   .editor-frame {
