@@ -45,6 +45,18 @@ test("service worker cache survives a browser restart for offline use", async ()
     await page.goto("/txt2pdf/");
     await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
     await page.reload();
+    // Closing right after the reload races the SW's async cache.put of the
+    // wasm and font; if it loses, the offline restart below can never
+    // enable the button. Wait until the page is usable AND both heavyweight
+    // assets are provably in a SW cache.
+    await expect(page.locator("#run")).toBeEnabled({ timeout: 20_000 });
+    await page.waitForFunction(async () => {
+      for (const name of await caches.keys()) {
+        const cache = await caches.open(name);
+        if ((await cache.match("/txt2pdf/txt2pdf.wasm")) && (await cache.match("/NanumGothic-Regular.ttf"))) return true;
+      }
+      return false;
+    }, undefined, { timeout: 20_000 });
     await context.close();
 
     context = await chromium.launchPersistentContext(profile, chromiumLaunchOptions());
