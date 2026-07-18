@@ -601,7 +601,6 @@ window.I18N.zh = {
     "You can choose AES-256 (recommended) or AES-128, using Latin letters and numbers for the password.": "您可以选择 AES-256(推荐)或 AES-128，密码使用拉丁字母和数字。",
     "Your files are processed entirely in your browser. They are never uploaded to any server.": "您的文件完全在浏览器中处理，绝不会上传到任何服务器。",
     "Your files never leave the browser": "您的文件永远不会离开浏览器",
-    "Never uploaded": "绝不上传",
     "e.g. 1-3,5 / first / last": "例如 1-3,5 / first / last",
     "e.g. 1-3,5": "例如 1-3,5",
     "e.g. 1-3,7": "例如 1-3,7",

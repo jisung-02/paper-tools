@@ -601,7 +601,6 @@ window.I18N.es = {
     "You can choose AES-256 (recommended) or AES-128, using Latin letters and numbers for the password.": "Puedes elegir AES-256 (recomendado) o AES-128, usando letras y números latinos para la contraseña.",
     "Your files are processed entirely in your browser. They are never uploaded to any server.": "Tus archivos se procesan por completo en tu navegador. Nunca se suben a ningún servidor.",
     "Your files never leave the browser": "Tus archivos nunca salen del navegador",
-    "Never uploaded": "Sin subidas",
     "e.g. 1-3,5 / first / last": "p. ej., 1-3,5 / first / last",
     "e.g. 1-3,5": "p. ej. 1-3,5",
     "e.g. 1-3,7": "p. ej., 1-3,7",

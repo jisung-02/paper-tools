@@ -601,7 +601,6 @@ window.I18N.de = {
     "You can choose AES-256 (recommended) or AES-128, using Latin letters and numbers for the password.": "Sie können AES-256 (empfohlen) oder AES-128 wählen und das Passwort aus lateinischen Buchstaben und Zahlen zusammensetzen.",
     "Your files are processed entirely in your browser. They are never uploaded to any server.": "Ihre Dateien werden vollständig in Ihrem Browser verarbeitet. Sie werden niemals auf einen Server hochgeladen.",
     "Your files never leave the browser": "Ihre Dateien verlassen niemals den Browser",
-    "Never uploaded": "Kein Upload",
     "e.g. 1-3,5 / first / last": "z. B. 1-3,5 / first / last",
     "e.g. 1-3,5": "z. B. 1-3,5",
     "e.g. 1-3,7": "z. B. 1-3,7",
