@@ -9,6 +9,7 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"math"
 	"strings"
 	"testing"
 )
@@ -343,5 +344,156 @@ func TestImagePixelBudgetCheckedBeforeDecode(t *testing.T) {
 				t.Fatalf("expected pixel budget error, got %v", err)
 			}
 		})
+	}
+}
+
+// photoGradientImage builds a deterministic, photo-like 200x150 test image:
+// a radial sine blend on R combined with linear X/Y gradients on G/B. It has
+// far more distinct colors than a flat-color test image, which is what
+// makes it a meaningful stand-in for a photograph when comparing palette
+// quantizers.
+func photoGradientImage(w, h int) *image.NRGBA {
+	img := image.NewNRGBA(image.Rect(0, 0, w, h))
+	cx, cy := float64(w)/2, float64(h)/2
+	maxDist := math.Hypot(cx, cy)
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			dx, dy := float64(x)-cx, float64(y)-cy
+			dist := math.Hypot(dx, dy) / maxDist
+
+			r := 0.5 + 0.5*math.Sin(dist*2*math.Pi)
+			if r < 0 {
+				r = 0
+			} else if r > 1 {
+				r = 1
+			}
+
+			img.SetNRGBA(x, y, color.NRGBA{
+				R: uint8(r * 255),
+				G: uint8(float64(x) / float64(w) * 255),
+				B: uint8(float64(y) / float64(h) * 255),
+				A: 255,
+			})
+		}
+	}
+	return img
+}
+
+// rmsAgainst computes the per-channel (R,G,B) RMS error of dec against src
+// over src's bounds.
+func rmsAgainst(t *testing.T, src, dec image.Image) float64 {
+	t.Helper()
+	b := src.Bounds()
+	var sum float64
+	var n int
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			c1 := color.NRGBAModel.Convert(src.At(x, y)).(color.NRGBA)
+			c2 := color.NRGBAModel.Convert(dec.At(x, y)).(color.NRGBA)
+			dr := float64(c1.R) - float64(c2.R)
+			dg := float64(c1.G) - float64(c2.G)
+			db := float64(c1.B) - float64(c2.B)
+			sum += dr*dr + dg*dg + db*db
+			n += 3
+		}
+	}
+	return math.Sqrt(sum / float64(n))
+}
+
+// TestGIFQuantizerBeatsPlan9Baseline verifies the median-cut quantizer used
+// by Convert/Resize produces a meaningfully closer palette than the
+// stdlib's default fixed Plan9 palette (gif.Encode with nil Options) for
+// photo-like content. Measured on this test image: baseline RMS ~= 21.6,
+// median-cut RMS ~= 10.1 (roughly half), so a new < old*0.8 margin is
+// comfortably below what's actually observed.
+func TestGIFQuantizerBeatsPlan9Baseline(t *testing.T) {
+	img := photoGradientImage(200, 150)
+
+	var pngBuf bytes.Buffer
+	if err := png.Encode(&pngBuf, img); err != nil {
+		t.Fatalf("failed to encode source PNG: %v", err)
+	}
+
+	// Baseline: stdlib default (Plan9 fixed palette, no custom quantizer).
+	var baseBuf bytes.Buffer
+	if err := gif.Encode(&baseBuf, img, nil); err != nil {
+		t.Fatalf("baseline gif.Encode failed: %v", err)
+	}
+	baseDec, err := gif.Decode(bytes.NewReader(baseBuf.Bytes()))
+	if err != nil {
+		t.Fatalf("failed to decode baseline GIF: %v", err)
+	}
+	oldRMS := rmsAgainst(t, img, baseDec)
+
+	// New: Convert's median-cut adaptive quantizer.
+	newBytes, err := Convert(pngBuf.Bytes(), "gif", 0)
+	if err != nil {
+		t.Fatalf("Convert to GIF failed: %v", err)
+	}
+	newDec, err := gif.Decode(bytes.NewReader(newBytes))
+	if err != nil {
+		t.Fatalf("failed to decode Convert's GIF: %v", err)
+	}
+	newRMS := rmsAgainst(t, img, newDec)
+
+	t.Logf("baseline (Plan9) RMS = %f, median-cut RMS = %f", oldRMS, newRMS)
+
+	if newRMS >= oldRMS*0.8 {
+		t.Fatalf("expected median-cut RMS (%f) to be well below baseline*0.8 (%f, baseline=%f)", newRMS, oldRMS*0.8, oldRMS)
+	}
+}
+
+// TestGIFTransparencyPreserved verifies that an image with a transparent
+// region still decodes as transparent after a round trip through Convert's
+// GIF encoding path (GIF only supports 1-bit transparency, so this checks
+// that the quantizer reserves a transparent palette slot rather than
+// dissolving alpha into an opaque nearby color).
+func TestGIFTransparencyPreserved(t *testing.T) {
+	const w, h = 40, 40
+	img := image.NewNRGBA(image.Rect(0, 0, w, h))
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			if x < w/2 {
+				// Opaque half: a color gradient.
+				img.SetNRGBA(x, y, color.NRGBA{R: uint8(x * 6), G: uint8(y * 6), B: 128, A: 255})
+			} else {
+				// Transparent half.
+				img.SetNRGBA(x, y, color.NRGBA{R: 0, G: 0, B: 0, A: 0})
+			}
+		}
+	}
+
+	var pngBuf bytes.Buffer
+	if err := png.Encode(&pngBuf, img); err != nil {
+		t.Fatalf("failed to encode source PNG: %v", err)
+	}
+
+	gifBytes, err := Convert(pngBuf.Bytes(), "gif", 0)
+	if err != nil {
+		t.Fatalf("Convert to GIF failed: %v", err)
+	}
+
+	dec, err := gif.Decode(bytes.NewReader(gifBytes))
+	if err != nil {
+		t.Fatalf("failed to decode GIF: %v", err)
+	}
+
+	for y := 0; y < h; y++ {
+		for x := w / 2; x < w; x++ {
+			c := color.NRGBAModel.Convert(dec.At(x, y)).(color.NRGBA)
+			if c.A != 0 {
+				t.Fatalf("pixel (%d,%d): expected fully transparent (A=0), got A=%d", x, y, c.A)
+			}
+		}
+	}
+
+	// Sanity check the opaque half actually stayed opaque.
+	for y := 0; y < h; y++ {
+		for x := 0; x < w/2; x++ {
+			c := color.NRGBAModel.Convert(dec.At(x, y)).(color.NRGBA)
+			if c.A != 255 {
+				t.Fatalf("pixel (%d,%d): expected fully opaque (A=255), got A=%d", x, y, c.A)
+			}
+		}
 	}
 }

@@ -53,7 +53,7 @@ func Convert(data []byte, format string, jpegQuality int) ([]byte, error) {
 			return nil, fmt.Errorf("encode jpeg: %w", err)
 		}
 	case "gif":
-		if err := gif.Encode(&buf, img, nil); err != nil {
+		if err := gif.Encode(&buf, img, &gif.Options{NumColors: 256, Quantizer: gifQuantizer}); err != nil {
 			return nil, fmt.Errorf("encode gif: %w", err)
 		}
 	default:
@@ -102,7 +102,7 @@ func Resize(data []byte, maxW, maxH int, jpegQuality int) ([]byte, string, error
 			return nil, "", fmt.Errorf("encode jpeg: %w", err)
 		}
 	case "gif":
-		if err := gif.Encode(&buf, scaled, nil); err != nil {
+		if err := gif.Encode(&buf, scaled, &gif.Options{NumColors: 256, Quantizer: gifQuantizer}); err != nil {
 			return nil, "", fmt.Errorf("encode gif: %w", err)
 		}
 	default:
