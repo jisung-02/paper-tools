@@ -15,9 +15,12 @@ const defaults = {
 };
 
 const labels = {
-  merge: "Merge", interleave: "Interleave", remove: "Remove pages", reorder: "Reorder", rotate: "Rotate",
-  flatten: "Flatten", compress: "Compress", metadata: "Metadata", watermark: "Watermark",
-  pagenum: "Page numbers", protect: "Protect", unlock: "Unlock",
+  merge: window.t("Merge", "병합"), interleave: window.t("Interleave", "교차 병합"),
+  remove: window.t("Remove pages", "페이지 삭제"), reorder: window.t("Reorder", "순서 변경"),
+  rotate: window.t("Rotate", "회전"), flatten: window.t("Flatten", "평면화"),
+  compress: window.t("Compress", "압축"), metadata: window.t("Metadata", "메타데이터"),
+  watermark: window.t("Watermark", "워터마크"), pagenum: window.t("Page numbers", "페이지 번호"),
+  protect: window.t("Protect", "암호 설정"), unlock: window.t("Unlock", "암호 해제"),
 };
 
 const fileInput = document.getElementById("workflowInput");
@@ -48,7 +51,7 @@ for (const id of workflowOperations) {
 }
 
 const runner = new OperationRunner(operationsById, {
-  clientFactory: (descriptor) => createWasmClient(() => { throw new Error("Worker execution is required for workflows"); }, {
+  clientFactory: (descriptor) => createWasmClient(() => { throw new Error(window.t("Worker execution is required for workflows", "워크플로우에는 워커 실행이 필요합니다.")); }, {
     worker: { host: "/operation-worker.js", wasm: descriptor.entry },
   }),
 });
@@ -76,16 +79,16 @@ function renderSteps() {
     remove.type = "button";
     remove.className = "secondary";
     remove.textContent = "×";
-    remove.setAttribute("aria-label", "Remove step");
+    remove.setAttribute("aria-label", window.t("Remove step", "단계 삭제"));
     remove.addEventListener("click", () => { steps.splice(index, 1); renderSteps(); });
     actions.appendChild(remove);
     header.append(title, actions);
     const params = document.createElement("textarea");
     params.value = JSON.stringify(step.params, null, 2);
-    params.setAttribute("aria-label", `${title.textContent} parameters JSON`);
+    params.setAttribute("aria-label", `${title.textContent} ${window.t("parameters JSON", "매개변수 JSON")}`);
     params.addEventListener("change", () => {
       try { step.params = JSON.parse(params.value); params.setCustomValidity(""); }
-      catch { params.setCustomValidity("Invalid JSON"); params.reportValidity(); }
+      catch { params.setCustomValidity(window.t("Invalid JSON", "올바르지 않은 JSON입니다.")); params.reportValidity(); }
     });
     item.append(header, params);
     list.appendChild(item);
@@ -112,7 +115,7 @@ async function executeOperation(operationId, artifacts, params, context) {
     onProgress: (phase) => { status.textContent = `${labels[operationId] || operationId}: ${phase}`; },
   });
   if (result?.error) throw new Error(result.error);
-  if (!(result?.data instanceof Uint8Array)) throw new Error(`${operationId} returned no PDF data`);
+  if (!(result?.data instanceof Uint8Array)) throw new Error(`${operationId} ${window.t("returned no PDF data", "PDF 데이터를 반환하지 않았습니다.")}`);
   return createArtifact(new Blob([result.data], { type: "application/pdf" }), {
     name: `${operationId}.pdf`, kind: "pdf", mime: "application/pdf",
   });
@@ -120,8 +123,14 @@ async function executeOperation(operationId, artifacts, params, context) {
 
 runButton.addEventListener("click", async () => {
   error.textContent = "";
+  // A failed re-run must not leave the previous run's result/Download
+  // sitting next to the new error.
+  resultSection.hidden = true;
+  resultURL?.dispose();
+  resultURL = undefined;
+  resultArtifact = undefined;
   const files = [...fileInput.files];
-  if (!files.length || !steps.length) { window.showErr(error, "Select PDFs and add at least one step."); return; }
+  if (!files.length || !steps.length) { window.showErr(error, window.t("Select PDFs and add at least one step.", "PDF를 선택하고 최소 한 단계를 추가하세요.")); return; }
   activeController?.abort();
   activeController = new AbortController();
   runButton.disabled = true;
@@ -147,7 +156,7 @@ runButton.addEventListener("click", async () => {
     resultURL?.dispose();
     resultURL = new ArtifactURL(resultArtifact.blob);
     preview.src = resultURL.url;
-    resultSummary.textContent = `${resultArtifact.name} · ${resultArtifact.size.toLocaleString()} bytes`;
+    resultSummary.textContent = `${resultArtifact.name} · ${resultArtifact.size.toLocaleString()} ${window.t("bytes", "바이트")}`;
     resultSection.hidden = false;
   } catch (cause) {
     if (cause?.name !== "AbortError") window.showErr(error, cause.message || cause);
@@ -169,9 +178,9 @@ document.getElementById("exportWorkflow").addEventListener("click", () => {
 document.getElementById("importWorkflow").addEventListener("change", async (event) => {
   try {
     const parsed = JSON.parse(await event.target.files[0].text());
-    if (parsed.version !== 1 || !Array.isArray(parsed.steps)) throw new Error("Invalid workflow file.");
+    if (parsed.version !== 1 || !Array.isArray(parsed.steps)) throw new Error(window.t("Invalid workflow file.", "올바르지 않은 워크플로우 파일입니다."));
     steps = parsed.steps.map((step) => ({ id: `step-${nextStep++}`, operationId: step.operationId, params: step.params || {} }));
-    if (steps.some((step) => !workflowOperations.includes(step.operationId))) throw new Error("Workflow contains an unsupported operation.");
+    if (steps.some((step) => !workflowOperations.includes(step.operationId))) throw new Error(window.t("Workflow contains an unsupported operation.", "워크플로우에 지원되지 않는 작업이 포함되어 있습니다."));
     renderSteps();
   } catch (cause) { window.showErr(error, cause.message || cause); }
 });

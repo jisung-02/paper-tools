@@ -7,6 +7,11 @@
   --border: #e8e4dd;
   --border-strong: #d8d2c9;
   --border-stronger: #a9a299;
+  /* Scoped, higher-contrast border for text-entry controls only (WCAG
+     1.4.11 needs >=3:1 for control boundaries); --border/--border-strong
+     stay as-is since they also draw decorative hairlines. #8f887d is a
+     warm gray consistent with the palette, ~3.51:1 against light --bg. */
+  --border-form: #8f887d;
   --hover: #f7f5f0;
   --err: #c93f2e;
   --accent: #3f3dbb;
@@ -29,6 +34,10 @@
     --border: #3d3a35;
     --border-strong: #524e47;
     --border-stronger: #736d63;
+    /* #736d63 (same as --border-stronger) is already ~3.88:1 against dark
+       --bg, so no separate hex is needed here — see the --border-form
+       comment in the light :root block above. */
+    --border-form: #736d63;
     --hover: #211f1c;
     --err: #f08575;
     --accent: #a3a0f0;
@@ -46,6 +55,7 @@
   --border: #3d3a35;
   --border-strong: #524e47;
   --border-stronger: #736d63;
+  --border-form: #736d63;
   --hover: #211f1c;
   --err: #f08575;
   --accent: #a3a0f0;
@@ -251,7 +261,7 @@ main .desc {
 /* dropzone */
 .drop {
   position: relative;
-  border: 1.5px dashed var(--border-strong);
+  border: 1.5px dashed var(--border-form);
   border-radius: var(--radius);
   padding: 2.25rem 1.25rem;
   text-align: center;
@@ -331,7 +341,7 @@ input[type="password"],
 select,
 textarea {
   font: inherit;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-form);
   border-radius: var(--radius);
   padding: .6rem .6rem;
   background: var(--bg);
@@ -505,6 +515,17 @@ footer {
   pointer-events: none;
 }
 .thumbcell.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+.thumbcell.selected::after {
+  content: "\2713";
+  position: absolute;
+  top: .15rem;
+  right: .3rem;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+  pointer-events: none;
+}
 
 /* split editor workspace (mdedit, typst) */
 .editor-frame {

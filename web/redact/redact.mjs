@@ -84,7 +84,7 @@ function drawSelections() {
     const rect = selectionPixels(selection, overlay.width, overlay.height);
     context.fillRect(rect.x, rect.y, rect.width, rect.height);
   }
-  count.textContent = `${totalSelections()} redaction area(s)`;
+  count.textContent = totalSelections() + window.t(" redaction area(s)", "개 삭제 영역");
 }
 
 async function renderCurrent() {
@@ -103,7 +103,7 @@ async function renderCurrent() {
       ? Math.sqrt(REDACT_LIMITS.maxPagePixels / area)
       : 0;
     const scale = Math.min(1.5, 1000 / base.width, pixelScale);
-    if (!Number.isFinite(scale) || scale <= 0) throw new Error("Invalid PDF page geometry");
+    if (!Number.isFinite(scale) || scale <= 0) throw new Error(window.t("Invalid PDF page geometry", "PDF 페이지 크기 정보가 올바르지 않습니다."));
     const viewport = page.getViewport({ scale });
     pageCanvas.width = Math.ceil(viewport.width);
     pageCanvas.height = Math.ceil(viewport.height);
@@ -154,7 +154,7 @@ async function loadPDF(file) {
       return;
     }
     if (loaded.numPages > REDACT_LIMITS.maxPages) {
-      throw new Error(`PDF page count exceeds the ${REDACT_LIMITS.maxPages}-page limit`);
+      throw new Error(`${window.t("PDF page count exceeds the", "PDF 페이지 수가")} ${REDACT_LIMITS.maxPages}${window.t("-page limit", "페이지 제한을 초과했습니다")}`);
     }
     sourceDoc = loaded;
     editor.hidden = false;
@@ -224,7 +224,7 @@ function createBrowserCanvas(width, height) {
   canvas.width = width;
   canvas.height = height;
   const context = canvas.getContext("2d", { alpha: false });
-  if (!context) throw new Error("Canvas 2D is unavailable");
+  if (!context) throw new Error(window.t("Canvas 2D is unavailable", "캔버스(2D)를 사용할 수 없습니다."));
   return {
     canvas,
     context,
@@ -238,7 +238,7 @@ function createBrowserCanvas(width, height) {
 function encodePNG(canvas) {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (blob) => blob ? resolve(blob) : reject(new Error("PNG export failed")),
+      (blob) => blob ? resolve(blob) : reject(new Error(window.t("PNG export failed", "PNG 내보내기에 실패했습니다."))),
       "image/png",
     );
   });
@@ -254,11 +254,11 @@ cancelButton.addEventListener("click", () => {
 
 runButton.addEventListener("click", () => window.run(runButton, async () => {
   if (!sourceDoc || !totalSelections()) {
-    window.showErr(error, "Select at least one area to redact.");
+    window.showErr(error, window.t("Select at least one area to redact.", "삭제할 영역을 하나 이상 선택하세요."));
     return;
   }
   if (!document.getElementById("redactConfirm").checked) {
-    window.showErr(error, "Confirm the raster-only output warning.");
+    window.showErr(error, window.t("Confirm the raster-only output warning.", "이미지 전용 출력 경고에 동의해 주세요."));
     return;
   }
   const activeDoc = sourceDoc;
@@ -280,8 +280,8 @@ runButton.addEventListener("click", () => window.run(runButton, async () => {
       onProgress({ phase, page, pages }) {
         status.hidden = false;
         status.textContent = phase === "finishing"
-          ? "Verifying raster-only PDF…"
-          : `Rasterizing ${page}/${pages}…`;
+          ? window.t("Verifying raster-only PDF…", "이미지 전용 PDF 검증 중…")
+          : `${window.t("Rasterizing", "래스터화 중")} ${page}/${pages}…`;
       },
     });
     window.finish(result, "redacted.pdf", error, "application/pdf");
@@ -289,7 +289,7 @@ runButton.addEventListener("click", () => window.run(runButton, async () => {
   } catch (cause) {
     if (cause?.name === "AbortError") {
       status.hidden = false;
-      status.textContent = "Redaction cancelled.";
+      status.textContent = window.t("Redaction cancelled.", "삭제 작업이 취소되었습니다.");
       return;
     }
     throw cause;

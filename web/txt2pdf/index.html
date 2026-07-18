@@ -11,7 +11,6 @@
 <script src="/theme.js"></script>
 <link rel="stylesheet" href="../style.css">
 <link rel="preload" href="./txt2pdf.wasm" as="fetch" crossorigin>
-<link rel="preload" href="../NanumGothic-Regular.ttf" as="fetch" crossorigin>
 <meta name="description" content="Convert text to PDF online — free & private, with Korean support. Paste text or drop a .txt file right in your browser; no upload, no signup.">
 <link rel="canonical" href="https://papertools.dev/txt2pdf/">
 <meta property="og:type" content="website">
@@ -97,21 +96,20 @@
 <script src="../app.js"></script>
 <script>
 let fontBytes = null;
-let wasmReady = false, fontOk = false;
 const btn = document.getElementById("run");
 const err = document.getElementById("err");
 const txt = document.getElementById("txt");
 const size = document.getElementById("size");
 
-function maybeEnable() { btn.disabled = !(wasmReady && fontOk); }
-btn.disabled = true;
+let fontPromise = null;
+function fontReady() {
+  return fontPromise ??= fetch("../NanumGothic-Regular.ttf")
+    .then(r => r.arrayBuffer())
+    .then(buf => { fontBytes = new Uint8Array(buf); })
+    .catch(e => { fontPromise = null; showErr(err, t("Failed to load font: ", "폰트를 불러오지 못했습니다: ") + e); throw e; });
+}
 
-const fontReady = fetch("../NanumGothic-Regular.ttf")
-  .then(r => r.arrayBuffer())
-  .then(buf => { fontBytes = new Uint8Array(buf); fontOk = true; maybeEnable(); })
-  .catch(e => { showErr(err, t("Failed to load font: ", "폰트를 불러오지 못했습니다: ") + e); throw e; });
-
-boot("./txt2pdf.wasm").then(() => { wasmReady = true; maybeEnable(); }).catch(() => {});
+boot("./txt2pdf.wasm").catch(() => {});
 
 const fileDz = dropzone("fileDrop", { multiple: false });
 
@@ -127,6 +125,7 @@ fileInput.addEventListener("change", async () => {
 btn.addEventListener("click", () => run(btn, async () => {
   const text = txt.value;
   if (!text.trim()) { showErr(err, t("Enter some text.", "텍스트를 입력하세요.")); return; }
+  await fontReady();
   const r = await runWasm(text, fontBytes, parseInt(size.value) || 11);
   finish(r, "text.pdf", err);
 }));

@@ -632,11 +632,19 @@ function dropzone(id, opts) {
 
   function setFiles(list) {
     const arr = Array.from(list);
+    const droppedExtra = !opts.multiple && arr.length > 1;
     files = opts.multiple ? arr : arr.slice(0, 1);
     el.__paperFiles = files;
     el.__paperRevision = (el.__paperRevision || 0) + 1;
     markResultStale();
     render();
+    // Surface the silent truncation above so a multi-file drag onto a
+    // single-file zone doesn't look like the other files were ignored.
+    if (droppedExtra && listEl) {
+      const notice = document.createElement("li");
+      notice.textContent = t("Only one file can be used here — kept the first.", "여기에는 파일 1개만 사용할 수 있어 첫 번째 파일만 유지했습니다.");
+      listEl.prepend(notice);
+    }
     updatePrompt();
     // Single funnel for every path that sets files (click-pick, drop): lets
     // page-specific enhancements (e.g. web/thumbs.js) react without this
@@ -646,6 +654,9 @@ function dropzone(id, opts) {
 
   el.setAttribute("role", "button");
   if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "0");
+  // The hidden native input must stay out of tab order — el above is the
+  // only focusable/keyboard-operable surface for this dropzone.
+  input.tabIndex = -1;
   if (!el.hasAttribute("aria-label")) {
     const label = document.querySelector('label[for="' + input.id + '"]');
     if (label) el.setAttribute("aria-label", label.textContent.trim());
@@ -722,6 +733,9 @@ const ERROR_MAP = [
   { needle: "wrong password", en: "Incorrect password.", ko: "암호가 올바르지 않습니다.", ja: "パスワードが正しくありません。", zh: "密码不正确。", es: "Contraseña incorrecta.", fr: "Mot de passe incorrect.", de: "Falsches Passwort." },
   { needle: "only Latin-1 text is supported", en: "Watermark supports Latin letters, numbers and symbols only.", ko: "워터마크는 영문·숫자·기호만 지원합니다.", ja: "ウォーターマークは英数字・記号のみ対応しています。", zh: "水印仅支持拉丁字母、数字和符号。", es: "La marca de agua solo admite letras, números y símbolos latinos.", fr: "Le filigrane ne prend en charge que les lettres, chiffres et symboles latins.", de: "Wasserzeichen unterstützen nur lateinische Buchstaben, Zahlen und Symbole." },
   { needle: "not a PDF", en: "This doesn't look like a PDF file.", ko: "PDF 파일이 아닌 것 같습니다.", ja: "PDFファイルではないようです。", zh: "这看起来不是 PDF 文件。", es: "Esto no parece un archivo PDF.", fr: "Cela ne ressemble pas à un fichier PDF.", de: "Das sieht nicht nach einer PDF-Datei aus." },
+  { needle: "too many pages selected for conversion", en: "This PDF has too many pages to convert at once (limit 500). Select a narrower page range.", ko: "한 번에 변환할 수 있는 페이지 수를 초과했습니다 (최대 500페이지). 페이지 범위를 좁혀서 다시 시도하세요.", ja: "一度に変換できるページ数の上限(500ページ)を超えています。ページ範囲を絞ってください。", zh: "一次可转换的页数超出上限(最多 500 页)。请缩小页码范围。", es: "Este PDF supera el límite de páginas que se pueden convertir a la vez (máximo 500). Selecciona un rango de páginas más reducido.", fr: "Ce PDF dépasse la limite de pages convertibles en une fois (500 maximum). Sélectionnez une plage de pages plus réduite.", de: "Diese PDF-Datei überschreitet das Limit für gleichzeitig konvertierbare Seiten (maximal 500). Wählen Sie einen kleineren Seitenbereich." },
+  { needle: "canvas dimensions exceed the dimension budget", en: "This page is too large to render at this scale. Try 1x scale instead of 2x.", ko: "이 페이지는 이 배율로 렌더링하기에 너무 큽니다. 2배 대신 1배 배율을 사용해 보세요.", ja: "このページはこの倍率では大きすぎて描画できません。2倍ではなく1倍の倍率を試してください。", zh: "此页面在该缩放比例下过大,无法渲染。请尝试使用 1 倍而非 2 倍缩放。", es: "Esta página es demasiado grande para procesarse a esta escala. Prueba con la escala 1x en lugar de 2x.", fr: "Cette page est trop grande pour être rendue à cette échelle. Essayez l'échelle 1x au lieu de 2x.", de: "Diese Seite ist bei diesem Maßstab zu groß zum Rendern. Versuchen Sie es mit 1x statt 2x." },
+  { needle: "canvas pixels exceed the pixel budget", en: "This page is too large to render at this scale. Try 1x scale instead of 2x.", ko: "이 페이지는 이 배율로 렌더링하기에 너무 큽니다. 2배 대신 1배 배율을 사용해 보세요.", ja: "このページはこの倍率では大きすぎて描画できません。2倍ではなく1倍の倍率を試してください。", zh: "此页面在该缩放比例下过大,无法渲染。请尝试使用 1 倍而非 2 倍缩放。", es: "Esta página es demasiado grande para procesarse a esta escala. Prueba con la escala 1x en lugar de 2x.", fr: "Cette page est trop grande pour être rendue à cette échelle. Essayez l'échelle 1x au lieu de 2x.", de: "Diese Seite ist bei diesem Maßstab zu groß zum Rendern. Versuchen Sie es mit 1x statt 2x." },
   { needle: "unsupported format", en: "Only PNG or JPG is supported.", ko: "PNG 또는 JPG만 지원합니다.", ja: "PNGまたはJPGのみ対応しています。", zh: "仅支持 PNG 或 JPG。", es: "Solo se admiten PNG o JPG.", fr: "Seuls PNG ou JPG sont pris en charge.", de: "Nur PNG oder JPG werden unterstützt." },
   { needle: "CMYK", en: "CMYK JPEG is not supported.", ko: "CMYK JPEG는 지원하지 않습니다.", ja: "CMYKのJPEGには対応していません。", zh: "不支持 CMYK JPEG。", es: "No se admite JPEG en CMYK.", fr: "Le JPEG CMYK n'est pas pris en charge.", de: "CMYK-JPEG wird nicht unterstützt." },
   { needle: "유효한 docx", en: "This isn't a valid .docx file.", ko: "유효한 docx 파일이 아닙니다.", ja: "有効な.docxファイルではありません。", zh: "这不是有效的 .docx 文件。", es: "Este no es un archivo .docx válido.", fr: "Ce n'est pas un fichier .docx valide.", de: "Dies ist keine gültige .docx-Datei." },

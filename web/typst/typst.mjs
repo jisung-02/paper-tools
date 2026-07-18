@@ -13,6 +13,11 @@ const out = document.getElementById("typstout");
 const dlTypBtn = document.getElementById("dltyp");
 const dlPdfBtn = document.getElementById("dlpdf");
 
+// Nothing to show until the engine actually starts loading (see
+// ensureEngine() below) — merely opening the page shouldn't imply a ~10 MB
+// download is already underway.
+if (statusEl) statusEl.hidden = true;
+
 function setStatus(msg) {
   if (!statusEl) return;
   statusEl.textContent = msg;
@@ -55,16 +60,35 @@ function clearErr() {
 let compiler;
 let renderer;
 let engineReady = false;
+let enginePromise = null;
 
 /* -------------------------------------------------------- engine boot --- */
 
-// Lazy singleton init: exactly one in-flight promise, started immediately on
-// module load (this tool live-previews as you type, so the engine needs to
-// be warm as soon as possible — unlike click-triggered tools such as OCR).
+// Lazy singleton init: exactly one in-flight promise, started on first user
+// intent (typing, focusing the editor, dropping a file, or clicking a
+// download button) rather than on module load — this tool live-previews as
+// you type, so the engine needs to be warm as soon as the user shows intent,
+// but merely opening the page shouldn't trigger a ~10 MB download.
+function ensureEngine() {
+  if (!enginePromise) {
+    enginePromise = initEngine();
+    enginePromise.then(() => {
+      // Picks up whatever's already in the textarea (e.g. a value the
+      // browser restored across a reload) the moment the engine finishes
+      // loading.
+      triggerRender();
+    }).catch((e) => {
+      setStatus(window.t("Failed to load tool: ", "도구를 불러오지 못했습니다: ") + (e && e.message ? e.message : String(e)));
+    });
+  }
+  return enginePromise;
+}
+
 // Mirrors app.js boot()'s status text / [data-needs-wasm] handling, since
 // this module-engine tool can't call boot() itself (that's Go-wasm only).
-const engineInit = (async () => {
+async function initEngine() {
   if (statusEl) {
+    statusEl.hidden = false;
     statusEl.setAttribute("role", "status");
     statusEl.setAttribute("aria-live", "polite");
     statusEl.setAttribute("aria-atomic", "true");
@@ -115,17 +139,7 @@ const engineInit = (async () => {
   document.querySelectorAll("[data-needs-wasm]").forEach((el) => {
     el.disabled = false;
   });
-})();
-
-engineInit.catch((e) => {
-  setStatus(window.t("Failed to load tool: ", "도구를 불러오지 못했습니다: ") + (e && e.message ? e.message : String(e)));
-});
-
-engineInit.then(() => {
-  // Picks up whatever's already in the textarea (e.g. a value the browser
-  // restored across a reload) the moment the engine finishes loading.
-  triggerRender();
-}).catch(() => {});
+}
 
 /* --------------------------------------------------- compiler mutex --- */
 
@@ -162,6 +176,7 @@ function triggerRender() {
     return;
   }
   if (!engineReady) {
+    ensureEngine();
     showLoadingPreview();
     return;
   }
@@ -238,20 +253,33 @@ async function compilePreview(text, seq) {
   if (diagnostics && diagnostics.length) showDiagnostics(diagnostics);
 }
 
-src.addEventListener("input", scheduleRender);
+src.addEventListener("input", () => {
+  ensureEngine();
+  scheduleRender();
+});
+src.addEventListener("focus", () => {
+  ensureEngine();
+});
 
 const fileDz = window.dropzone("fileDrop", { multiple: false });
 document.getElementById("fileDrop").addEventListener("dz:files", async ({ detail }) => {
   const f = detail.files[0];
   if (!f) return;
-  const buf = await f.arrayBuffer();
-  src.value = new TextDecoder().decode(buf);
+  ensureEngine();
+  try {
+    const buf = await f.arrayBuffer();
+    src.value = new TextDecoder("utf-8", { fatal: true }).decode(buf);
+  } catch {
+    showPlainErr(window.t("That file isn't readable text — drop a text file.", "텍스트 파일이 아닙니다 — 텍스트 파일을 놓아주세요."));
+    return;
+  }
   triggerRender();
 });
 
 /* --------------------------------------------------------- downloads --- */
 
 dlTypBtn.addEventListener("click", () => window.run(dlTypBtn, async () => {
+  ensureEngine();
   const text = src.value;
   if (!text.trim()) {
     showPlainErr(window.t("Write some Typst first.", "먼저 Typst를 작성하세요."));
@@ -261,6 +289,7 @@ dlTypBtn.addEventListener("click", () => window.run(dlTypBtn, async () => {
 }));
 
 dlPdfBtn.addEventListener("click", () => window.run(dlPdfBtn, async () => {
+  await ensureEngine();
   const text = src.value;
   if (!text.trim()) {
     showPlainErr(window.t("Write some Typst first.", "먼저 Typst를 작성하세요."));

@@ -20,6 +20,12 @@
 <link rel="alternate" hreflang="fr" href="https://papertools.dev/fr/workflow/">
 <link rel="alternate" hreflang="de" href="https://papertools.dev/de/workflow/">
 <link rel="alternate" hreflang="x-default" href="https://papertools.dev/workflow/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"How to build a PDF workflow","step":[{"@type":"HowToStep","position":1,"name":"Drop in one or more PDFs, then add the steps you want to run, in order."},{"@type":"HowToStep","position":2,"name":"Reorder, edit or remove steps, and adjust each step's parameters as JSON."},{"@type":"HowToStep","position":3,"name":"Click Run workflow to chain every step, then download the final PDF."}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I have to re-upload the file between steps?","acceptedAnswer":{"@type":"Answer","text":"No — the output of each step is fed directly into the next one, and only the final result is downloaded."}},{"@type":"Question","name":"Can I save a workflow and reuse it later?","acceptedAnswer":{"@type":"Answer","text":"Yes — export your steps as a JSON file, then import it later to rebuild the same workflow."}},{"@type":"Question","name":"Are my PDFs uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No — every step runs locally in your browser, and your files never leave your device."}}]}
+</script>
 </head>
 <body>
 <header><a class="wordmark" href="../">Paper Tools</a><nav class="langtoggle"><button type="button" data-lang="en">EN</button><span aria-hidden="true">/</span><button type="button" data-lang="ko">한국어</button></nav></header>
@@ -31,7 +37,7 @@
 <div class="drop" id="workflowDrop"><span data-i18n data-en="Drag PDFs here, or click to choose" data-ko="PDF를 끌어다 놓거나 클릭해서 선택">Drag PDFs here, or click to choose</span><input id="workflowInput" type="file" accept="application/pdf" multiple><ul class="filelist"></ul></div>
 <section class="workflow-builder" aria-labelledby="stepsTitle">
 <h2 id="stepsTitle" data-i18n data-en="Steps" data-ko="작업 단계">Steps</h2>
-<div class="workflow-add"><select id="operationSelect" aria-label="Operation"></select><button class="secondary" type="button" id="addStep" data-i18n data-en="Add step" data-ko="단계 추가">Add step</button></div>
+<div class="workflow-add"><select id="operationSelect" aria-label="Operation" data-en-aria="Operation" data-ko-aria="작업"></select><button class="secondary" type="button" id="addStep" data-i18n data-en="Add step" data-ko="단계 추가">Add step</button></div>
 <ol id="steps"></ol>
 </section>
 <div class="workflow-actions">
@@ -48,8 +54,23 @@
 <iframe id="resultPreview" title="PDF result preview"></iframe>
 <button class="primary" type="button" id="downloadResult" data-i18n data-en="Download result" data-ko="결과 다운로드">Download result</button>
 </section>
+<section class="page-info">
+<h2 data-i18n data-en="How to build a PDF workflow" data-ko="PDF 워크플로우 만드는 법">How to build a PDF workflow</h2>
+<ol>
+<li data-i18n data-en="Drop in one or more PDFs, then add the steps you want to run, in order." data-ko="PDF를 하나 이상 끌어다 놓고, 실행할 단계를 순서대로 추가하세요.">Drop in one or more PDFs, then add the steps you want to run, in order.</li>
+<li data-i18n data-en="Reorder, edit or remove steps, and adjust each step's parameters as JSON." data-ko="단계 순서를 바꾸거나 편집·삭제하고, 각 단계의 매개변수를 JSON으로 조정하세요.">Reorder, edit or remove steps, and adjust each step's parameters as JSON.</li>
+<li data-i18n data-en="Click Run workflow to chain every step, then download the final PDF." data-ko="워크플로우 실행을 클릭해 모든 단계를 연결한 뒤 최종 PDF를 다운로드하세요.">Click Run workflow to chain every step, then download the final PDF.</li>
+</ol>
+<h2 data-i18n data-en="FAQ" data-ko="자주 묻는 질문">FAQ</h2>
+<h3 data-i18n data-en="Do I have to re-upload the file between steps?" data-ko="단계마다 파일을 다시 업로드해야 하나요?">Do I have to re-upload the file between steps?</h3>
+<p data-i18n data-en="No — the output of each step is fed directly into the next one, and only the final result is downloaded." data-ko="아니요 — 각 단계의 결과가 다음 단계로 바로 전달되며, 최종 결과만 다운로드하면 됩니다.">No — the output of each step is fed directly into the next one, and only the final result is downloaded.</p>
+<h3 data-i18n data-en="Can I save a workflow and reuse it later?" data-ko="워크플로우를 저장했다가 나중에 다시 쓸 수 있나요?">Can I save a workflow and reuse it later?</h3>
+<p data-i18n data-en="Yes — export your steps as a JSON file, then import it later to rebuild the same workflow." data-ko="네 — 단계를 JSON 파일로 내보낸 뒤 나중에 불러와 같은 워크플로우를 다시 만들 수 있습니다.">Yes — export your steps as a JSON file, then import it later to rebuild the same workflow.</p>
+<h3 data-i18n data-en="Are my PDFs uploaded to a server?" data-ko="PDF가 서버에 업로드되나요?">Are my PDFs uploaded to a server?</h3>
+<p data-i18n data-en="No — every step runs locally in your browser, and your files never leave your device." data-ko="아니요 — 모든 단계는 브라우저 안에서 실행되며, 파일은 기기 밖으로 나가지 않습니다.">No — every step runs locally in your browser, and your files never leave your device.</p>
+</section>
 </main>
-<footer><span data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</span> · <a href="../privacy/">Privacy</a></footer>
+<footer><span data-i18n data-en="No server · no uploads · everything runs in this tab" data-ko="서버 없음 · 업로드 없음 · 모든 처리는 이 탭 안에서 끝납니다">No server · no uploads · everything runs in this tab</span> · <a href="../privacy/" data-i18n data-en="Privacy" data-ko="개인정보처리방침">Privacy</a></footer>
 <script src="../app.js"></script>
 <script type="module" src="/workflow/workflow.mjs"></script>
 </body>

@@ -7,10 +7,13 @@ import { batchOperations, operationArgs } from "../operation-adapters.mjs";
 import { zipStoreStream } from "../pdf2img/zip.mjs";
 
 const labels = {
-  merge: "Merge", interleave: "Interleave", remove: "Remove pages", rotate: "Rotate",
-  flatten: "Flatten", compress: "Compress", metadata: "Metadata", watermark: "Watermark",
-  pagenum: "Page numbers", protect: "Protect", unlock: "Unlock",
-  img2pdf: "Images to PDF",
+  merge: window.t("Merge", "병합"), interleave: window.t("Interleave", "교차 병합"),
+  remove: window.t("Remove pages", "페이지 삭제"), rotate: window.t("Rotate", "회전"),
+  flatten: window.t("Flatten", "평면화"), compress: window.t("Compress", "압축"),
+  metadata: window.t("Metadata", "메타데이터"), watermark: window.t("Watermark", "워터마크"),
+  pagenum: window.t("Page numbers", "페이지 번호"), protect: window.t("Protect", "암호 설정"),
+  unlock: window.t("Unlock", "암호 해제"),
+  img2pdf: window.t("Images to PDF", "이미지를 PDF로"),
 };
 const defaults = {
   merge: {}, interleave: { reverseB: false }, remove: { pages: "1" }, rotate: { pages: "all", degrees: 90 },
@@ -89,18 +92,18 @@ updateOperationOptions();
 
 const runner = new OperationRunner(operationsById, {
   clientFactory: (descriptor) => createWasmClient(() => {
-    throw new Error("Worker execution is required for batch processing");
+    throw new Error(window.t("Worker execution is required for batch processing", "일괄 처리에는 워커 실행이 필요합니다."));
   }, { worker: { host: "/operation-worker.js", wasm: descriptor.entry } }),
 });
 
 folderButton.addEventListener("click", async () => {
   if (typeof window.showDirectoryPicker !== "function") {
-    window.showErr(error, "Folder output is not available in this browser.");
+    window.showErr(error, window.t("Folder output is not available in this browser.", "이 브라우저에서는 폴더 출력을 사용할 수 없습니다."));
     return;
   }
   try {
     directory = await window.showDirectoryPicker({ mode: "readwrite" });
-    folderButton.textContent = `Folder: ${directory.name}`;
+    folderButton.textContent = `${window.t("Folder:", "폴더:")} ${directory.name}`;
   } catch (cause) {
     if (cause?.name !== "AbortError") window.showErr(error, cause.message || cause);
   }
@@ -124,7 +127,7 @@ async function invokeOperation(operationId, value, parsed, context, mode, used) 
     signal: context.signal,
   });
   if (output?.error) throw new Error(output.error);
-  if (!(output?.data instanceof Uint8Array)) throw new Error("Operation returned no PDF data");
+  if (!(output?.data instanceof Uint8Array)) throw new Error(window.t("Operation returned no PDF data", "작업에서 PDF 데이터를 반환하지 않았습니다."));
   const name = mode === "grouped"
     ? uniqueOutputName(`paper-tools-${operationId}.pdf`, used)
     : outputName(files[0], operationId, used);
@@ -162,14 +165,14 @@ runButton.addEventListener("click", async () => {
 
   const files = [...input.files];
   if (!files.length) {
-    window.showErr(error, "Select at least one PDF.");
+    window.showErr(error, window.t("Select at least one PDF.", "PDF를 하나 이상 선택하세요."));
     return;
   }
   let parsed;
   try {
     parsed = JSON.parse(params.value);
   } catch {
-    window.showErr(error, "Parameters must be valid JSON.");
+    window.showErr(error, window.t("Parameters must be valid JSON.", "매개변수는 올바른 JSON 형식이어야 합니다."));
     return;
   }
 
@@ -179,8 +182,11 @@ runButton.addEventListener("click", async () => {
   if (mode === "grouped") {
     const { minimum, maximum } = inputBounds(descriptor);
     if (files.length < minimum || files.length > maximum) {
-      const requirement = minimum === maximum ? `exactly ${minimum}` : `${minimum}-${maximum}`;
-      window.showErr(error, `${labels[operationId] || operationId} requires ${requirement} inputs.`);
+      const requirement = minimum === maximum
+        ? `${window.t("exactly", "정확히")} ${minimum}`
+        : `${minimum}-${maximum}`;
+      const operationLabel = labels[operationId] || operationId;
+      window.showErr(error, `${operationLabel}${window.t(" requires", "에 필요한 입력은")} ${requirement}${window.t(" inputs.", "개입니다.")}`);
       return;
     }
   }
@@ -235,7 +241,7 @@ runButton.addEventListener("click", async () => {
     archiveName = sink.name || "paper-tools-batch.zip";
     activeSink = null;
     completedSink = sink;
-    summary.textContent = `${succeeded} succeeded · ${failures.length} failed${sink.kind === "directory" ? ` · saved as ${archiveName}` : ""}`;
+    summary.textContent = `${succeeded}${window.t(" succeeded", "개 성공")} · ${failures.length}${window.t(" failed", "개 실패")}${sink.kind === "directory" ? ` · ${window.t("saved as", "저장 위치:")} ${archiveName}` : ""}`;
     downloadButton.hidden = !archiveBlob;
     resultSection.hidden = false;
   } catch (cause) {

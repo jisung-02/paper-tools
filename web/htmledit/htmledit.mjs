@@ -53,8 +53,13 @@ const fileDz = window.dropzone("fileDrop", { multiple: false });
 document.getElementById("fileDrop").addEventListener("dz:files", async ({ detail }) => {
   const f = detail.files[0];
   if (!f) return;
-  const buf = await f.arrayBuffer();
-  src.value = new TextDecoder().decode(buf);
+  try {
+    const buf = await f.arrayBuffer();
+    src.value = new TextDecoder("utf-8", { fatal: true }).decode(buf);
+  } catch {
+    window.showErr(err, window.t("That file isn't readable text — drop a text file.", "텍스트 파일이 아닙니다 — 텍스트 파일을 놓아주세요."));
+    return;
+  }
   renderPreview();
 });
 

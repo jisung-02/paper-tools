@@ -1,6 +1,6 @@
 // Service worker for offline support. Bump CACHE to invalidate old entries
 // on the next deploy.
-const CACHE = "pt-v4";
+const CACHE = "pt-v5";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -13,6 +13,16 @@ self.addEventListener("activate", (event) => {
     ).then(() => self.clients.claim()),
   );
 });
+
+// Deploy-hashed immutable names (e.g. /pdf-4ba2f15599b0.mjs), tesseract
+// traineddata, gzipped wasm, and vendored libraries never change without
+// also changing their URL, so they're safe to serve cache-first.
+function isImmutableAsset(pathname) {
+  return /-[0-9a-f]{12}\./.test(pathname)
+    || pathname.endsWith(".traineddata")
+    || pathname.endsWith(".wasm.gz")
+    || pathname.startsWith("/vendor/");
+}
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
@@ -29,6 +39,35 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(() => caches.match(req)),
+    );
+    return;
+  }
+
+  // Immutable assets: cache-first with background revalidation. These are
+  // multi-MB binaries (Typst's ~10 MB wasm.gz, tesseract traineddata,
+  // vendored pdf.js) that never change under a given URL, so re-validating
+  // them over the network on every use — as the network-first path below
+  // does — just re-downloads them for no benefit. Respond from the cache
+  // immediately when present, and refresh the cache in the background so a
+  // future deploy under a new hashed name still gets picked up eventually.
+  if (isImmutableAsset(new URL(req.url).pathname)) {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        const revalidate = fetch(req)
+          .then((res) => {
+            if (res.ok) {
+              const copy = res.clone();
+              event.waitUntil(caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {}));
+            }
+            return res;
+          })
+          .catch(() => cached);
+        if (cached) {
+          event.waitUntil(revalidate.catch(() => {}));
+          return cached;
+        }
+        return revalidate;
+      }),
     );
     return;
   }

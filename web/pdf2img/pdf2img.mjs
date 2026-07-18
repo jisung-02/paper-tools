@@ -4,8 +4,18 @@ import { imageFileName, imageMime, jpegQuality, pageNumbers, renderScale } from 
 import { zipStore } from "./zip.mjs";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = "/vendor/pdfjs/pdf.worker.mjs";
+
+// Mirrors web/pdfdiff/visual.mjs's MAX_PAGES / MAX_COMPARISON_PIXELS /
+// MAX_CANVAS_DIMENSION: without these, a several-thousand-page PDF or a huge
+// MediaBox at 2x scale would render an unbounded canvas and crash the tab.
+const MAX_PAGES = 500;
+const MAX_CANVAS_PIXELS = 8 * 1024 * 1024;
+const MAX_CANVAS_DIMENSION = 16_384;
+
 const pdfRenderer = createPdfRenderer(pdfjsLib, {
   createCanvas: () => document.createElement("canvas"),
+  maxPixels: MAX_CANVAS_PIXELS,
+  maxDimension: MAX_CANVAS_DIMENSION,
 });
 
 const fileDz = window.dropzone("fileDrop", { multiple: false });
@@ -40,10 +50,16 @@ async function renderPdfToZip(bytes, format, scaleValue, pageRange, qualityValue
   }
 
   try {
+    const numbers = pageNumbers(pageRange, session.numPages);
+    if (numbers.length > MAX_PAGES) {
+      throw new Error("too many pages selected for conversion");
+    }
     const files = [];
     canvas = document.createElement("canvas");
 
-    for (const pageNumber of pageNumbers(pageRange, session.numPages)) {
+    let done = 0;
+    for (const pageNumber of numbers) {
+      btn.textContent = window.t("Converting…", "변환 중…") + " (" + (++done) + "/" + numbers.length + ")";
       await session.renderPage(pageNumber, { canvas, scale: scaleValue });
       files.push({
         name: imageFileName(pageNumber, format),

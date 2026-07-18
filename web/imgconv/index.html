@@ -134,6 +134,7 @@ btn.addEventListener("click", () => run(btn, async () => {
   const { ext, mime } = formatInfo(fmt.value);
   const outputs = [];
   const usedNames = new Set();
+  const failures = [];
 
   for (let i = 0; i < inputFiles.length; i++) {
     const inputFile = inputFiles[i];
@@ -147,7 +148,8 @@ btn.addEventListener("click", () => run(btn, async () => {
         showErr(err, r.error);
         return;
       }
-      throw new Error(inputFile.name + ": " + r.error);
+      failures.push({ name: inputFile.name, error: r.error });
+      continue;
     }
     if (!r.data) continue;
     if (inputFiles.length === 1) {
@@ -161,7 +163,14 @@ btn.addEventListener("click", () => run(btn, async () => {
     }
   }
 
-  if (outputs.length < 1) return;
+  if (outputs.length < 1) {
+    if (failures.length) showErr(err, failures[0].name + ": " + failures[0].error);
+    return;
+  }
+
+  if (failures.length) {
+    showErr(err, failures.length + t(" file(s) failed and were skipped: ", "개 파일이 실패해 건너뛰었습니다: ") + failures.map((f) => f.name).join(", "));
+  }
 
   if (outputs.length === 1) {
     download(outputs[0].data, outputs[0].name, mime);

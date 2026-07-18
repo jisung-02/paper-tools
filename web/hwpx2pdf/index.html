@@ -11,7 +11,6 @@
 <script src="/theme.js"></script>
 <link rel="stylesheet" href="../style.css">
 <link rel="preload" href="./hwpx2pdf.wasm" as="fetch" crossorigin>
-<link rel="preload" href="../NanumGothic-Regular.ttf" as="fetch" crossorigin>
 <meta name="description" content="Convert Hangul HWPX to PDF online — free & private. Turn .hwpx text into a PDF right in your browser (text-focused); no upload, no signup.">
 <link rel="canonical" href="https://papertools.dev/hwpx2pdf/">
 <meta property="og:type" content="website">
@@ -91,25 +90,25 @@
 <script src="../app.js"></script>
 <script>
 let fontBytes = null;
-let wasmReady = false, fontOk = false;
 const btn = document.getElementById("run");
 const err = document.getElementById("err");
 
-function maybeEnable() { btn.disabled = !(wasmReady && fontOk); }
-btn.disabled = true;
+let fontPromise = null;
+function fontReady() {
+  return fontPromise ??= fetch("../NanumGothic-Regular.ttf")
+    .then(r => r.arrayBuffer())
+    .then(buf => { fontBytes = new Uint8Array(buf); })
+    .catch(e => { fontPromise = null; showErr(err, t("Failed to load font: ", "폰트를 불러오지 못했습니다: ") + e); throw e; });
+}
 
-const fontReady = fetch("../NanumGothic-Regular.ttf")
-  .then(r => r.arrayBuffer())
-  .then(buf => { fontBytes = new Uint8Array(buf); fontOk = true; maybeEnable(); })
-  .catch(e => { showErr(err, t("Failed to load font: ", "폰트를 불러오지 못했습니다: ") + e); throw e; });
-
-boot("./hwpx2pdf.wasm").then(() => { wasmReady = true; maybeEnable(); }).catch(() => {});
+boot("./hwpx2pdf.wasm").catch(() => {});
 
 const fileDz = dropzone("fileDrop", { multiple: false });
 
 btn.addEventListener("click", () => run(btn, async () => {
   if (fileDz.files.length < 1) { showErr(err, t("Select a file.", "파일을 선택하세요.")); return; }
   const fileBuf = await fileBytes(fileDz.files[0]);
+  await fontReady();
   const r = await runWasm(fileBuf, fontBytes);
   finish(r, "converted.pdf", err);
 }));
