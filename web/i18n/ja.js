@@ -601,6 +601,7 @@ window.I18N.ja = {
     "You can choose AES-256 (recommended) or AES-128, using Latin letters and numbers for the password.": "AES-256(推奨)またはAES-128を選択でき、パスワードには英数字を使用します。",
     "Your files are processed entirely in your browser. They are never uploaded to any server.": "ファイルはすべてブラウザ内で処理されます。サーバーにアップロードされることは一切ありません。",
     "Your files never leave the browser": "ファイルはブラウザの外に出ません",
+    "Never uploaded": "サーバー未送信",
     "e.g. 1-3,5 / first / last": "例:1-3,5 / first / last",
     "e.g. 1-3,5": "例: 1-3,5",
     "e.g. 1-3,7": "例:1-3,7",
