@@ -240,6 +240,20 @@ func assertDocEqual(t *testing.T, got, want *DocModel) {
 					assertDocEqual(t, &DocModel{Blocks: gc.Blocks}, &DocModel{Blocks: wc.Blocks})
 				}
 			}
+		case *Image:
+			gi, ok := got.Blocks[i].(*Image)
+			if !ok {
+				t.Errorf("block %d: got %T want *Image", i, got.Blocks[i])
+				continue
+			}
+			if gi.MIME != wb.MIME || !bytes.Equal(gi.Data, wb.Data) {
+				t.Errorf("image %d: mime/data mismatch (%q %dB vs %q %dB)", i, gi.MIME, len(gi.Data), wb.MIME, len(wb.Data))
+			}
+			gw, gh := gi.displaySizePt()
+			ww, wh := wb.displaySizePt()
+			if gw < ww-0.02 || gw > ww+0.02 || gh < wh-0.02 || gh > wh+0.02 {
+				t.Errorf("image %d size: got %v x %v want %v x %v", i, gw, gh, ww, wh)
+			}
 		}
 	}
 }

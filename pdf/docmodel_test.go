@@ -1,6 +1,12 @@
 package pdf
 
-import "testing"
+import (
+	"bytes"
+	"image"
+	"image/jpeg"
+	"image/png"
+	"testing"
+)
 
 func TestMergeRuns(t *testing.T) {
 	got := mergeRuns([]Run{
@@ -96,5 +102,49 @@ func TestNormalizeBlocksRecursesIntoCells(t *testing.T) {
 	}
 	if cell.ColSpan != 1 || cell.RowSpan != 1 {
 		t.Errorf("spans not normalized to >=1: %+v", cell)
+	}
+}
+
+func tinyPNG(t *testing.T, w, h int) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, image.NewNRGBA(image.Rect(0, 0, w, h))); err != nil {
+		t.Fatal(err)
+	}
+	return buf.Bytes()
+}
+
+func TestImageSniffAndPixelSize(t *testing.T) {
+	p := tinyPNG(t, 3, 2)
+	if m := sniffImageMIME(p); m != "image/png" {
+		t.Errorf("png sniff: %q", m)
+	}
+	if w, h, ok := imagePixelSize(p); !ok || w != 3 || h != 2 {
+		t.Errorf("png size: %d x %d ok=%v", w, h, ok)
+	}
+	var jb bytes.Buffer
+	if err := jpeg.Encode(&jb, image.NewNRGBA(image.Rect(0, 0, 4, 5)), nil); err != nil {
+		t.Fatal(err)
+	}
+	if m := sniffImageMIME(jb.Bytes()); m != "image/jpeg" {
+		t.Errorf("jpeg sniff: %q", m)
+	}
+	if w, h, ok := imagePixelSize(jb.Bytes()); !ok || w != 4 || h != 5 {
+		t.Errorf("jpeg size: %d x %d ok=%v", w, h, ok)
+	}
+	if m := sniffImageMIME([]byte("GIF89a...")); m != "" {
+		t.Errorf("gif should be unsupported, got %q", m)
+	}
+}
+
+func TestImageDisplaySize(t *testing.T) {
+	im := &Image{Data: tinyPNG(t, 96, 48)}
+	w, h := im.displaySizePt()
+	if w != 72 || h != 36 { // 96px @96dpi = 72pt
+		t.Errorf("derived size: %v x %v", w, h)
+	}
+	im2 := &Image{WPt: 100, HPt: 50, Data: im.Data}
+	if w, h := im2.displaySizePt(); w != 100 || h != 50 {
+		t.Errorf("explicit size ignored: %v x %v", w, h)
 	}
 }

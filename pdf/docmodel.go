@@ -1,6 +1,10 @@
 package pdf
 
-import "strings"
+import (
+	"bytes"
+	"encoding/binary"
+	"strings"
+)
 
 // Hostile-input ceilings. Converters run client-side in the user's own tab,
 // so these only prevent self-DoS (a crashed tab), not a cross-user boundary;
@@ -11,6 +15,7 @@ const (
 	maxModelRuns   = 250000 // runs across the document
 	maxHwpxCharPrs = 4096   // distinct charPr entries writeHwpx will emit
 	maxTableSpan   = 1000   // ColSpan/RowSpan ceiling; hostile span values otherwise drive writers' per-column loops to GB-scale output
+	maxModelImages = 200    // Image blocks across the document
 )
 
 // DocModel is the shared intermediate document model for office conversions:
@@ -70,6 +75,61 @@ func (c Cell) rowSpan() int {
 		return 1
 	}
 	return c.RowSpan
+}
+
+// Image is a block-level embedded picture (PNG or JPEG bytes). WPt/HPt are
+// the display size in points; 0 means "derive from pixel size at 96 DPI".
+// ponytail: images are standalone blocks — inline anchoring/wrap positions
+// are not modeled.
+type Image struct {
+	MIME     string
+	Data     []byte
+	WPt, HPt float64
+}
+
+func (*Image) isBlock() {}
+
+// sniffImageMIME identifies the two supported formats by magic bytes.
+func sniffImageMIME(data []byte) string {
+	if bytes.HasPrefix(data, []byte("\x89PNG\r\n\x1a\n")) {
+		return "image/png"
+	}
+	if len(data) >= 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF {
+		return "image/jpeg"
+	}
+	return ""
+}
+
+// imagePixelSize reads pixel dimensions from the PNG IHDR or JPEG SOF
+// header without decoding the raster.
+func imagePixelSize(data []byte) (int, int, bool) {
+	switch sniffImageMIME(data) {
+	case "image/png":
+		if len(data) >= 24 {
+			w := int(binary.BigEndian.Uint32(data[16:20]))
+			h := int(binary.BigEndian.Uint32(data[20:24]))
+			if w > 0 && h > 0 {
+				return w, h, true
+			}
+		}
+	case "image/jpeg":
+		if sof, err := scanJPEGHeader(data); err == nil {
+			return sof.width, sof.height, true
+		}
+	}
+	return 0, 0, false
+}
+
+// displaySizePt resolves the display size in points: explicit WPt/HPt when
+// both set, else pixel size at 96 DPI, else a 200pt square fallback.
+func (im *Image) displaySizePt() (float64, float64) {
+	if im.WPt > 0 && im.HPt > 0 {
+		return im.WPt, im.HPt
+	}
+	if w, h, ok := imagePixelSize(im.Data); ok {
+		return float64(w) * 72 / 96, float64(h) * 72 / 96
+	}
+	return 200, 200
 }
 
 // Run is a maximal span of identically-formatted text within a paragraph.
