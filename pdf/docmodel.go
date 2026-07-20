@@ -42,6 +42,35 @@ type Para struct {
 
 func (*Para) isBlock() {}
 
+// Table is a rectangular grid of cells. Rows hold only real cells — grid
+// positions covered by a ColSpan/RowSpan from another cell have no
+// placeholder entry.
+type Table struct{ Rows [][]Cell }
+
+func (*Table) isBlock() {}
+
+// Cell is one table cell: nested block content plus its span. Spans of 0
+// are treated as 1 via colSpan()/rowSpan().
+type Cell struct {
+	Blocks  []Block
+	ColSpan int
+	RowSpan int
+}
+
+func (c Cell) colSpan() int {
+	if c.ColSpan < 1 {
+		return 1
+	}
+	return c.ColSpan
+}
+
+func (c Cell) rowSpan() int {
+	if c.RowSpan < 1 {
+		return 1
+	}
+	return c.RowSpan
+}
+
 // Run is a maximal span of identically-formatted text within a paragraph.
 // SizePt 0 means "inherit the default body size"; Color is 0xRRGGBB.
 type Run struct {
@@ -80,31 +109,48 @@ func mergeRuns(runs []Run) []Run {
 // ponytail: in-paragraph line breaks become separate paragraphs (slight
 // spacing change) instead of format-specific break elements.
 func normalizeDoc(doc *DocModel) *DocModel {
-	out := &DocModel{}
-	for _, blk := range doc.Blocks {
-		p, ok := blk.(*Para)
-		if !ok {
-			out.Blocks = append(out.Blocks, blk)
-			continue
-		}
-		cur := &Para{Align: p.Align, Heading: p.Heading}
-		for _, r := range p.Runs {
-			segs := strings.Split(r.Text, "\n")
-			for i, seg := range segs {
-				if i > 0 {
-					cur.Runs = mergeRuns(cur.Runs)
-					out.Blocks = append(out.Blocks, cur)
-					cur = &Para{Align: p.Align, Heading: p.Heading}
-				}
-				if seg != "" {
-					nr := r
-					nr.Text = seg
-					cur.Runs = append(cur.Runs, nr)
+	return &DocModel{Blocks: normalizeBlocks(doc.Blocks)}
+}
+
+// normalizeBlocks applies normalizeDoc's paragraph-splitting rules to a
+// block list, recursing into table cells.
+func normalizeBlocks(blocks []Block) []Block {
+	var out []Block
+	for _, blk := range blocks {
+		switch b := blk.(type) {
+		case *Para:
+			p := b
+			cur := &Para{Align: p.Align, Heading: p.Heading}
+			for _, r := range p.Runs {
+				segs := strings.Split(r.Text, "\n")
+				for i, seg := range segs {
+					if i > 0 {
+						cur.Runs = mergeRuns(cur.Runs)
+						out = append(out, cur)
+						cur = &Para{Align: p.Align, Heading: p.Heading}
+					}
+					if seg != "" {
+						nr := r
+						nr.Text = seg
+						cur.Runs = append(cur.Runs, nr)
+					}
 				}
 			}
+			cur.Runs = mergeRuns(cur.Runs)
+			out = append(out, cur)
+		case *Table:
+			nt := &Table{}
+			for _, row := range b.Rows {
+				nr := make([]Cell, len(row))
+				for i, c := range row {
+					nr[i] = Cell{Blocks: normalizeBlocks(c.Blocks), ColSpan: c.colSpan(), RowSpan: c.rowSpan()}
+				}
+				nt.Rows = append(nt.Rows, nr)
+			}
+			out = append(out, nt)
+		default:
+			out = append(out, blk)
 		}
-		cur.Runs = mergeRuns(cur.Runs)
-		out.Blocks = append(out.Blocks, cur)
 	}
 	return out
 }
@@ -126,3 +172,59 @@ func docFromParas(paras []string) *DocModel {
 // headingSizePt is the default visual size for a heading level, derived
 // from the 11pt body default and md.go's headingScale.
 func headingSizePt(level int) float64 { return 11 * headingScale(level) }
+
+// gridItem is one grid placement reported by tableGrid: an explicit cell
+// (Cell != nil) or a position covered by a RowSpan from an earlier row
+// (Cell == nil; docx emits a vMerge-continue cell there). W is the width
+// in grid columns either way.
+type gridItem struct {
+	Row, Col, W int
+	Cell        *Cell
+}
+
+// tableGrid simulates grid occupancy and returns the grid width plus every
+// placement in row-major, column order. Rows narrower than the grid are
+// reported as-is (no padding); irregular tables degrade gracefully.
+func tableGrid(t *Table) (int, []gridItem) {
+	cols := 0
+	var items []gridItem
+	type span struct{ w, rows, born int }
+	active := map[int]*span{} // start col -> live rowspan
+	for r := range t.Rows {
+		c := 0
+		emitCovered := func() {
+			for {
+				sp, ok := active[c]
+				if !ok || sp.born == r {
+					return
+				}
+				items = append(items, gridItem{Row: r, Col: c, W: sp.w})
+				c += sp.w
+			}
+		}
+		emitCovered()
+		for i := range t.Rows[r] {
+			cell := &t.Rows[r][i]
+			w := cell.colSpan()
+			items = append(items, gridItem{Row: r, Col: c, W: w, Cell: cell})
+			if rs := cell.rowSpan(); rs > 1 {
+				active[c] = &span{w: w, rows: rs - 1, born: r}
+			}
+			c += w
+			emitCovered()
+		}
+		if c > cols {
+			cols = c
+		}
+		for k, sp := range active {
+			if sp.born == r {
+				continue
+			}
+			sp.rows--
+			if sp.rows == 0 {
+				delete(active, k)
+			}
+		}
+	}
+	return cols, items
+}

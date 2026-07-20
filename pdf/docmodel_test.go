@@ -50,3 +50,51 @@ func TestDocFromParas(t *testing.T) {
 		t.Errorf("got %q", p.Runs[0].Text)
 	}
 }
+
+func TestTableGridSpans(t *testing.T) {
+	// 3-col grid:
+	// row0: A(colspan2) B(rowspan2)
+	// row1: C D            (B covers col2)
+	tbl := &Table{Rows: [][]Cell{
+		{{ColSpan: 2}, {RowSpan: 2}},
+		{{}, {}},
+	}}
+	cols, items := tableGrid(tbl)
+	if cols != 3 {
+		t.Fatalf("cols = %d, want 3", cols)
+	}
+	type pos struct {
+		r, c, w int
+		covered bool
+	}
+	var got []pos
+	for _, it := range items {
+		got = append(got, pos{it.Row, it.Col, it.W, it.Cell == nil})
+	}
+	want := []pos{
+		{0, 0, 2, false}, {0, 2, 1, false},
+		{1, 0, 1, false}, {1, 1, 1, false}, {1, 2, 1, true},
+	}
+	if len(got) != len(want) {
+		t.Fatalf("items = %+v, want %+v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("item %d = %+v, want %+v", i, got[i], want[i])
+		}
+	}
+}
+
+func TestNormalizeBlocksRecursesIntoCells(t *testing.T) {
+	tbl := &Table{Rows: [][]Cell{{{
+		Blocks: []Block{&Para{Runs: []Run{{Text: "a\nb"}}}},
+	}}}}
+	n := normalizeDoc(&DocModel{Blocks: []Block{tbl}})
+	cell := n.Blocks[0].(*Table).Rows[0][0]
+	if len(cell.Blocks) != 2 {
+		t.Fatalf("newline in cell should split para, got %d blocks", len(cell.Blocks))
+	}
+	if cell.ColSpan != 1 || cell.RowSpan != 1 {
+		t.Errorf("spans not normalized to >=1: %+v", cell)
+	}
+}

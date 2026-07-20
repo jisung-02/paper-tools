@@ -200,14 +200,45 @@ func assertDocEqual(t *testing.T, got, want *DocModel) {
 		t.Fatalf("got %d blocks, want %d", len(got.Blocks), len(want.Blocks))
 	}
 	for i := range want.Blocks {
-		gp, wp := got.Blocks[i].(*Para), want.Blocks[i].(*Para)
-		if gp.Align != wp.Align || gp.Heading != wp.Heading || len(gp.Runs) != len(wp.Runs) {
-			t.Errorf("para %d: got %+v want %+v", i, gp, wp)
-			continue
-		}
-		for j := range wp.Runs {
-			if gp.Runs[j] != wp.Runs[j] {
-				t.Errorf("para %d run %d: got %+v want %+v", i, j, gp.Runs[j], wp.Runs[j])
+		switch wb := want.Blocks[i].(type) {
+		case *Para:
+			gp, ok := got.Blocks[i].(*Para)
+			if !ok {
+				t.Errorf("block %d: got %T want *Para", i, got.Blocks[i])
+				continue
+			}
+			if gp.Align != wb.Align || gp.Heading != wb.Heading || len(gp.Runs) != len(wb.Runs) {
+				t.Errorf("para %d: got %+v want %+v", i, gp, wb)
+				continue
+			}
+			for j := range wb.Runs {
+				if gp.Runs[j] != wb.Runs[j] {
+					t.Errorf("para %d run %d: got %+v want %+v", i, j, gp.Runs[j], wb.Runs[j])
+				}
+			}
+		case *Table:
+			gt, ok := got.Blocks[i].(*Table)
+			if !ok {
+				t.Errorf("block %d: got %T want *Table", i, got.Blocks[i])
+				continue
+			}
+			if len(gt.Rows) != len(wb.Rows) {
+				t.Errorf("table %d: got %d rows want %d", i, len(gt.Rows), len(wb.Rows))
+				continue
+			}
+			for r := range wb.Rows {
+				if len(gt.Rows[r]) != len(wb.Rows[r]) {
+					t.Errorf("table %d row %d: got %d cells want %d", i, r, len(gt.Rows[r]), len(wb.Rows[r]))
+					continue
+				}
+				for ci := range wb.Rows[r] {
+					gc, wc := gt.Rows[r][ci], wb.Rows[r][ci]
+					if gc.colSpan() != wc.colSpan() || gc.rowSpan() != wc.rowSpan() {
+						t.Errorf("table %d cell %d/%d spans: got %d,%d want %d,%d",
+							i, r, ci, gc.colSpan(), gc.rowSpan(), wc.colSpan(), wc.rowSpan())
+					}
+					assertDocEqual(t, &DocModel{Blocks: gc.Blocks}, &DocModel{Blocks: wc.Blocks})
+				}
 			}
 		}
 	}
