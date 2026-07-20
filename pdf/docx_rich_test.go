@@ -274,3 +274,57 @@ func TestWriteDocxTable(t *testing.T) {
 		}
 	}
 }
+
+func TestParseDocxTable(t *testing.T) {
+	docXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>` +
+		`<w:p><w:r><w:t>앞 문단</w:t></w:r></w:p>` +
+		`<w:tbl><w:tblGrid><w:gridCol/><w:gridCol/><w:gridCol/></w:tblGrid>` +
+		`<w:tr><w:tc><w:tcPr><w:gridSpan w:val="2"/></w:tcPr><w:p><w:r><w:rPr><w:b/></w:rPr><w:t>머리</w:t></w:r></w:p></w:tc>` +
+		`<w:tc><w:tcPr><w:vMerge w:val="restart"/></w:tcPr><w:p><w:r><w:t>세로</w:t></w:r></w:p></w:tc></w:tr>` +
+		`<w:tr><w:tc><w:p><w:r><w:t>한</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>둘</w:t></w:r></w:p></w:tc>` +
+		`<w:tc><w:tcPr><w:vMerge/></w:tcPr><w:p/></w:tc></w:tr>` +
+		`</w:tbl>` +
+		`<w:p><w:r><w:t>뒤 문단</w:t></w:r></w:p>` +
+		`</w:body></w:document>`
+	d, err := parseDocx(makeTestDocx(t, docXML))
+	if err != nil {
+		t.Fatalf("parseDocx: %v", err)
+	}
+	if len(d.Blocks) != 3 {
+		t.Fatalf("want [para, table, para], got %d blocks", len(d.Blocks))
+	}
+	tbl := d.Blocks[1].(*Table)
+	if len(tbl.Rows) != 2 || len(tbl.Rows[0]) != 2 || len(tbl.Rows[1]) != 2 {
+		t.Fatalf("rows/cells wrong: %+v", tbl.Rows)
+	}
+	if tbl.Rows[0][0].ColSpan != 2 {
+		t.Errorf("colspan: %+v", tbl.Rows[0][0])
+	}
+	if tbl.Rows[0][1].RowSpan != 2 {
+		t.Errorf("rowspan (restart+1 continue = 2): %+v", tbl.Rows[0][1])
+	}
+	head := tbl.Rows[0][0].Blocks[0].(*Para)
+	if !head.Runs[0].Bold || head.Runs[0].Text != "머리" {
+		t.Errorf("cell formatting lost: %+v", head.Runs)
+	}
+	if d.Blocks[2].(*Para).Runs[0].Text != "뒤 문단" {
+		t.Errorf("paragraph after table lost")
+	}
+}
+
+func TestDocxTableWriteParseRoundTrip(t *testing.T) {
+	orig := &DocModel{Blocks: []Block{
+		&Para{Runs: []Run{{Text: "표 앞"}}},
+		&Table{Rows: [][]Cell{
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "굵게", Bold: true}}}}, ColSpan: 2, RowSpan: 2},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "세로칸"}}}}, RowSpan: 2}},
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "둘", Italic: true}}}}}},
+		}},
+		&Para{Runs: []Run{{Text: "표 뒤"}}},
+	}}
+	parsed, err := parseDocx(writeDocx(orig))
+	if err != nil {
+		t.Fatalf("round-trip: %v", err)
+	}
+	assertDocEqual(t, parsed, orig)
+}

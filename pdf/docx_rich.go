@@ -238,11 +238,42 @@ func parseDocx(data []byte) (*DocModel, error) {
 	inRPr, inPPr := false, false
 	textBytes := 0
 	blocks, runs := 0, 0
+
+	// docxTbl tracks one in-progress <w:tbl> while it is being parsed. Rows
+	// are built as [][]*Cell (not [][]Cell) because `open` keeps pointers
+	// into cells across rows for vMerge RowSpan++; storing *Cell into a
+	// growing []Cell would dangle on reallocation. The pointer slice is
+	// deref-copied into Table.Rows only once, at </w:tbl>, after all
+	// RowSpan increments are done.
+	type docxTbl struct {
+		rows       [][]*Cell
+		row        []*Cell
+		cell       *Cell
+		gridCol    int
+		pendSpan   int
+		pendVMerge string // "", "restart", "continue"
+		inTcPr     bool
+		open       map[int]*Cell // grid col -> vMerge restart cell
+		nested     int           // depth of flattened inner tables
+	}
+	var tstack []*docxTbl
+
+	// appendBlock routes a finished block to the innermost open table cell,
+	// or to doc.Blocks when no table is open.
+	appendBlock := func(blk Block) {
+		blocks++
+		if n := len(tstack); n > 0 && tstack[n-1].cell != nil {
+			c := tstack[n-1].cell
+			c.Blocks = append(c.Blocks, blk)
+			return
+		}
+		doc.Blocks = append(doc.Blocks, blk)
+	}
+
 	flush := func() {
 		if cur != nil {
 			cur.Runs = mergeRuns(cur.Runs)
-			doc.Blocks = append(doc.Blocks, cur)
-			blocks++
+			appendBlock(cur)
 			cur = nil
 		}
 	}
@@ -356,6 +387,43 @@ func parseDocx(data []byte) (*DocModel, error) {
 					flush()
 					cur = &Para{Align: al, Heading: hd}
 				}
+			case "tbl":
+				flush()
+				if n := len(tstack); n > 0 {
+					tstack[n-1].nested++ // ponytail: nested tables flatten into the enclosing cell
+				} else {
+					tstack = append(tstack, &docxTbl{open: map[int]*Cell{}})
+				}
+			case "tr":
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
+					top := tstack[n-1]
+					top.row = nil
+					top.gridCol = 0
+				}
+			case "tc":
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
+					flush()
+					top := tstack[n-1]
+					top.cell = &Cell{}
+					top.pendSpan = 1
+					top.pendVMerge = ""
+				}
+			case "tcPr":
+				if n := len(tstack); n > 0 {
+					tstack[n-1].inTcPr = true
+				}
+			case "gridSpan":
+				if n := len(tstack); n > 0 && tstack[n-1].inTcPr {
+					tstack[n-1].pendSpan, _ = strconv.Atoi(xmlAttr(t, "val"))
+				}
+			case "vMerge":
+				if n := len(tstack); n > 0 && tstack[n-1].inTcPr {
+					if v := xmlAttr(t, "val"); v == "restart" {
+						tstack[n-1].pendVMerge = "restart"
+					} else {
+						tstack[n-1].pendVMerge = "continue"
+					}
+				}
 			}
 		case xml.EndElement:
 			switch t.Name.Local {
@@ -367,6 +435,63 @@ func parseDocx(data []byte) (*DocModel, error) {
 				curRun = Run{}
 			case "p":
 				flush()
+			case "tcPr":
+				if n := len(tstack); n > 0 {
+					tstack[n-1].inTcPr = false
+				}
+			case "tc":
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
+					flush()
+					top := tstack[n-1]
+					w := top.pendSpan
+					if w < 1 {
+						w = 1
+					}
+					c := top.gridCol
+					cell := top.cell
+					top.cell = nil
+					switch top.pendVMerge {
+					case "continue":
+						if rc := top.open[c]; rc != nil {
+							rc.RowSpan++
+						}
+						// covered position: the cell content (an empty <w:p/>) is discarded
+					case "restart":
+						cell.ColSpan = w
+						cell.RowSpan = 1
+						top.row = append(top.row, cell)
+						top.open[c] = cell
+					default:
+						cell.ColSpan = w
+						top.row = append(top.row, cell)
+						delete(top.open, c)
+					}
+					top.gridCol += w
+				}
+			case "tr":
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
+					top := tstack[n-1]
+					top.rows = append(top.rows, top.row)
+					top.row = nil
+				}
+			case "tbl":
+				if n := len(tstack); n > 0 {
+					top := tstack[n-1]
+					if top.nested > 0 {
+						top.nested--
+					} else {
+						tstack = tstack[:n-1]
+						tbl := &Table{}
+						for _, pr := range top.rows {
+							var nr []Cell
+							for _, pc := range pr {
+								nr = append(nr, *pc)
+							}
+							tbl.Rows = append(tbl.Rows, nr)
+						}
+						appendBlock(tbl)
+					}
+				}
 			}
 		}
 		if blocks > maxModelBlocks || runs > maxModelRuns {
