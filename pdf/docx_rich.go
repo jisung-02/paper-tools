@@ -37,11 +37,7 @@ func writeDocx(doc *DocModel) []byte {
 
 	var b bytes.Buffer
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>`)
-	for _, blk := range doc.Blocks {
-		if p, ok := blk.(*Para); ok {
-			writeDocxPara(&b, p)
-		}
-	}
+	writeDocxBlocks(&b, doc.Blocks)
 	b.WriteString(`<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>`)
 	writeZipEntry(w, "word/document.xml", b.String())
 
@@ -55,6 +51,74 @@ func writeZipEntry(w *zip.Writer, name, content string) {
 		// ponytail: Write to a bytes.Buffer-backed zip entry never fails; error ignored.
 		f.Write([]byte(content))
 	}
+}
+
+// docxTblPr renders full single-line borders so converted tables are
+// visible in Word/LibreOffice with default styling.
+const docxTblPr = `<w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/></w:tblBorders></w:tblPr>`
+
+func writeDocxBlocks(b *bytes.Buffer, blocks []Block) {
+	for _, blk := range blocks {
+		switch t := blk.(type) {
+		case *Para:
+			writeDocxPara(b, t)
+		case *Table:
+			writeDocxTable(b, t)
+		}
+	}
+}
+
+// writeDocxTable serializes a table; covered grid positions become
+// vMerge-continue cells (required by wordprocessingml), colspans become
+// gridSpan.
+func writeDocxTable(b *bytes.Buffer, t *Table) {
+	cols, items := tableGrid(t)
+	if cols == 0 {
+		return
+	}
+	b.WriteString(`<w:tbl>` + docxTblPr + `<w:tblGrid>`)
+	for i := 0; i < cols; i++ {
+		b.WriteString(`<w:gridCol/>`)
+	}
+	b.WriteString(`</w:tblGrid>`)
+	row := -1
+	for _, it := range items {
+		if it.Row != row {
+			if row >= 0 {
+				b.WriteString(`</w:tr>`)
+			}
+			row = it.Row
+			b.WriteString(`<w:tr>`)
+		}
+		var tcPr strings.Builder
+		if it.W > 1 {
+			fmt.Fprintf(&tcPr, `<w:gridSpan w:val="%d"/>`, it.W)
+		}
+		switch {
+		case it.Cell == nil:
+			tcPr.WriteString(`<w:vMerge/>`)
+		case it.Cell.rowSpan() > 1:
+			tcPr.WriteString(`<w:vMerge w:val="restart"/>`)
+		}
+		b.WriteString(`<w:tc>`)
+		if tcPr.Len() > 0 {
+			b.WriteString(`<w:tcPr>` + tcPr.String() + `</w:tcPr>`)
+		}
+		wrote := false
+		if it.Cell != nil && len(it.Cell.Blocks) > 0 {
+			writeDocxBlocks(b, it.Cell.Blocks)
+			// a tc must END with a paragraph; append one if the cell's last
+			// block is a nested table
+			if _, isTbl := it.Cell.Blocks[len(it.Cell.Blocks)-1].(*Table); !isTbl {
+				wrote = true
+			}
+		}
+		if !wrote {
+			b.WriteString(`<w:p/>`)
+		}
+		b.WriteString(`</w:tc>`)
+	}
+	b.WriteString(`</w:tr></w:tbl>`)
 }
 
 func writeDocxPara(b *bytes.Buffer, p *Para) {

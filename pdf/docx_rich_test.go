@@ -243,3 +243,34 @@ func assertDocEqual(t *testing.T, got, want *DocModel) {
 		}
 	}
 }
+
+func TestWriteDocxTable(t *testing.T) {
+	doc := &DocModel{Blocks: []Block{
+		&Table{Rows: [][]Cell{
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "머리", Bold: true}}}}, ColSpan: 2},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "세로"}}}}, RowSpan: 2}},
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "한"}}}}},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "둘"}}}}}},
+		}},
+	}}
+	xmlDoc := docxEntry(t, writeDocx(doc), "word/document.xml")
+	for _, want := range []string{
+		`<w:tbl>`, `<w:tblBorders>`, `<w:gridCol/><w:gridCol/><w:gridCol/>`,
+		`<w:gridSpan w:val="2"/>`, `<w:vMerge w:val="restart"/>`, `<w:vMerge/>`,
+		`머리`, `세로`,
+	} {
+		if !strings.Contains(xmlDoc, want) {
+			t.Errorf("document.xml missing %s", want)
+		}
+	}
+	// every cell carries at least one paragraph; text still extractable
+	txt, err := DocxText(writeDocx(doc))
+	if err != nil {
+		t.Fatalf("DocxText: %v", err)
+	}
+	for _, want := range []string{"머리", "세로", "한", "둘"} {
+		if !strings.Contains(txt, want) {
+			t.Errorf("text missing %q", want)
+		}
+	}
+}
