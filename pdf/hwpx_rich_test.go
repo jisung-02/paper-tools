@@ -116,3 +116,37 @@ func TestWriteHwpxCharPrCap(t *testing.T) {
 		t.Fatalf("charPr table not capped: %d entries", n)
 	}
 }
+
+func TestWriteHwpxTable(t *testing.T) {
+	doc := &DocModel{Blocks: []Block{
+		&Table{Rows: [][]Cell{
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "머리", Bold: true}}}}, ColSpan: 2},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "세로"}}}}, RowSpan: 2}},
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "한"}}}}},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "둘"}}}}}},
+		}},
+	}}
+	b := writeHwpx(doc)
+	header := hwpxEntry(t, b, "Contents/header.xml")
+	if !strings.Contains(header, `<hh:borderFills itemCnt="2">`) {
+		t.Errorf("header missing borderFills")
+	}
+	section := hwpxEntry(t, b, "Contents/section0.xml")
+	for _, want := range []string{
+		`rowCnt="2" colCnt="3"`, `colSpan="2" rowSpan="1"`, `colSpan="1" rowSpan="2"`,
+		`colAddr="2" rowAddr="0"`, `<hp:subList`, `머리`,
+	} {
+		if !strings.Contains(section, want) {
+			t.Errorf("section missing %s", want)
+		}
+	}
+	txt, err := HwpxText(b)
+	if err != nil {
+		t.Fatalf("HwpxText: %v", err)
+	}
+	for _, want := range []string{"머리", "세로", "한", "둘"} {
+		if !strings.Contains(txt, want) {
+			t.Errorf("text missing %q", want)
+		}
+	}
+}

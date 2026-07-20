@@ -64,6 +64,10 @@ func hwpxParaPrXML(id int, a Align) string {
 		id, hwpxAlignName(a))
 }
 
+// hwpxBorderFills defines fill 0 (no lines, referenced by charPr) and fill
+// 1 (solid hairlines, referenced by tables/cells).
+const hwpxBorderFills = `<hh:borderFills itemCnt="2"><hh:borderFill id="0" threeD="0" shadow="0" centerLine="NONE" breakCellSeparateLine="0"><hh:slash type="NONE" Crooked="0" isCounter="0"/><hh:backSlash type="NONE" Crooked="0" isCounter="0"/><hh:leftBorder type="NONE" width="0.1 mm" color="#000000"/><hh:rightBorder type="NONE" width="0.1 mm" color="#000000"/><hh:topBorder type="NONE" width="0.1 mm" color="#000000"/><hh:bottomBorder type="NONE" width="0.1 mm" color="#000000"/><hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/></hh:borderFill><hh:borderFill id="1" threeD="0" shadow="0" centerLine="NONE" breakCellSeparateLine="0"><hh:slash type="NONE" Crooked="0" isCounter="0"/><hh:backSlash type="NONE" Crooked="0" isCounter="0"/><hh:leftBorder type="SOLID" width="0.12 mm" color="#000000"/><hh:rightBorder type="SOLID" width="0.12 mm" color="#000000"/><hh:topBorder type="SOLID" width="0.12 mm" color="#000000"/><hh:bottomBorder type="SOLID" width="0.12 mm" color="#000000"/><hh:diagonal type="SOLID" width="0.1 mm" color="#000000"/></hh:borderFill></hh:borderFills>`
+
 // writeHwpx serializes doc to an HWPX (OWPML) package, deduplicating run
 // styles into charPr entries and paragraph formats into paraPr/style
 // entries. Heading paragraphs fold bold + headingSizePt into their runs'
@@ -114,15 +118,13 @@ func writeHwpx(doc *DocModel) []byte {
 	styleOf := map[int]int{} // heading level -> style id
 	type styleEnt struct{ level, paraPr, charPr int }
 	var styleList []styleEnt
+	tblID := 0
 
 	// First pass: build the section body while filling the tables.
 	var sec bytes.Buffer
 	sec.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section" xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">`)
-	for _, blk := range doc.Blocks {
-		p, ok := blk.(*Para)
-		if !ok {
-			continue
-		}
+
+	writePara := func(p *Para) {
 		pid := paraOf(p.Align)
 		sid := 0
 		if p.Heading >= 1 && p.Heading <= 6 {
@@ -148,12 +150,68 @@ func writeHwpx(doc *DocModel) []byte {
 		}
 		sec.WriteString(`</hp:p>`)
 	}
+
+	var writeBlocks func([]Block)
+
+	// writeTable emits one <hp:tbl> anchored in its own paragraph.
+	// ponytail: equal column widths on an A4-ish 42000-HWPUNIT body; real
+	// column widths are not modeled.
+	writeTable := func(tb *Table) {
+		cols, items := tableGrid(tb)
+		if cols == 0 {
+			return
+		}
+		tblID++
+		const totalW = 42000
+		cellW := totalW / cols
+		fmt.Fprintf(&sec, `<hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:tbl id="%d" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="0" rowCnt="%d" colCnt="%d" cellSpacing="0" borderFillIDRef="1" noAdjust="0"><hp:sz width="%d" widthRelTo="ABSOLUTE" height="%d" heightRelTo="ABSOLUTE" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="141" bottom="141"/>`,
+			tblID, len(tb.Rows), cols, totalW, len(tb.Rows)*1000)
+		row := -1
+		for _, it := range items {
+			if it.Cell == nil {
+				continue // hwpx has no covered placeholder cells
+			}
+			if it.Row != row {
+				if row >= 0 {
+					sec.WriteString(`</hp:tr>`)
+				}
+				row = it.Row
+				sec.WriteString(`<hp:tr>`)
+			}
+			fmt.Fprintf(&sec, `<hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="0" borderFillIDRef="1"><hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">`)
+			if len(it.Cell.Blocks) == 0 {
+				sec.WriteString(`<hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:t></hp:t></hp:run></hp:p>`)
+			} else {
+				writeBlocks(it.Cell.Blocks)
+			}
+			fmt.Fprintf(&sec, `</hp:subList><hp:cellAddr colAddr="%d" rowAddr="%d"/><hp:cellSpan colSpan="%d" rowSpan="%d"/><hp:cellSz width="%d" height="0"/><hp:cellMargin left="141" right="141" top="141" bottom="141"/></hp:tc>`,
+				it.Col, it.Row, it.W, it.Cell.rowSpan(), cellW*it.W)
+		}
+		if row >= 0 {
+			sec.WriteString(`</hp:tr>`)
+		}
+		sec.WriteString(`</hp:tbl></hp:run></hp:p>`)
+	}
+
+	writeBlocks = func(blocks []Block) {
+		for _, blk := range blocks {
+			switch b := blk.(type) {
+			case *Para:
+				writePara(b)
+			case *Table:
+				writeTable(b)
+			}
+		}
+	}
+
+	writeBlocks(doc.Blocks)
 	sec.WriteString(`</hs:sec>`)
 
 	// Header with the collected tables.
 	var head bytes.Buffer
 	head.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head" xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core" version="1.4" secCnt="1"><hh:refList>`)
 	head.WriteString(`<hh:fontfaces itemCnt="1"><hh:fontface lang="HANGUL" fontCnt="1"><hh:font id="0" face="함초롬바탕" type="TTF" isEmbedded="0"><hh:typeInfo familyType="FCF_UNKNOWN" weight="0" proportion="0" contrast="0" strokeVariation="0" armStyle="0" letterform="0" midline="0" xHeight="0"/></hh:font></hh:fontface></hh:fontfaces>`)
+	head.WriteString(hwpxBorderFills)
 	fmt.Fprintf(&head, `<hh:charProperties itemCnt="%d">`, len(charList))
 	for id, r := range charList {
 		head.WriteString(hwpxCharPrXML(id, r))
