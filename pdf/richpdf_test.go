@@ -105,3 +105,63 @@ func TestRenderDocPDFHeadingSizePinned(t *testing.T) {
 		t.Error("heading scaled with body FontSize; must stay pinned")
 	}
 }
+
+func TestRenderDocPDFTable(t *testing.T) {
+	doc := &DocModel{Blocks: []Block{
+		&Para{Runs: []Run{{Text: "표 앞 문단"}}},
+		&Table{Rows: [][]Cell{
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "머리칸", Bold: true}}}}, ColSpan: 2},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "세로칸"}}}}, RowSpan: 2}},
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "한"}}}}},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "둘"}}}}}},
+		}},
+		&Para{Runs: []Run{{Text: "표 뒤 문단"}}},
+	}}
+	pdfBytes, err := renderDocPDF(doc, testFont(t), TextPDFOpts{})
+	if err != nil {
+		t.Fatalf("renderDocPDF: %v", err)
+	}
+	if _, err := Parse(pdfBytes); err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	text, err := ExtractText(pdfBytes)
+	if err != nil {
+		t.Fatalf("ExtractText: %v", err)
+	}
+	for _, want := range []string{"표 앞 문단", "머리칸", "세로칸", "한", "둘", "표 뒤 문단"} {
+		if !strings.Contains(text, want) {
+			t.Errorf("extracted text missing %q", want)
+		}
+	}
+	if !bytes.Contains(pdfBytes, []byte("re S")) {
+		t.Error("no grid rectangles stroked")
+	}
+}
+
+func TestRenderDocPDFTableSplitsAcrossPages(t *testing.T) {
+	tbl := &Table{}
+	for i := 0; i < 80; i++ {
+		tbl.Rows = append(tbl.Rows, []Cell{
+			{Blocks: []Block{&Para{Runs: []Run{{Text: "왼쪽 칸 내용"}}}}},
+			{Blocks: []Block{&Para{Runs: []Run{{Text: "오른쪽 칸 내용"}}}}},
+		})
+	}
+	pdfBytes, err := renderDocPDF(&DocModel{Blocks: []Block{tbl}}, testFont(t), TextPDFOpts{})
+	if err != nil {
+		t.Fatalf("renderDocPDF: %v", err)
+	}
+	if _, err := Parse(pdfBytes); err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	// pdf/ops.go's writeObj sorts Dict keys alphabetically, so a real Page
+	// object's "/Type" key (alphabetically last among Contents/MediaBox/
+	// Parent/Resources/Type) is always immediately followed by " >>". The
+	// single Pages object's "/Type /Pages" would also match a bare
+	// "/Type /Page" substring search (it's a byte-for-byte prefix), silently
+	// inflating the count by one and masking a single-page regression. The
+	// trailing space distinguishes them: "/Type /Page " never matches
+	// "/Type /Pages ..." since the next byte there is 's', not a space.
+	if n := bytes.Count(pdfBytes, []byte("/Type /Page ")); n < 2 {
+		t.Errorf("80-row table should span 2+ pages, got %d page objects", n)
+	}
+}
