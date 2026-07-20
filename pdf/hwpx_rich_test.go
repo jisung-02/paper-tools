@@ -76,3 +76,32 @@ func TestWriteHwpxFormatting(t *testing.T) {
 		}
 	}
 }
+
+func TestHwpxWriteParseRoundTrip(t *testing.T) {
+	orig := &DocModel{Blocks: []Block{
+		&Para{Heading: 1, Runs: []Run{{Text: "제목 하나"}}},
+		&Para{Align: AlignRight, Runs: []Run{
+			{Text: "굵은", Bold: true},
+			{Text: "빨강 큰", Color: 0xFF0000, SizePt: 14, Italic: true, Underline: true, Strike: true},
+		}},
+		&Para{},
+		&Para{Runs: []Run{{Text: "탭\t뒤 마지막"}}},
+	}}
+	parsed, err := parseHwpx(writeHwpx(orig))
+	if err != nil {
+		t.Fatalf("round-trip: %v", err)
+	}
+	// Heading runs come back with folded bold + headingSizePt (hwpx styles
+	// carry no cascade) — adjust expectations accordingly.
+	want := &DocModel{Blocks: []Block{
+		&Para{Heading: 1, Runs: []Run{{Text: "제목 하나", Bold: true, SizePt: headingSizePt(1)}}},
+		orig.Blocks[1], orig.Blocks[2], orig.Blocks[3],
+	}}
+	assertDocEqual(t, parsed, want)
+}
+
+func TestParseHwpxRejectsGarbage(t *testing.T) {
+	if _, err := parseHwpx([]byte("not a zip")); err == nil {
+		t.Fatal("expected error for non-zip input")
+	}
+}

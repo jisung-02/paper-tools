@@ -3,7 +3,12 @@ package pdf
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/xml"
+	"errors"
 	"fmt"
+	"io"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -177,4 +182,229 @@ func writeHwpx(doc *DocModel) []byte {
 	// ponytail: ignore Close() error; bytes.Buffer-backed zip.Writer never fails on Close.
 	w.Close()
 	return buf.Bytes()
+}
+
+// parseHwpx reads an HWPX package into the shared DocModel by first
+// building id→format maps from Contents/header.xml, then walking the
+// sorted section files.
+// ponytail: charPr/paraPr/style resolution only — tables (stage 2), images
+// (stage 3), numbering and per-language fonts are not modeled; their text
+// still comes through as plain paragraphs.
+func parseHwpx(data []byte) (*DocModel, error) {
+	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	if err != nil {
+		return nil, errors.New("유효한 hwpx 파일이 아닙니다")
+	}
+	if err := validateOfficeZIP(zr, "hwpx"); err != nil {
+		return nil, err
+	}
+
+	charStyles := map[string]Run{}
+	paraAligns := map[string]Align{}
+	styleHeading := map[string]int{}
+	var sections []*zip.File
+	for _, f := range zr.File {
+		if f.Name == "Contents/header.xml" {
+			hb, err := readOfficeEntry(f, "hwpx")
+			if err != nil {
+				return nil, err
+			}
+			parseHwpxHeader(hb, charStyles, paraAligns, styleHeading)
+		}
+		if strings.HasPrefix(f.Name, "Contents/section") && strings.HasSuffix(f.Name, ".xml") {
+			sections = append(sections, f)
+		}
+	}
+	if len(sections) == 0 {
+		return nil, errors.New("유효한 hwpx 파일이 아닙니다")
+	}
+	sort.Slice(sections, func(i, j int) bool {
+		return hwpxSectionNumber(sections[i].Name) < hwpxSectionNumber(sections[j].Name)
+	})
+
+	doc := &DocModel{}
+	textBytes := 0
+	for _, f := range sections {
+		sb, err := readOfficeEntry(f, "hwpx")
+		if err != nil {
+			return nil, err
+		}
+		if err := parseHwpxSection(sb, charStyles, paraAligns, styleHeading, doc, &textBytes); err != nil {
+			return nil, err
+		}
+	}
+	return doc, nil
+}
+
+// parseHwpxHeader fills the id→format maps from header.xml.
+func parseHwpxHeader(data []byte, charStyles map[string]Run, paraAligns map[string]Align, styleHeading map[string]int) {
+	dec := xml.NewDecoder(bytes.NewReader(data))
+	var curChar, curParaPr string // charPr/paraPr id being parsed, "" when outside
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return
+		}
+		t, ok := tok.(xml.StartElement)
+		if !ok {
+			if e, ok := tok.(xml.EndElement); ok {
+				switch e.Name.Local {
+				case "charPr":
+					curChar = ""
+				case "paraPr":
+					curParaPr = ""
+				}
+			}
+			continue
+		}
+		switch t.Name.Local {
+		case "charPr":
+			curChar = xmlAttr(t, "id")
+			r := Run{}
+			// ponytail: height 1100 is exactly what the writer emits for
+			// SizePt 0 ("default 11pt"), so map it back to 0 — defaults stay
+			// defaults across round-trips. An external explicit 11pt is
+			// indistinguishable and also becomes default; visually identical
+			// in this pipeline.
+			if n, err := strconv.Atoi(xmlAttr(t, "height")); err == nil && n > 0 && n != 1100 {
+				r.SizePt = float64(n) / 100
+			}
+			if c := xmlAttr(t, "textColor"); strings.HasPrefix(c, "#") {
+				if v, err := strconv.ParseUint(c[1:], 16, 32); err == nil {
+					r.Color = uint32(v) & 0xFFFFFF
+				}
+			}
+			charStyles[curChar] = r
+		case "bold":
+			if curChar != "" {
+				r := charStyles[curChar]
+				r.Bold = true
+				charStyles[curChar] = r
+			}
+		case "italic":
+			if curChar != "" {
+				r := charStyles[curChar]
+				r.Italic = true
+				charStyles[curChar] = r
+			}
+		case "underline":
+			if curChar != "" && xmlAttr(t, "type") != "NONE" {
+				r := charStyles[curChar]
+				r.Underline = true
+				charStyles[curChar] = r
+			}
+		case "strikeout":
+			if curChar != "" && xmlAttr(t, "shape") != "NONE" {
+				r := charStyles[curChar]
+				r.Strike = true
+				charStyles[curChar] = r
+			}
+		case "paraPr":
+			curChar = ""
+			id := xmlAttr(t, "id")
+			// alignment arrives via the child <hh:align> below; record id now
+			paraAligns[id] = AlignDefault
+			// remember which paraPr the next align belongs to
+			curParaPr = id
+		case "align":
+			if curParaPr != "" {
+				switch xmlAttr(t, "horizontal") {
+				case "LEFT":
+					paraAligns[curParaPr] = AlignLeft
+				case "CENTER":
+					paraAligns[curParaPr] = AlignCenter
+				case "RIGHT":
+					paraAligns[curParaPr] = AlignRight
+				}
+			}
+		case "style":
+			name := xmlAttr(t, "engName")
+			if lvl, ok := strings.CutPrefix(name, "Heading "); ok {
+				if n, err := strconv.Atoi(lvl); err == nil && n >= 1 && n <= 6 {
+					styleHeading[xmlAttr(t, "id")] = n
+				}
+			}
+		}
+	}
+}
+
+// parseHwpxSection appends paragraphs from one section XML to doc.
+func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[string]Align, styleHeading map[string]int, doc *DocModel, textBytes *int) error {
+	dec := xml.NewDecoder(bytes.NewReader(data))
+	var cur *Para
+	var curRun Run
+	flush := func() {
+		if cur != nil {
+			cur.Runs = mergeRuns(cur.Runs)
+			doc.Blocks = append(doc.Blocks, cur)
+			cur = nil
+		}
+	}
+	for {
+		tok, err := dec.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return errors.New("유효한 hwpx 파일이 아닙니다")
+		}
+		switch t := tok.(type) {
+		case xml.StartElement:
+			switch t.Name.Local {
+			case "p":
+				flush()
+				cur = &Para{
+					Align:   paraAligns[xmlAttr(t, "paraPrIDRef")],
+					Heading: styleHeading[xmlAttr(t, "styleIDRef")],
+				}
+			case "run":
+				curRun = charStyles[xmlAttr(t, "charPrIDRef")]
+			case "t":
+				var sb strings.Builder
+			readText:
+				for {
+					tok2, err := dec.Token()
+					if err != nil {
+						break readText
+					}
+					switch t2 := tok2.(type) {
+					case xml.CharData:
+						sb.Write(t2)
+					case xml.EndElement:
+						if t2.Name.Local == "t" {
+							break readText
+						}
+					}
+				}
+				*textBytes += sb.Len()
+				if *textBytes > int(officeParseLimits.maxTextBytes) {
+					return errors.New("hwpx: extracted text too large")
+				}
+				if cur == nil {
+					cur = &Para{}
+				}
+				nr := curRun
+				nr.Text = sb.String()
+				cur.Runs = append(cur.Runs, nr)
+			case "tab":
+				if cur != nil {
+					nr := curRun
+					nr.Text = "\t"
+					cur.Runs = append(cur.Runs, nr)
+				}
+			case "lineBreak":
+				if cur != nil {
+					al, hd := cur.Align, cur.Heading
+					flush()
+					cur = &Para{Align: al, Heading: hd}
+				}
+			}
+		case xml.EndElement:
+			if t.Name.Local == "p" {
+				flush()
+			}
+		}
+	}
+	flush()
+	return nil
 }
