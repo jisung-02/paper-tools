@@ -48,6 +48,7 @@ func writeDocx(doc *DocModel) []byte {
 
 func writeZipEntry(w *zip.Writer, name, content string) {
 	if f, err := w.Create(name); err == nil {
+		// ponytail: Write to a bytes.Buffer-backed zip entry never fails; error ignored.
 		f.Write([]byte(content))
 	}
 }

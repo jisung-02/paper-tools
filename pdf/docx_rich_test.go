@@ -60,8 +60,17 @@ func TestWriteDocxFormatting(t *testing.T) {
 		}
 	}
 	styles := docxEntry(t, b, "word/styles.xml")
-	if !strings.Contains(styles, `w:styleId="Heading1"`) {
-		t.Errorf("styles.xml missing Heading1 style")
+	for _, want := range []string{
+		`w:styleId="Heading1"`,
+		`w:styleId="Heading6"`,
+		`<w:sz w:val="44"/>`,
+		`<w:sz w:val="35"/>`,
+		`<w:sz w:val="29"/>`,
+		`<w:sz w:val="24"/>`,
+	} {
+		if !strings.Contains(styles, want) {
+			t.Errorf("styles.xml missing %s", want)
+		}
 	}
 	// still extractable via the untouched text path
 	txt, err := DocxText(b)
