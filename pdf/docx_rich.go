@@ -3,7 +3,11 @@ package pdf
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/xml"
+	"errors"
 	"fmt"
+	"io"
+	"strconv"
 	"strings"
 )
 
@@ -114,4 +118,188 @@ func writeDocxRun(b *bytes.Buffer, r Run) {
 		}
 	}
 	b.WriteString(`</w:r>`)
+}
+
+// xmlAttr returns the named attribute's value (any namespace), or "".
+func xmlAttr(t xml.StartElement, local string) string {
+	for _, a := range t.Attr {
+		if a.Name.Local == local {
+			return a.Value
+		}
+	}
+	return ""
+}
+
+// xmlOn interprets a wordprocessingml on/off toggle element: present with no
+// val (or a truthy val) means on; val 0/false/none/off means off.
+func xmlOn(t xml.StartElement) bool {
+	switch xmlAttr(t, "val") {
+	case "0", "false", "none", "off":
+		return false
+	}
+	return true
+}
+
+// parseDocx reads word/document.xml into the shared DocModel.
+// ponytail: direct rPr/pPr formatting plus HeadingN pStyle only — styles.xml
+// indirection, numbering, tables (stage 2) and images (stage 3) are not
+// resolved; their text still comes through as plain paragraphs.
+func parseDocx(data []byte) (*DocModel, error) {
+	r, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	if err != nil {
+		return nil, errors.New("유효한 docx 파일이 아닙니다")
+	}
+	if err := validateOfficeZIP(r, "docx"); err != nil {
+		return nil, err
+	}
+	var docFile *zip.File
+	for _, f := range r.File {
+		if f.Name == "word/document.xml" {
+			docFile = f
+			break
+		}
+	}
+	if docFile == nil {
+		return nil, errors.New("유효한 docx 파일이 아닙니다")
+	}
+	docBytes, err := readOfficeEntry(docFile, "docx")
+	if err != nil {
+		return nil, err
+	}
+
+	doc := &DocModel{}
+	dec := xml.NewDecoder(bytes.NewReader(docBytes))
+	var cur *Para
+	var curRun Run
+	inRPr, inPPr := false, false
+	textBytes := 0
+	flush := func() {
+		if cur != nil {
+			cur.Runs = mergeRuns(cur.Runs)
+			doc.Blocks = append(doc.Blocks, cur)
+			cur = nil
+		}
+	}
+	for {
+		tok, err := dec.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, errors.New("유효한 docx 파일이 아닙니다")
+		}
+		switch t := tok.(type) {
+		case xml.StartElement:
+			switch t.Name.Local {
+			case "p":
+				flush()
+				cur = &Para{}
+			case "pPr":
+				inPPr = true
+			case "rPr":
+				inRPr = true
+			case "r":
+				curRun = Run{}
+			case "pStyle":
+				if inPPr && cur != nil {
+					if lvl, ok := strings.CutPrefix(xmlAttr(t, "val"), "Heading"); ok {
+						if n, err := strconv.Atoi(lvl); err == nil && n >= 1 && n <= 6 {
+							cur.Heading = n
+						}
+					}
+				}
+			case "jc":
+				if inPPr && cur != nil {
+					switch xmlAttr(t, "val") {
+					case "left", "start":
+						cur.Align = AlignLeft
+					case "center":
+						cur.Align = AlignCenter
+					case "right", "end":
+						cur.Align = AlignRight
+					}
+				}
+			case "b":
+				if inRPr && !inPPr {
+					curRun.Bold = xmlOn(t)
+				}
+			case "i":
+				if inRPr && !inPPr {
+					curRun.Italic = xmlOn(t)
+				}
+			case "strike":
+				if inRPr && !inPPr {
+					curRun.Strike = xmlOn(t)
+				}
+			case "u":
+				if inRPr && !inPPr {
+					curRun.Underline = xmlAttr(t, "val") != "none"
+				}
+			case "sz":
+				if inRPr && !inPPr {
+					if n, err := strconv.Atoi(xmlAttr(t, "val")); err == nil && n > 0 {
+						curRun.SizePt = float64(n) / 2
+					}
+				}
+			case "color":
+				if inRPr && !inPPr {
+					if v := xmlAttr(t, "val"); v != "" && v != "auto" {
+						if c, err := strconv.ParseUint(v, 16, 32); err == nil {
+							curRun.Color = uint32(c) & 0xFFFFFF
+						}
+					}
+				}
+			case "t":
+				var sb strings.Builder
+			readText:
+				for {
+					tok2, err := dec.Token()
+					if err != nil {
+						break readText
+					}
+					switch t2 := tok2.(type) {
+					case xml.CharData:
+						sb.Write(t2)
+					case xml.EndElement:
+						if t2.Name.Local == "t" {
+							break readText
+						}
+					}
+				}
+				textBytes += sb.Len()
+				if textBytes > int(officeParseLimits.maxTextBytes) {
+					return nil, errors.New("docx: extracted text too large")
+				}
+				if cur == nil {
+					cur = &Para{}
+				}
+				nr := curRun
+				nr.Text = sb.String()
+				cur.Runs = append(cur.Runs, nr)
+			case "tab":
+				if !inRPr && !inPPr && cur != nil {
+					nr := curRun
+					nr.Text = "\t"
+					cur.Runs = append(cur.Runs, nr)
+				}
+			case "br", "cr":
+				if cur != nil {
+					al, hd := cur.Align, cur.Heading
+					flush()
+					cur = &Para{Align: al, Heading: hd}
+				}
+			}
+		case xml.EndElement:
+			switch t.Name.Local {
+			case "pPr":
+				inPPr = false
+			case "rPr":
+				inRPr = false
+			case "p":
+				flush()
+			}
+		}
+	}
+	flush()
+	return doc, nil
 }
