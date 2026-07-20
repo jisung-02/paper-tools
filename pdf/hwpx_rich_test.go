@@ -150,3 +150,21 @@ func TestWriteHwpxTable(t *testing.T) {
 		}
 	}
 }
+
+func TestHwpxTableWriteParseRoundTrip(t *testing.T) {
+	orig := &DocModel{Blocks: []Block{
+		&Para{Runs: []Run{{Text: "표 앞"}}},
+		&Table{Rows: [][]Cell{
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "굵게", Bold: true}}}}, ColSpan: 2},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "세로칸"}}}}, RowSpan: 2}},
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "한"}}}}},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "둘"}}}}}},
+		}},
+		&Para{Runs: []Run{{Text: "표 뒤"}}},
+	}}
+	parsed, err := parseHwpx(writeHwpx(orig))
+	if err != nil {
+		t.Fatalf("round-trip: %v", err)
+	}
+	assertDocEqual(t, parsed, orig)
+}

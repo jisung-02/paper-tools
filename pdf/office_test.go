@@ -205,3 +205,27 @@ func TestDocxHwpxCrossRoundTripFormatting(t *testing.T) {
 	}
 	assertDocEqual(t, final, orig)
 }
+
+func TestDocxHwpxCrossRoundTripTable(t *testing.T) {
+	orig := &DocModel{Blocks: []Block{
+		&Table{Rows: [][]Cell{
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "머리", Bold: true}}}}, ColSpan: 2},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "세로"}}}}, RowSpan: 2}},
+			{{Blocks: []Block{&Para{Runs: []Run{{Text: "한"}}}}},
+				{Blocks: []Block{&Para{Runs: []Run{{Text: "둘", Italic: true}}}}}},
+		}},
+	}}
+	hwpx, err := DocxToHwpx(writeDocx(orig))
+	if err != nil {
+		t.Fatalf("DocxToHwpx: %v", err)
+	}
+	docx, err := HwpxToDocx(hwpx)
+	if err != nil {
+		t.Fatalf("HwpxToDocx: %v", err)
+	}
+	final, err := parseDocx(docx)
+	if err != nil {
+		t.Fatalf("parseDocx: %v", err)
+	}
+	assertDocEqual(t, final, orig)
+}

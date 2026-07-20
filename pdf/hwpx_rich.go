@@ -392,16 +392,40 @@ func parseHwpxHeader(data []byte, charStyles map[string]Run, paraAligns map[stri
 	}
 }
 
+// hwpxTbl tracks one in-progress <hp:tbl> while it is being parsed. Rows are
+// built as [][]*Cell (mirroring docxTbl) even though hwpx spans are read
+// directly off <hp:cellSpan> with no vMerge bookkeeping needed; the pointer
+// slice is deref-copied into Table.Rows only once, at </hp:tbl>.
+type hwpxTbl struct {
+	rows   [][]*Cell
+	row    []*Cell
+	cell   *Cell
+	nested int // depth of flattened inner tables (nested inside a cell)
+}
+
 // parseHwpxSection appends paragraphs from one section XML to doc.
 func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[string]Align, styleHeading map[string]int, doc *DocModel, textBytes, blocks, runs *int) error {
 	dec := xml.NewDecoder(bytes.NewReader(data))
 	var cur *Para
 	var curRun Run
+	var tstack []*hwpxTbl
+
+	// appendBlock routes a finished block to the innermost open table cell,
+	// or to doc.Blocks when no table is open.
+	appendBlock := func(blk Block) {
+		*blocks++
+		if n := len(tstack); n > 0 && tstack[n-1].cell != nil {
+			c := tstack[n-1].cell
+			c.Blocks = append(c.Blocks, blk)
+			return
+		}
+		doc.Blocks = append(doc.Blocks, blk)
+	}
+
 	flush := func() {
 		if cur != nil {
 			cur.Runs = mergeRuns(cur.Runs)
-			doc.Blocks = append(doc.Blocks, cur)
-			*blocks++
+			appendBlock(cur)
 			cur = nil
 		}
 	}
@@ -465,6 +489,37 @@ func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[str
 					flush()
 					cur = &Para{Align: al, Heading: hd}
 				}
+			case "tbl":
+				// ponytail: hp:tbl sits inside a run inside a paragraph.
+				// writeHwpx always anchors a table in its own paragraph with
+				// no runs, so discard that wrapper instead of flushing an
+				// empty block; a hand-authored file with real text before
+				// the table in the same paragraph still flushes it as one.
+				// Either way the table becomes its own block and any
+				// trailing text starts a fresh paragraph.
+				if cur != nil && len(cur.Runs) == 0 {
+					cur = nil
+				} else {
+					flush()
+				}
+				if n := len(tstack); n > 0 && tstack[n-1].cell != nil {
+					tstack[n-1].nested++ // nested table flattens into the enclosing cell
+				} else {
+					tstack = append(tstack, &hwpxTbl{})
+				}
+			case "tr":
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
+					tstack[n-1].row = nil
+				}
+			case "tc":
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
+					tstack[n-1].cell = &Cell{}
+				}
+			case "cellSpan":
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 && tstack[n-1].cell != nil {
+					tstack[n-1].cell.ColSpan, _ = strconv.Atoi(xmlAttr(t, "colSpan"))
+					tstack[n-1].cell.RowSpan, _ = strconv.Atoi(xmlAttr(t, "rowSpan"))
+				}
 			}
 		case xml.EndElement:
 			switch t.Name.Local {
@@ -473,6 +528,37 @@ func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[str
 			case "p":
 				curRun = Run{}
 				flush()
+			case "tc":
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
+					flush()
+					top := tstack[n-1]
+					top.row = append(top.row, top.cell)
+					top.cell = nil
+				}
+			case "tr":
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
+					top := tstack[n-1]
+					top.rows = append(top.rows, top.row)
+					top.row = nil
+				}
+			case "tbl":
+				if n := len(tstack); n > 0 {
+					top := tstack[n-1]
+					if top.nested > 0 {
+						top.nested--
+					} else {
+						tstack = tstack[:n-1]
+						tbl := &Table{}
+						for _, pr := range top.rows {
+							var nr []Cell
+							for _, pc := range pr {
+								nr = append(nr, *pc)
+							}
+							tbl.Rows = append(tbl.Rows, nr)
+						}
+						appendBlock(tbl)
+					}
+				}
 			}
 		}
 		if *blocks > maxModelBlocks || *runs > maxModelRuns {
