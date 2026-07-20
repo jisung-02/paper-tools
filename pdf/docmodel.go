@@ -2,6 +2,16 @@ package pdf
 
 import "strings"
 
+// Hostile-input ceilings. Converters run client-side in the user's own tab,
+// so these only prevent self-DoS (a crashed tab), not a cross-user boundary;
+// they bound worst-case memory amplification from adversarial files
+// (millions of empty paragraphs, a distinct style per run, ...).
+const (
+	maxModelBlocks = 100000 // Para+Table blocks, including inside table cells
+	maxModelRuns   = 250000 // runs across the document
+	maxHwpxCharPrs = 4096   // distinct charPr entries writeHwpx will emit
+)
+
 // DocModel is the shared intermediate document model for office conversions:
 // readers (docx/hwpx) produce it, writers (docx/hwpx/PDF) consume it.
 type DocModel struct{ Blocks []Block }
@@ -62,9 +72,11 @@ func mergeRuns(runs []Run) []Run {
 	return out
 }
 
-// normalizeDoc returns a copy of doc where any "\n" inside run text splits
-// the paragraph (preserving its Align/Heading) and adjacent same-style runs
-// are merged. Writers call this first so they never see embedded newlines.
+// normalizeDoc returns a normalized shallow copy of doc (paragraphs are
+// rebuilt; other block kinds pass through by reference) where any "\n"
+// inside run text splits the paragraph (preserving its Align/Heading) and
+// adjacent same-style runs are merged. Writers call this first so they
+// never see embedded newlines.
 // ponytail: in-paragraph line breaks become separate paragraphs (slight
 // spacing change) instead of format-specific break elements.
 func normalizeDoc(doc *DocModel) *DocModel {

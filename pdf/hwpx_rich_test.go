@@ -105,3 +105,14 @@ func TestParseHwpxRejectsGarbage(t *testing.T) {
 		t.Fatal("expected error for non-zip input")
 	}
 }
+
+func TestWriteHwpxCharPrCap(t *testing.T) {
+	p := &Para{}
+	for i := 0; i < maxHwpxCharPrs+10; i++ {
+		p.Runs = append(p.Runs, Run{Text: "x", SizePt: 6 + float64(i)/10})
+	}
+	header := hwpxEntry(t, writeHwpx(&DocModel{Blocks: []Block{p}}), "Contents/header.xml")
+	if n := strings.Count(header, "<hh:charPr "); n > maxHwpxCharPrs {
+		t.Fatalf("charPr table not capped: %d entries", n)
+	}
+}

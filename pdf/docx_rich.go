@@ -173,10 +173,12 @@ func parseDocx(data []byte) (*DocModel, error) {
 	var curRun Run
 	inRPr, inPPr := false, false
 	textBytes := 0
+	blocks, runs := 0, 0
 	flush := func() {
 		if cur != nil {
 			cur.Runs = mergeRuns(cur.Runs)
 			doc.Blocks = append(doc.Blocks, cur)
+			blocks++
 			cur = nil
 		}
 	}
@@ -276,11 +278,13 @@ func parseDocx(data []byte) (*DocModel, error) {
 				nr := curRun
 				nr.Text = sb.String()
 				cur.Runs = append(cur.Runs, nr)
+				runs++
 			case "tab":
 				if !inRPr && !inPPr && cur != nil {
 					nr := curRun
 					nr.Text = "\t"
 					cur.Runs = append(cur.Runs, nr)
+					runs++
 				}
 			case "br", "cr":
 				if cur != nil {
@@ -295,9 +299,14 @@ func parseDocx(data []byte) (*DocModel, error) {
 				inPPr = false
 			case "rPr":
 				inRPr = false
+			case "r":
+				curRun = Run{}
 			case "p":
 				flush()
 			}
+		}
+		if blocks > maxModelBlocks || runs > maxModelRuns {
+			return nil, errors.New("docx: document too complex")
 		}
 	}
 	flush()

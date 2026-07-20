@@ -167,6 +167,32 @@ func TestDocxToPDFPreservesBold(t *testing.T) {
 	}
 }
 
+func TestParseDocxTooComplex(t *testing.T) {
+	var sb strings.Builder
+	sb.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>`)
+	for i := 0; i < maxModelBlocks+2; i++ {
+		sb.WriteString(`<w:p/>`)
+	}
+	sb.WriteString(`</w:body></w:document>`)
+	if _, err := parseDocx(makeTestDocx(t, sb.String())); err == nil || err.Error() != "docx: document too complex" {
+		t.Fatalf("want too-complex error, got %v", err)
+	}
+}
+
+func TestParseDocxStaleRunStyleReset(t *testing.T) {
+	docXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>` +
+		`<w:p><w:r><w:rPr><w:b/></w:rPr><w:t>a</w:t></w:r><w:t>b</w:t></w:p>` +
+		`</w:body></w:document>`
+	d, err := parseDocx(makeTestDocx(t, docXML))
+	if err != nil {
+		t.Fatalf("parseDocx: %v", err)
+	}
+	runs := d.Blocks[0].(*Para).Runs
+	if len(runs) != 2 || !runs[0].Bold || runs[1].Bold {
+		t.Fatalf("stale style leaked past </w:r>: %+v", runs)
+	}
+}
+
 // assertDocEqual compares two stage-1 docs paragraph by paragraph.
 func assertDocEqual(t *testing.T, got, want *DocModel) {
 	t.Helper()

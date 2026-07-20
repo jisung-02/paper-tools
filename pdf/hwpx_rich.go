@@ -89,6 +89,11 @@ func writeHwpx(doc *DocModel) []byte {
 		if id, ok := charIDs[s]; ok {
 			return id
 		}
+		// ponytail: cap the dedup table; pathological inputs with thousands
+		// of distinct styles fall back to the plain default charPr.
+		if len(charList) >= maxHwpxCharPrs {
+			return 0
+		}
 		id := len(charList)
 		charIDs[s] = id
 		charList = append(charList, s)
@@ -224,12 +229,13 @@ func parseHwpx(data []byte) (*DocModel, error) {
 
 	doc := &DocModel{}
 	textBytes := 0
+	blocks, runs := 0, 0
 	for _, f := range sections {
 		sb, err := readOfficeEntry(f, "hwpx")
 		if err != nil {
 			return nil, err
 		}
-		if err := parseHwpxSection(sb, charStyles, paraAligns, styleHeading, doc, &textBytes); err != nil {
+		if err := parseHwpxSection(sb, charStyles, paraAligns, styleHeading, doc, &textBytes, &blocks, &runs); err != nil {
 			return nil, err
 		}
 	}
@@ -329,7 +335,7 @@ func parseHwpxHeader(data []byte, charStyles map[string]Run, paraAligns map[stri
 }
 
 // parseHwpxSection appends paragraphs from one section XML to doc.
-func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[string]Align, styleHeading map[string]int, doc *DocModel, textBytes *int) error {
+func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[string]Align, styleHeading map[string]int, doc *DocModel, textBytes, blocks, runs *int) error {
 	dec := xml.NewDecoder(bytes.NewReader(data))
 	var cur *Para
 	var curRun Run
@@ -337,6 +343,7 @@ func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[str
 		if cur != nil {
 			cur.Runs = mergeRuns(cur.Runs)
 			doc.Blocks = append(doc.Blocks, cur)
+			*blocks++
 			cur = nil
 		}
 	}
@@ -386,11 +393,13 @@ func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[str
 				nr := curRun
 				nr.Text = sb.String()
 				cur.Runs = append(cur.Runs, nr)
+				*runs++
 			case "tab":
 				if cur != nil {
 					nr := curRun
 					nr.Text = "\t"
 					cur.Runs = append(cur.Runs, nr)
+					*runs++
 				}
 			case "lineBreak":
 				if cur != nil {
@@ -400,9 +409,16 @@ func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[str
 				}
 			}
 		case xml.EndElement:
-			if t.Name.Local == "p" {
+			switch t.Name.Local {
+			case "run":
+				curRun = Run{}
+			case "p":
+				curRun = Run{}
 				flush()
 			}
+		}
+		if *blocks > maxModelBlocks || *runs > maxModelRuns {
+			return errors.New("hwpx: document too complex")
 		}
 	}
 	flush()
