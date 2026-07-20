@@ -13,11 +13,14 @@ import (
 
 // Static docx package parts. styles.xml carries the built-in Heading1..6
 // definitions so w:pStyle references render correctly in Word/LibreOffice.
-const docxContentTypesXML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`
+const docxContentTypesXML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>`
 
 const docxRootRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`
 
-const docxDocumentRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`
+// docxDocumentRelsHead/Tail bracket the styles relationship plus the
+// per-image relationships appended dynamically by writeDocx.
+const docxDocumentRelsHead = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`
+const docxDocumentRelsTail = `</Relationships>`
 
 // docxStylesXML defines Normal plus Heading1..6 (bold, sizes derived from
 // headingSizePt at the 11pt body default, in half-points).
@@ -28,17 +31,33 @@ const docxStylesXML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w
 // alignment and HeadingN paragraph style.
 func writeDocx(doc *DocModel) []byte {
 	doc = normalizeDoc(doc)
+	reg := &docxImageReg{ids: map[*Image]int{}}
+
+	// Body is built first, into its own buffer, so reg is fully populated
+	// before the rels/media entries (which depend on it) are written.
+	var b bytes.Buffer
+	b.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>`)
+	writeDocxBlocks(&b, doc.Blocks, reg)
+	b.WriteString(`<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>`)
+
+	var rels strings.Builder
+	rels.WriteString(docxDocumentRelsHead)
+	for n, im := range reg.list {
+		fmt.Fprintf(&rels, `<Relationship Id="rIdImg%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image%d.%s"/>`,
+			n, n, imageExt(sniffImageMIME(im.Data)))
+	}
+	rels.WriteString(docxDocumentRelsTail)
+
 	buf := new(bytes.Buffer)
 	w := zip.NewWriter(buf)
 	writeZipEntry(w, "[Content_Types].xml", docxContentTypesXML)
 	writeZipEntry(w, "_rels/.rels", docxRootRels)
-	writeZipEntry(w, "word/_rels/document.xml.rels", docxDocumentRels)
+	writeZipEntry(w, "word/_rels/document.xml.rels", rels.String())
 	writeZipEntry(w, "word/styles.xml", docxStylesXML)
-
-	var b bytes.Buffer
-	b.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>`)
-	writeDocxBlocks(&b, doc.Blocks)
-	b.WriteString(`<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>`)
+	for n, im := range reg.list {
+		name := fmt.Sprintf("word/media/image%d.%s", n, imageExt(sniffImageMIME(im.Data)))
+		writeZipEntryBytes(w, name, im.Data)
+	}
 	writeZipEntry(w, "word/document.xml", b.String())
 
 	// ponytail: ignore Close() error; bytes.Buffer-backed zip.Writer never fails on Close.
@@ -47,31 +66,77 @@ func writeDocx(doc *DocModel) []byte {
 }
 
 func writeZipEntry(w *zip.Writer, name, content string) {
+	writeZipEntryBytes(w, name, []byte(content))
+}
+
+func writeZipEntryBytes(w *zip.Writer, name string, data []byte) {
 	if f, err := w.Create(name); err == nil {
 		// ponytail: Write to a bytes.Buffer-backed zip entry never fails; error ignored.
-		f.Write([]byte(content))
+		f.Write(data)
 	}
+}
+
+// docxImageReg assigns each distinct *Image a 0-based id in first-encounter
+// order, shared between the body writer (for rIdImgN references) and the
+// relationships/media part writers.
+type docxImageReg struct {
+	ids  map[*Image]int
+	list []*Image
+}
+
+func (r *docxImageReg) id(im *Image) int {
+	if n, ok := r.ids[im]; ok {
+		return n
+	}
+	n := len(r.list)
+	r.ids[im] = n
+	r.list = append(r.list, im)
+	return n
+}
+
+// imageExt maps a sniffed image MIME type to its docx/hwpx media part
+// extension.
+func imageExt(mime string) string {
+	if mime == "image/jpeg" {
+		return "jpeg"
+	}
+	return "png"
 }
 
 // docxTblPr renders full single-line borders so converted tables are
 // visible in Word/LibreOffice with default styling.
 const docxTblPr = `<w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/></w:tblBorders></w:tblPr>`
 
-func writeDocxBlocks(b *bytes.Buffer, blocks []Block) {
+func writeDocxBlocks(b *bytes.Buffer, blocks []Block, reg *docxImageReg) {
 	for _, blk := range blocks {
 		switch t := blk.(type) {
 		case *Para:
 			writeDocxPara(b, t)
 		case *Table:
-			writeDocxTable(b, t)
+			writeDocxTable(b, t, reg)
+		case *Image:
+			writeDocxImage(b, t, reg)
 		}
 	}
+}
+
+// writeDocxImage emits one inline drawing paragraph. Sizes are EMU
+// (1pt = 12700).
+func writeDocxImage(b *bytes.Buffer, im *Image, reg *docxImageReg) {
+	if sniffImageMIME(im.Data) == "" {
+		return // ponytail: unsupported/garbage image data is dropped on write
+	}
+	n := reg.id(im)
+	wPt, hPt := im.displaySizePt()
+	cx, cy := int(wPt*12700+0.5), int(hPt*12700+0.5)
+	fmt.Fprintf(b, `<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="%d" cy="%d"/><wp:docPr id="%d" name="Picture %d"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="%d" name="Picture %d"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdImg%d"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="%d" cy="%d"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`,
+		cx, cy, n+1, n+1, n+1, n+1, n, cx, cy)
 }
 
 // writeDocxTable serializes a table; covered grid positions become
 // vMerge-continue cells (required by wordprocessingml), colspans become
 // gridSpan.
-func writeDocxTable(b *bytes.Buffer, t *Table) {
+func writeDocxTable(b *bytes.Buffer, t *Table, reg *docxImageReg) {
 	cols, items := tableGrid(t)
 	if cols == 0 {
 		return
@@ -106,7 +171,7 @@ func writeDocxTable(b *bytes.Buffer, t *Table) {
 		}
 		wrote := false
 		if it.Cell != nil && len(it.Cell.Blocks) > 0 {
-			writeDocxBlocks(b, it.Cell.Blocks)
+			writeDocxBlocks(b, it.Cell.Blocks, reg)
 			// a tc must END with a paragraph; append one if the cell's last
 			// block is a nested table
 			if _, isTbl := it.Cell.Blocks[len(it.Cell.Blocks)-1].(*Table); !isTbl {

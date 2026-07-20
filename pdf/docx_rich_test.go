@@ -289,6 +289,34 @@ func TestWriteDocxTable(t *testing.T) {
 	}
 }
 
+func TestWriteDocxImage(t *testing.T) {
+	img := &Image{Data: tinyPNG(t, 10, 10)}
+	doc := &DocModel{Blocks: []Block{
+		&Para{Runs: []Run{{Text: "앞"}}},
+		img,
+		&Para{Runs: []Run{{Text: "뒤"}}},
+	}}
+	b := writeDocx(doc)
+	xmlDoc := docxEntry(t, b, "word/document.xml")
+	for _, want := range []string{`<w:drawing>`, `<wp:extent cx="95250" cy="95250"/>`, `r:embed="rIdImg0"`} {
+		if !strings.Contains(xmlDoc, want) {
+			t.Errorf("document.xml missing %s", want)
+		}
+	}
+	media := docxEntry(t, b, "word/media/image0.png")
+	if !strings.HasPrefix(media, "\x89PNG") {
+		t.Errorf("media entry not the PNG bytes")
+	}
+	rels := docxEntry(t, b, "word/_rels/document.xml.rels")
+	if !strings.Contains(rels, `Id="rIdImg0"`) || !strings.Contains(rels, `Target="media/image0.png"`) {
+		t.Errorf("rels missing image relationship: %s", rels)
+	}
+	ct := docxEntry(t, b, "[Content_Types].xml")
+	if !strings.Contains(ct, `Extension="png"`) {
+		t.Errorf("content types missing png default")
+	}
+}
+
 func TestParseDocxTable(t *testing.T) {
 	docXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>` +
 		`<w:p><w:r><w:t>앞 문단</w:t></w:r></w:p>` +
