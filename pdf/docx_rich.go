@@ -249,6 +249,20 @@ func writeDocxRun(b *bytes.Buffer, r Run) {
 	b.WriteString(`</w:r>`)
 }
 
+// parseDocxRels fills id -> target from a relationships part.
+func parseDocxRels(data []byte, out map[string]string) {
+	dec := xml.NewDecoder(bytes.NewReader(data))
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return
+		}
+		if t, ok := tok.(xml.StartElement); ok && t.Name.Local == "Relationship" {
+			out[xmlAttr(t, "Id")] = xmlAttr(t, "Target")
+		}
+	}
+}
+
 // xmlAttr returns the named attribute's value (any namespace), or "".
 func xmlAttr(t xml.StartElement, local string) string {
 	for _, a := range t.Attr {
@@ -296,13 +310,40 @@ func parseDocx(data []byte) (*DocModel, error) {
 		return nil, err
 	}
 
+	// rels maps a relationship id (w:embed="rIdN") to its Target path;
+	// mediaFile indexes every media part by its zip entry name so image
+	// bytes are only read (via readOfficeEntry) when a drawing actually
+	// references them. Both are best-effort: a docx without rels or media
+	// still parses fine, just with drawings silently skipped.
+	rels := map[string]string{}
+	mediaFile := map[string]*zip.File{}
+	for _, f := range r.File {
+		if f.Name == "word/_rels/document.xml.rels" {
+			if rb, err := readOfficeEntry(f, "docx"); err == nil {
+				parseDocxRels(rb, rels)
+			}
+		}
+		if strings.HasPrefix(f.Name, "word/media/") || strings.HasPrefix(f.Name, "media/") {
+			mediaFile[f.Name] = f
+		}
+	}
+
 	doc := &DocModel{}
 	dec := xml.NewDecoder(bytes.NewReader(docBytes))
 	var cur *Para
 	var curRun Run
 	inRPr, inPPr := false, false
+	inDrawing := false
 	textBytes := 0
-	blocks, runs := 0, 0
+	blocks, runs, images := 0, 0, 0
+
+	// pendImgT accumulates the one drawing currently being parsed: the blip's
+	// r:embed rel id and the wp:extent size (EMU -> pt, 12700 EMU per pt).
+	type pendImgT struct {
+		rid      string
+		wPt, hPt float64
+	}
+	var pendImg pendImgT
 
 	// docxTbl tracks one in-progress <w:tbl> while it is being parsed. Rows
 	// are built as [][]*Cell (not [][]Cell) because `open` keeps pointers
@@ -495,6 +536,26 @@ func parseDocx(data []byte) (*DocModel, error) {
 						tstack[n-1].pendVMerge = "continue"
 					}
 				}
+			case "drawing":
+				inDrawing = true
+				pendImg = pendImgT{}
+			case "extent":
+				// wp:extent (the drawing's display size) is the only "extent"
+				// local name in this schema — pic:spPr's size element is
+				// a:ext ("ext", not "extent"), so no collision — but guard
+				// with inDrawing anyway in case of unexpected nesting.
+				if inDrawing {
+					if cx, err := strconv.Atoi(xmlAttr(t, "cx")); err == nil {
+						pendImg.wPt = float64(cx) / 12700
+					}
+					if cy, err := strconv.Atoi(xmlAttr(t, "cy")); err == nil {
+						pendImg.hPt = float64(cy) / 12700
+					}
+				}
+			case "blip":
+				if inDrawing {
+					pendImg.rid = xmlAttr(t, "embed")
+				}
 			}
 		case xml.EndElement:
 			switch t.Name.Local {
@@ -554,6 +615,36 @@ func parseDocx(data []byte) (*DocModel, error) {
 					top.rows = append(top.rows, top.row)
 					top.row = nil
 				}
+			case "drawing":
+				inDrawing = false
+				target := strings.TrimPrefix(rels[pendImg.rid], "/")
+				f := mediaFile["word/"+target]
+				if f == nil {
+					f = mediaFile[target]
+				}
+				if f == nil {
+					break // ponytail: rel/target/media entry missing — skip the drawing silently
+				}
+				data, err := readOfficeEntry(f, "docx")
+				if err != nil {
+					break // ponytail: unreadable media part — skip the drawing silently
+				}
+				mime := sniffImageMIME(data)
+				if mime == "" {
+					break // ponytail: media part isn't a supported image format — skip silently
+				}
+				// writeDocx always anchors an image in its own paragraph with
+				// no runs, so discard that synthetic wrapper instead of
+				// flushing an empty block (mirrors the hwpx "tbl" anchor
+				// discard); real text before the image in the same paragraph
+				// is still flushed and kept.
+				if cur != nil && len(cur.Runs) == 0 {
+					cur = nil
+				} else {
+					flush()
+				}
+				appendBlock(&Image{MIME: mime, Data: data, WPt: pendImg.wPt, HPt: pendImg.hPt})
+				images++
 			case "tbl":
 				if n := len(tstack); n > 0 {
 					top := tstack[n-1]
@@ -574,7 +665,7 @@ func parseDocx(data []byte) (*DocModel, error) {
 				}
 			}
 		}
-		if blocks > maxModelBlocks || runs > maxModelRuns {
+		if blocks > maxModelBlocks || runs > maxModelRuns || images > maxModelImages {
 			return nil, errors.New("docx: document too complex")
 		}
 	}

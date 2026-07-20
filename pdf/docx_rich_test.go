@@ -154,6 +154,33 @@ func TestDocxWriteParseRoundTrip(t *testing.T) {
 	assertDocEqual(t, parsed, orig)
 }
 
+func TestDocxImageWriteParseRoundTrip(t *testing.T) {
+	img := &Image{MIME: "image/png", Data: tinyPNG(t, 20, 10), WPt: 120, HPt: 60}
+	orig := &DocModel{Blocks: []Block{
+		&Para{Runs: []Run{{Text: "앞 문단"}}},
+		img,
+		&Para{Runs: []Run{{Text: "뒤 문단"}}},
+	}}
+	parsed, err := parseDocx(writeDocx(orig))
+	if err != nil {
+		t.Fatalf("round-trip: %v", err)
+	}
+	assertDocEqual(t, parsed, orig)
+}
+
+func TestParseDocxImageMidParagraphKeepsText(t *testing.T) {
+	img := &Image{Data: tinyPNG(t, 8, 8)}
+	orig := &DocModel{Blocks: []Block{
+		&Para{Runs: []Run{{Text: "그림:"}}},
+		img,
+	}}
+	parsed, err := parseDocx(writeDocx(orig))
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	assertDocEqual(t, parsed, orig)
+}
+
 func TestDocxToPDFPreservesBold(t *testing.T) {
 	doc := &DocModel{Blocks: []Block{
 		&Para{Runs: []Run{{Text: "굵은 텍스트", Bold: true}}},
@@ -246,8 +273,15 @@ func assertDocEqual(t *testing.T, got, want *DocModel) {
 				t.Errorf("block %d: got %T want *Image", i, got.Blocks[i])
 				continue
 			}
-			if gi.MIME != wb.MIME || !bytes.Equal(gi.Data, wb.Data) {
-				t.Errorf("image %d: mime/data mismatch (%q %dB vs %q %dB)", i, gi.MIME, len(gi.Data), wb.MIME, len(wb.Data))
+			// want.MIME is informational on the model (writers derive the real
+			// type from Data via sniffImageMIME, same as the parser does), so
+			// an unset want.MIME falls back to the sniffed value for comparison.
+			wantMIME := wb.MIME
+			if wantMIME == "" {
+				wantMIME = sniffImageMIME(wb.Data)
+			}
+			if gi.MIME != wantMIME || !bytes.Equal(gi.Data, wb.Data) {
+				t.Errorf("image %d: mime/data mismatch (%q %dB vs %q %dB)", i, gi.MIME, len(gi.Data), wantMIME, len(wb.Data))
 			}
 			gw, gh := gi.displaySizePt()
 			ww, wh := wb.displaySizePt()
