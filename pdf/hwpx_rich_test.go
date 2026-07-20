@@ -168,3 +168,57 @@ func TestHwpxTableWriteParseRoundTrip(t *testing.T) {
 	}
 	assertDocEqual(t, parsed, orig)
 }
+
+// makeTestHwpx zips sectionXML into a minimal hwpx package (Contents/section0.xml
+// only — parseHwpx does not require header.xml or the mimetype entry to be present).
+func makeTestHwpx(t *testing.T, sectionXML string) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	w, err := zw.Create("Contents/section0.xml")
+	if err != nil {
+		t.Fatalf("zip create: %v", err)
+	}
+	if _, err := w.Write([]byte(sectionXML)); err != nil {
+		t.Fatalf("zip write: %v", err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatalf("zip close: %v", err)
+	}
+	return buf.Bytes()
+}
+
+func TestParseHwpxMalformedNestedTcNoPanic(t *testing.T) {
+	sectionXML := `<hp:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">` +
+		`<hp:p><hp:run><hp:tbl><hp:tr><hp:tc><hp:tc>` +
+		`<hp:subList><hp:p><hp:run><hp:t>x</hp:t></hp:run></hp:p></hp:subList>` +
+		`</hp:tc></hp:tc></hp:tr></hp:tbl></hp:run></hp:p>` +
+		`</hp:sec>`
+	if _, err := parseHwpx(makeTestHwpx(t, sectionXML)); err != nil {
+		t.Logf("clean error is acceptable: %v", err)
+	}
+}
+
+func TestParseHwpxHugeSpanClamped(t *testing.T) {
+	sectionXML := `<hp:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">` +
+		`<hp:p><hp:run><hp:tbl><hp:tr><hp:tc>` +
+		`<hp:subList><hp:p><hp:run><hp:t>x</hp:t></hp:run></hp:p></hp:subList>` +
+		`<hp:cellSpan colSpan="1000000000" rowSpan="1"/>` +
+		`</hp:tc></hp:tr></hp:tbl></hp:run></hp:p>` +
+		`</hp:sec>`
+	d, err := parseHwpx(makeTestHwpx(t, sectionXML))
+	if err != nil {
+		t.Fatalf("parseHwpx: %v", err)
+	}
+	if c := d.Blocks[0].(*Table).Rows[0][0]; c.ColSpan > maxTableSpan {
+		t.Fatalf("span not clamped: %d", c.ColSpan)
+	}
+	// the full conversion must stay small
+	out, err := HwpxToDocx(makeTestHwpx(t, sectionXML))
+	if err != nil {
+		t.Fatalf("HwpxToDocx: %v", err)
+	}
+	if len(out) > 1<<20 {
+		t.Fatalf("amplified output: %d bytes", len(out))
+	}
+}

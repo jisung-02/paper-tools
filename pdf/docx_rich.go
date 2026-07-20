@@ -414,7 +414,13 @@ func parseDocx(data []byte) (*DocModel, error) {
 				}
 			case "gridSpan":
 				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 && tstack[n-1].inTcPr {
-					tstack[n-1].pendSpan, _ = strconv.Atoi(xmlAttr(t, "val"))
+					v, _ := strconv.Atoi(xmlAttr(t, "val"))
+					if v < 1 {
+						v = 1
+					} else if v > maxTableSpan {
+						v = maxTableSpan
+					}
+					tstack[n-1].pendSpan = v
 				}
 			case "vMerge":
 				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 && tstack[n-1].inTcPr {
@@ -443,9 +449,18 @@ func parseDocx(data []byte) (*DocModel, error) {
 				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
 					flush()
 					top := tstack[n-1]
+					// malformed nesting (e.g. <w:tc><w:tc>...</w:tc></w:tc>) makes
+					// the outer close's top.cell already nil (cleared by the inner
+					// close); treat it as a phantom close and leave gridCol/rows
+					// untouched rather than deref a nil cell below.
+					if top.cell == nil {
+						break
+					}
 					w := top.pendSpan
 					if w < 1 {
 						w = 1
+					} else if w > maxTableSpan {
+						w = maxTableSpan
 					}
 					c := top.gridCol
 					cell := top.cell

@@ -517,8 +517,22 @@ func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[str
 				}
 			case "cellSpan":
 				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 && tstack[n-1].cell != nil {
-					tstack[n-1].cell.ColSpan, _ = strconv.Atoi(xmlAttr(t, "colSpan"))
-					tstack[n-1].cell.RowSpan, _ = strconv.Atoi(xmlAttr(t, "rowSpan"))
+					cs, _ := strconv.Atoi(xmlAttr(t, "colSpan"))
+					rs, _ := strconv.Atoi(xmlAttr(t, "rowSpan"))
+					// 0 stays allowed here — colSpan()/rowSpan() accessors
+					// normalize it to 1; only clamp the hostile upper end.
+					if cs < 0 {
+						cs = 0
+					} else if cs > maxTableSpan {
+						cs = maxTableSpan
+					}
+					if rs < 0 {
+						rs = 0
+					} else if rs > maxTableSpan {
+						rs = maxTableSpan
+					}
+					tstack[n-1].cell.ColSpan = cs
+					tstack[n-1].cell.RowSpan = rs
 				}
 			}
 		case xml.EndElement:
@@ -530,10 +544,16 @@ func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[str
 				flush()
 			case "tc":
 				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
-					flush()
 					top := tstack[n-1]
-					top.row = append(top.row, top.cell)
-					top.cell = nil
+					// malformed nesting (e.g. <hp:tc><hp:tc>...</hp:tc></hp:tc>)
+					// makes the outer close's top.cell already nil (cleared by
+					// the inner close); skip rather than append a nil *Cell,
+					// which </hp:tbl>'s deref-copy would later panic on.
+					if top.cell != nil {
+						flush()
+						top.row = append(top.row, top.cell)
+						top.cell = nil
+					}
 				}
 			case "tr":
 				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {

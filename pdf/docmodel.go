@@ -10,6 +10,7 @@ const (
 	maxModelBlocks = 100000 // Para+Table blocks, including inside table cells
 	maxModelRuns   = 250000 // runs across the document
 	maxHwpxCharPrs = 4096   // distinct charPr entries writeHwpx will emit
+	maxTableSpan   = 1000   // ColSpan/RowSpan ceiling; hostile span values otherwise drive writers' per-column loops to GB-scale output
 )
 
 // DocModel is the shared intermediate document model for office conversions:

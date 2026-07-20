@@ -350,3 +350,33 @@ func TestParseDocxNestedTableDoesNotCorruptOuterSpans(t *testing.T) {
 		t.Errorf("outer cell spans corrupted by nested table's tcPr: %+v", c)
 	}
 }
+
+func TestParseDocxMalformedNestedTcNoPanic(t *testing.T) {
+	docXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>` +
+		`<w:tbl><w:tr><w:tc><w:tc><w:p><w:r><w:t>x</w:t></w:r></w:p></w:tc></w:tc></w:tr></w:tbl>` +
+		`</w:body></w:document>`
+	if _, err := parseDocx(makeTestDocx(t, docXML)); err != nil {
+		t.Logf("clean error is acceptable: %v", err)
+	}
+}
+
+func TestParseDocxHugeGridSpanClamped(t *testing.T) {
+	docXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>` +
+		`<w:tbl><w:tr><w:tc><w:tcPr><w:gridSpan w:val="1000000000"/></w:tcPr><w:p><w:r><w:t>x</w:t></w:r></w:p></w:tc></w:tr></w:tbl>` +
+		`</w:body></w:document>`
+	d, err := parseDocx(makeTestDocx(t, docXML))
+	if err != nil {
+		t.Fatalf("parseDocx: %v", err)
+	}
+	if c := d.Blocks[0].(*Table).Rows[0][0]; c.ColSpan > maxTableSpan {
+		t.Fatalf("span not clamped: %d", c.ColSpan)
+	}
+	// the full conversion must stay small
+	out, err := DocxToHwpx(makeTestDocx(t, docXML))
+	if err != nil {
+		t.Fatalf("DocxToHwpx: %v", err)
+	}
+	if len(out) > 1<<20 {
+		t.Fatalf("amplified output: %d bytes", len(out))
+	}
+}
