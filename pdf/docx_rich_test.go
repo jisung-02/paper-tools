@@ -154,6 +154,19 @@ func TestDocxWriteParseRoundTrip(t *testing.T) {
 	assertDocEqual(t, parsed, orig)
 }
 
+func TestDocxToPDFPreservesBold(t *testing.T) {
+	doc := &DocModel{Blocks: []Block{
+		&Para{Runs: []Run{{Text: "굵은 텍스트", Bold: true}}},
+	}}
+	pdfBytes, err := DocxToPDF(writeDocx(doc), testFont(t), TextPDFOpts{})
+	if err != nil {
+		t.Fatalf("DocxToPDF: %v", err)
+	}
+	if !bytes.Contains(pdfBytes, []byte("2 Tr")) {
+		t.Error("bold run did not reach the PDF renderer")
+	}
+}
+
 // assertDocEqual compares two stage-1 docs paragraph by paragraph.
 func assertDocEqual(t *testing.T, got, want *DocModel) {
 	t.Helper()
