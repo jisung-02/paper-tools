@@ -127,7 +127,10 @@ func renderDocPDF(doc *DocModel, fontTTF []byte, opts TextPDFOpts) ([]byte, erro
 		}
 		base := bodySize
 		if p.Heading > 0 {
-			base = bodySize * headingScale(p.Heading)
+			// Pinned heading sizes (headingSizePt), matching writeDocx's
+			// styles.xml and writeHwpx's folded charPr — headings must not
+			// scale with a custom body FontSize.
+			base = headingSizePt(p.Heading)
 		}
 		var spans []pdfSpan
 		for _, r := range p.Runs {
@@ -146,7 +149,13 @@ func renderDocPDF(doc *DocModel, fontTTF []byte, opts TextPDFOpts) ([]byte, erro
 			spans = append(spans, sp)
 		}
 		if bi > 0 {
-			addGap(bodySize * 0.5)
+			// Mirror md.go: headings get a lead-in gap scaled to their own
+			// size, body blocks to the body size.
+			pre := bodySize * 0.5
+			if p.Heading > 0 {
+				pre = base * 0.5
+			}
+			addGap(pre)
 		}
 		lineFactor := 1.5
 		if p.Heading > 0 {

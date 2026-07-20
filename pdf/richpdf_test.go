@@ -88,3 +88,20 @@ func TestRenderDocPDFEmptyDoc(t *testing.T) {
 		t.Fatalf("Parse: %v", err)
 	}
 }
+
+func TestRenderDocPDFHeadingSizePinned(t *testing.T) {
+	doc := &DocModel{Blocks: []Block{
+		&Para{Heading: 1, Runs: []Run{{Text: "제목"}}},
+	}}
+	pdfBytes, err := renderDocPDF(doc, testFont(t), TextPDFOpts{FontSize: 20})
+	if err != nil {
+		t.Fatalf("renderDocPDF: %v", err)
+	}
+	// Heading size is pinned to headingSizePt(1)=22, not 20*2.0=40.
+	if !bytes.Contains(pdfBytes, []byte("/F1 22.00 Tf")) {
+		t.Error("heading not rendered at pinned 22pt")
+	}
+	if bytes.Contains(pdfBytes, []byte("/F1 40.00 Tf")) {
+		t.Error("heading scaled with body FontSize; must stay pinned")
+	}
+}
