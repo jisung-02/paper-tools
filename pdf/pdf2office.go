@@ -6,8 +6,9 @@ import (
 	"strings"
 )
 
-// ponytail: text-only reflow, like DocxToHwpx/HwpxToDocx — layout, images,
-// tables and fonts are dropped. ExtractText only emits a single "\n" per
+// ponytail: text-only reflow — layout, images, tables and fonts are dropped
+// (unlike DocxToHwpx/HwpxToDocx, which preserve character formatting via the
+// shared document model). ExtractText only emits a single "\n" per
 // content-stream line break (Td/TD/T*/'/") and "\n\n" between pages, so real
 // paragraph boundaries aren't distinguishable from ordinary line wraps within
 // a page; blank lines (including page breaks) are treated as paragraph
@@ -56,7 +57,7 @@ func PdfToDocx(file []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return buildDocx(paras), nil
+	return writeDocx(docFromParas(paras)), nil
 }
 
 // PdfToHwpx converts a PDF to a .hwpx file by extracting its text and
@@ -66,5 +67,5 @@ func PdfToHwpx(file []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return buildHwpx(paras), nil
+	return writeHwpx(docFromParas(paras)), nil
 }

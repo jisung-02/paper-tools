@@ -10,7 +10,7 @@ import (
 
 func TestBuildDocxRoundTrip(t *testing.T) {
 	paras := []string{"첫째 문단 한글", "Second English 12345", ""}
-	docxBytes := buildDocx(paras)
+	docxBytes := writeDocx(docFromParas(paras))
 
 	// Verify text round-trip
 	text, err := DocxText(docxBytes)
@@ -34,6 +34,7 @@ func TestBuildDocxRoundTrip(t *testing.T) {
 		"[Content_Types].xml": false,
 		"_rels/.rels":         false,
 		"word/document.xml":   false,
+		"word/styles.xml":     false,
 	}
 	for _, f := range zr.File {
 		if _, ok := requiredFiles[f.Name]; ok {
@@ -49,7 +50,7 @@ func TestBuildDocxRoundTrip(t *testing.T) {
 
 func TestBuildHwpxRoundTrip(t *testing.T) {
 	paras := []string{"첫째 문단 한글", "Second English 12345", ""}
-	hwpxBytes := buildHwpx(paras)
+	hwpxBytes := writeHwpx(docFromParas(paras))
 
 	// Verify text round-trip
 	text, err := HwpxText(hwpxBytes)
@@ -179,4 +180,28 @@ func TestHwpxToDocx(t *testing.T) {
 	if !strings.Contains(text, "First Para") {
 		t.Errorf("text missing English paragraph; got: %q", text)
 	}
+}
+
+func TestDocxHwpxCrossRoundTripFormatting(t *testing.T) {
+	orig := &DocModel{Blocks: []Block{
+		&Para{Align: AlignCenter, Runs: []Run{
+			{Text: "굵은", Bold: true},
+			{Text: " 빨강 14pt", Color: 0xFF0000, SizePt: 14},
+			{Text: " 꾸밈", Italic: true, Underline: true, Strike: true},
+		}},
+		&Para{Runs: []Run{{Text: "평범한 문단"}}},
+	}}
+	hwpx, err := DocxToHwpx(writeDocx(orig))
+	if err != nil {
+		t.Fatalf("DocxToHwpx: %v", err)
+	}
+	docx, err := HwpxToDocx(hwpx)
+	if err != nil {
+		t.Fatalf("HwpxToDocx: %v", err)
+	}
+	final, err := parseDocx(docx)
+	if err != nil {
+		t.Fatalf("parseDocx: %v", err)
+	}
+	assertDocEqual(t, final, orig)
 }

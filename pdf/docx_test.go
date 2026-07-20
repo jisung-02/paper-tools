@@ -130,7 +130,7 @@ func FuzzDocxToPDF(f *testing.F) {
 	font := testFont(f)
 	f.Add([]byte(""))
 	f.Add([]byte("PK\x03\x04"))
-	f.Add(buildDocx([]string{"첫째 문단 한글", "Second English 12345", ""}))
+	f.Add(writeDocx(docFromParas([]string{"첫째 문단 한글", "Second English 12345", ""})))
 	f.Fuzz(func(t *testing.T, data []byte) {
 		DocxToPDF(data, font, TextPDFOpts{})
 	})
