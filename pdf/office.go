@@ -10,24 +10,6 @@ import (
 // (bold/italic/underline/strike/size/color), alignment and heading levels
 // via the shared DocModel; tables and images are later stages.
 
-// splitParas splits extracted text on newlines, trimming ONE trailing empty paragraph
-// if the text ends with "\n" (which split produces a trailing "" element).
-// Keeps any other internal empty paragraphs (blank lines) as-is.
-// Returns at least one paragraph (empty string if input is empty).
-func splitParas(text string) []string {
-	paras := strings.Split(text, "\n")
-	// If the split has at least one element and the last is empty (text ended with "\n"),
-	// drop that one trailing empty element only.
-	if len(paras) > 0 && paras[len(paras)-1] == "" {
-		paras = paras[:len(paras)-1]
-	}
-	// Ensure we always return at least one paragraph.
-	if len(paras) == 0 {
-		paras = []string{""}
-	}
-	return paras
-}
-
 // escapeXMLText safely escapes a string for use in XML text content.
 // xml.EscapeText only escapes & < > ' " — it does not remove control
 // characters that are outright illegal in XML 1.0 (e.g. PDF text extraction
