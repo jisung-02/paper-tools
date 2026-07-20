@@ -328,3 +328,25 @@ func TestDocxTableWriteParseRoundTrip(t *testing.T) {
 	}
 	assertDocEqual(t, parsed, orig)
 }
+
+func TestParseDocxNestedTableDoesNotCorruptOuterSpans(t *testing.T) {
+	docXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>` +
+		`<w:tbl><w:tr>` +
+		`<w:tc><w:p><w:r><w:t>바깥</w:t></w:r></w:p>` +
+		`<w:tbl><w:tr><w:tc><w:tcPr><w:gridSpan w:val="3"/><w:vMerge w:val="restart"/></w:tcPr><w:p><w:r><w:t>안</w:t></w:r></w:p></w:tc></w:tr></w:tbl>` +
+		`<w:p/></w:tc>` +
+		`<w:tc><w:p><w:r><w:t>이웃</w:t></w:r></w:p></w:tc>` +
+		`</w:tr></w:tbl>` +
+		`</w:body></w:document>`
+	d, err := parseDocx(makeTestDocx(t, docXML))
+	if err != nil {
+		t.Fatalf("parseDocx: %v", err)
+	}
+	tbl := d.Blocks[0].(*Table)
+	if len(tbl.Rows) != 1 || len(tbl.Rows[0]) != 2 {
+		t.Fatalf("outer table shape wrong: %+v", tbl.Rows)
+	}
+	if c := tbl.Rows[0][0]; c.colSpan() != 1 || c.rowSpan() != 1 {
+		t.Errorf("outer cell spans corrupted by nested table's tcPr: %+v", c)
+	}
+}

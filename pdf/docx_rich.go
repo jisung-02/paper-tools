@@ -409,15 +409,15 @@ func parseDocx(data []byte) (*DocModel, error) {
 					top.pendVMerge = ""
 				}
 			case "tcPr":
-				if n := len(tstack); n > 0 {
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
 					tstack[n-1].inTcPr = true
 				}
 			case "gridSpan":
-				if n := len(tstack); n > 0 && tstack[n-1].inTcPr {
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 && tstack[n-1].inTcPr {
 					tstack[n-1].pendSpan, _ = strconv.Atoi(xmlAttr(t, "val"))
 				}
 			case "vMerge":
-				if n := len(tstack); n > 0 && tstack[n-1].inTcPr {
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 && tstack[n-1].inTcPr {
 					if v := xmlAttr(t, "val"); v == "restart" {
 						tstack[n-1].pendVMerge = "restart"
 					} else {
@@ -436,7 +436,7 @@ func parseDocx(data []byte) (*DocModel, error) {
 			case "p":
 				flush()
 			case "tcPr":
-				if n := len(tstack); n > 0 {
+				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
 					tstack[n-1].inTcPr = false
 				}
 			case "tc":
