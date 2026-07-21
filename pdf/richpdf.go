@@ -464,15 +464,24 @@ func renderDocPDF(doc *DocModel, fontTTF []byte, opts TextPDFOpts) ([]byte, erro
 		return nil, err
 	}
 
-	// Embed each image once, storing its XObject resource name on the item.
+	// Embed each distinct image once, storing its XObject resource name on
+	// the item. Dedup by data identity (imageKey), not item index: a parsed
+	// document whose pics share one backing slice (via the parsers'
+	// shared-media cache) must embed a single XObject, not one per draw.
 	// A failed embed (garbage image data that slipped past the earlier
 	// sniff, e.g. a hand-built model in a test) just drops the item —
 	// ponytail.
 	xobjs := Dict{}
+	embedded := map[imgKey]string{}
 	n := 0
 	for i := range items {
 		im := items[i].img
 		if im == nil {
+			continue
+		}
+		k := imageKey(im.data)
+		if name, ok := embedded[k]; ok {
+			im.res = name
 			continue
 		}
 		ref, _, _, _, err := embedImage(b, im.data, n)
@@ -483,6 +492,7 @@ func renderDocPDF(doc *DocModel, fontTTF []byte, opts TextPDFOpts) ([]byte, erro
 		name := fmt.Sprintf("Im%d", n)
 		im.res = name
 		xobjs[Name(name)] = ref
+		embedded[k] = name
 		n++
 	}
 

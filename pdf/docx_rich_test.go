@@ -456,3 +456,37 @@ func TestParseDocxHugeGridSpanClamped(t *testing.T) {
 		t.Fatalf("amplified output: %d bytes", len(out))
 	}
 }
+
+func TestParseDocxSharedMediaCachedAndDeduped(t *testing.T) {
+	// one media part referenced by three drawings
+	img := &Image{Data: tinyPNG(t, 6, 6)}
+	orig := &DocModel{Blocks: []Block{img, img, img}}
+	b := writeDocx(orig) // writer dedup: one media part, three drawings
+	d, err := parseDocx(b)
+	if err != nil {
+		t.Fatalf("parseDocx: %v", err)
+	}
+	var imgs []*Image
+	for _, blk := range d.Blocks {
+		if im, ok := blk.(*Image); ok {
+			imgs = append(imgs, im)
+		}
+	}
+	if len(imgs) != 3 {
+		t.Fatalf("want 3 images, got %d", len(imgs))
+	}
+	if &imgs[0].Data[0] != &imgs[1].Data[0] || &imgs[1].Data[0] != &imgs[2].Data[0] {
+		t.Error("parsed images do not share one cached backing slice")
+	}
+	// rewrite must emit exactly one media part again
+	zr, _ := zip.NewReader(bytes.NewReader(writeDocx(d)), int64(len(writeDocx(d))))
+	media := 0
+	for _, f := range zr.File {
+		if strings.HasPrefix(f.Name, "word/media/") {
+			media++
+		}
+	}
+	if media != 1 {
+		t.Errorf("rewrite duplicated shared media: %d parts", media)
+	}
+}

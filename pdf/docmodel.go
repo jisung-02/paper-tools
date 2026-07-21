@@ -89,6 +89,22 @@ type Image struct {
 
 func (*Image) isBlock() {}
 
+// imgKey identifies an image by its backing bytes (same slice = same image),
+// so re-serializing a parsed document doesn't duplicate shared media.
+// ponytail: distinct-but-equal byte slices still duplicate; only shared
+// backings (the parsers' cache guarantees) dedup.
+type imgKey struct {
+	p *byte
+	n int
+}
+
+func imageKey(data []byte) imgKey {
+	if len(data) == 0 {
+		return imgKey{}
+	}
+	return imgKey{&data[0], len(data)}
+}
+
 // sniffImageMIME identifies the two supported formats by magic bytes.
 func sniffImageMIME(data []byte) string {
 	if bytes.HasPrefix(data, []byte("\x89PNG\r\n\x1a\n")) {

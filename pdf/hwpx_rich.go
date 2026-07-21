@@ -119,7 +119,7 @@ func writeHwpx(doc *DocModel) []byte {
 	type styleEnt struct{ level, paraPr, charPr int }
 	var styleList []styleEnt
 	tblID := 0
-	reg := &hwpxImageReg{ids: map[*Image]int{}}
+	reg := &hwpxImageReg{ids: map[imgKey]int{}}
 
 	// First pass: build the section body while filling the tables.
 	var sec bytes.Buffer
@@ -278,20 +278,23 @@ func writeHwpx(doc *DocModel) []byte {
 	return buf.Bytes()
 }
 
-// hwpxImageReg assigns each distinct *Image a 0-based id in first-encounter
+// hwpxImageReg assigns each distinct image a 0-based id in first-encounter
 // order, mirroring docxImageReg; shared between the section body writer (for
 // binaryItemIDRef references) and the manifest/content.hpf/BinData writers.
+// Dedup keys on the image's backing bytes (imageKey), not the *Image
+// pointer — see docxImageReg.
 type hwpxImageReg struct {
-	ids  map[*Image]int
+	ids  map[imgKey]int
 	list []*Image
 }
 
 func (r *hwpxImageReg) id(im *Image) int {
-	if n, ok := r.ids[im]; ok {
+	k := imageKey(im.Data)
+	if n, ok := r.ids[k]; ok {
 		return n
 	}
 	n := len(r.list)
-	r.ids[im] = n
+	r.ids[k] = n
 	r.list = append(r.list, im)
 	return n
 }
@@ -336,7 +339,9 @@ func parseHwpx(data []byte) (*DocModel, error) {
 		case strings.HasPrefix(f.Name, "BinData/"):
 			bb, err := readOfficeEntry(f, "hwpx")
 			if err != nil {
-				return nil, err
+				// ponytail: corrupt/oversized BinData entries are skipped (their pics
+				// degrade to nothing), matching docx's per-drawing silent skip.
+				continue
 			}
 			binData[f.Name] = bb
 		}

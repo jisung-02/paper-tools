@@ -31,7 +31,7 @@ const docxStylesXML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w
 // alignment and HeadingN paragraph style.
 func writeDocx(doc *DocModel) []byte {
 	doc = normalizeDoc(doc)
-	reg := &docxImageReg{ids: map[*Image]int{}}
+	reg := &docxImageReg{ids: map[imgKey]int{}}
 
 	// Body is built first, into its own buffer, so reg is fully populated
 	// before the rels/media entries (which depend on it) are written.
@@ -76,20 +76,24 @@ func writeZipEntryBytes(w *zip.Writer, name string, data []byte) {
 	}
 }
 
-// docxImageReg assigns each distinct *Image a 0-based id in first-encounter
+// docxImageReg assigns each distinct image a 0-based id in first-encounter
 // order, shared between the body writer (for rIdImgN references) and the
-// relationships/media part writers.
+// relationships/media part writers. Dedup keys on the image's backing bytes
+// (imageKey) rather than the *Image pointer, so images that came from a
+// parser's shared-media cache (same slice, different *Image) still collapse
+// to one media part instead of being duplicated on rewrite.
 type docxImageReg struct {
-	ids  map[*Image]int
+	ids  map[imgKey]int
 	list []*Image
 }
 
 func (r *docxImageReg) id(im *Image) int {
-	if n, ok := r.ids[im]; ok {
+	k := imageKey(im.Data)
+	if n, ok := r.ids[k]; ok {
 		return n
 	}
 	n := len(r.list)
-	r.ids[im] = n
+	r.ids[k] = n
 	r.list = append(r.list, im)
 	return n
 }
@@ -314,9 +318,14 @@ func parseDocx(data []byte) (*DocModel, error) {
 	// mediaFile indexes every media part by its zip entry name so image
 	// bytes are only read (via readOfficeEntry) when a drawing actually
 	// references them. Both are best-effort: a docx without rels or media
-	// still parses fine, just with drawings silently skipped.
+	// still parses fine, just with drawings silently skipped. mediaBytes
+	// caches each media part's decompressed bytes on first read so N
+	// drawings referencing one part (a common share-the-same-picture
+	// pattern) share one backing slice instead of re-reading (and
+	// retaining) N independent copies.
 	rels := map[string]string{}
 	mediaFile := map[string]*zip.File{}
+	mediaBytes := map[string][]byte{}
 	for _, f := range r.File {
 		if f.Name == "word/_rels/document.xml.rels" {
 			if rb, err := readOfficeEntry(f, "docx"); err == nil {
@@ -625,9 +634,14 @@ func parseDocx(data []byte) (*DocModel, error) {
 				if f == nil {
 					break // ponytail: rel/target/media entry missing — skip the drawing silently
 				}
-				data, err := readOfficeEntry(f, "docx")
-				if err != nil {
-					break // ponytail: unreadable media part — skip the drawing silently
+				data, ok := mediaBytes[f.Name]
+				if !ok {
+					var err error
+					data, err = readOfficeEntry(f, "docx")
+					if err != nil {
+						break // ponytail: unreadable media part — skip the drawing silently
+					}
+					mediaBytes[f.Name] = data
 				}
 				mime := sniffImageMIME(data)
 				if mime == "" {

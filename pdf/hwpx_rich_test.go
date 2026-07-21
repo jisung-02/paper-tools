@@ -260,3 +260,31 @@ func TestParseHwpxHugeSpanClamped(t *testing.T) {
 		t.Fatalf("amplified output: %d bytes", len(out))
 	}
 }
+
+func TestParseHwpxSkipsCorruptBinData(t *testing.T) {
+	src := writeHwpx(&DocModel{Blocks: []Block{&Para{Runs: []Run{{Text: "본문"}}}}})
+	// re-zip with an extra corrupt-deflate BinData entry
+	zr, _ := zip.NewReader(bytes.NewReader(src), int64(len(src)))
+	var buf bytes.Buffer
+	w := zip.NewWriter(&buf)
+	for _, f := range zr.File {
+		hdr := f.FileHeader
+		dst, _ := w.CreateRaw(&hdr)
+		rc, _ := f.OpenRaw()
+		io.Copy(dst, rc)
+	}
+	corrupt := &zip.FileHeader{Name: "BinData/broken.png", Method: zip.Deflate}
+	corrupt.CompressedSize64 = 4
+	corrupt.UncompressedSize64 = 100
+	corrupt.CRC32 = 0xdeadbeef
+	cw, _ := w.CreateRaw(corrupt)
+	cw.Write([]byte{0xde, 0xad, 0xbe, 0xef})
+	w.Close()
+	d, err := parseHwpx(buf.Bytes())
+	if err != nil {
+		t.Fatalf("corrupt BinData must not abort the parse: %v", err)
+	}
+	if len(d.Blocks) == 0 {
+		t.Fatal("document content lost")
+	}
+}

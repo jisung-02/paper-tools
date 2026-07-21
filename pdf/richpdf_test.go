@@ -205,3 +205,17 @@ func TestRenderDocPDFImageClampedToContentWidth(t *testing.T) {
 		t.Error("oversized image not clamped to textContentWidth")
 	}
 }
+
+func TestRenderDocPDFSharedImageEmbeddedOnce(t *testing.T) {
+	img := &Image{Data: tinyPNG(t, 12, 12)}
+	pdfBytes, err := renderDocPDF(&DocModel{Blocks: []Block{img, img}}, testFont(t), TextPDFOpts{})
+	if err != nil {
+		t.Fatalf("renderDocPDF: %v", err)
+	}
+	if n := bytes.Count(pdfBytes, []byte("/Im0 Do")); n != 2 {
+		t.Errorf("want 2 draws of Im0, got %d", n)
+	}
+	if bytes.Contains(pdfBytes, []byte("/Im1")) {
+		t.Error("shared image embedded twice")
+	}
+}
