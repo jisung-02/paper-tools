@@ -206,6 +206,27 @@ func TestDocxHwpxCrossRoundTripFormatting(t *testing.T) {
 	assertDocEqual(t, final, orig)
 }
 
+func TestDocxHwpxCrossRoundTripImage(t *testing.T) {
+	img := &Image{MIME: "image/png", Data: tinyPNG(t, 16, 16), WPt: 90, HPt: 90}
+	orig := &DocModel{Blocks: []Block{
+		&Para{Runs: []Run{{Text: "이미지 문서", Bold: true}}},
+		img,
+	}}
+	hwpx, err := DocxToHwpx(writeDocx(orig))
+	if err != nil {
+		t.Fatalf("DocxToHwpx: %v", err)
+	}
+	docx, err := HwpxToDocx(hwpx)
+	if err != nil {
+		t.Fatalf("HwpxToDocx: %v", err)
+	}
+	final, err := parseDocx(docx)
+	if err != nil {
+		t.Fatalf("parseDocx: %v", err)
+	}
+	assertDocEqual(t, final, orig)
+}
+
 func TestDocxHwpxCrossRoundTripTable(t *testing.T) {
 	orig := &DocModel{Blocks: []Block{
 		&Table{Rows: [][]Cell{

@@ -193,6 +193,20 @@ func TestHwpxTableWriteParseRoundTrip(t *testing.T) {
 	assertDocEqual(t, parsed, orig)
 }
 
+func TestHwpxImageWriteParseRoundTrip(t *testing.T) {
+	img := &Image{MIME: "image/png", Data: tinyPNG(t, 20, 10), WPt: 120, HPt: 60}
+	orig := &DocModel{Blocks: []Block{
+		&Para{Runs: []Run{{Text: "앞 문단"}}},
+		img,
+		&Para{Runs: []Run{{Text: "뒤 문단"}}},
+	}}
+	parsed, err := parseHwpx(writeHwpx(orig))
+	if err != nil {
+		t.Fatalf("round-trip: %v", err)
+	}
+	assertDocEqual(t, parsed, orig)
+}
+
 // makeTestHwpx zips sectionXML into a minimal hwpx package (Contents/section0.xml
 // only — parseHwpx does not require header.xml or the mimetype entry to be present).
 func makeTestHwpx(t *testing.T, sectionXML string) []byte {

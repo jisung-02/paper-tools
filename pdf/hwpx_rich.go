@@ -297,11 +297,11 @@ func (r *hwpxImageReg) id(im *Image) int {
 }
 
 // parseHwpx reads an HWPX package into the shared DocModel by first
-// building id→format maps from Contents/header.xml, then walking the
-// sorted section files.
-// ponytail: charPr/paraPr/style resolution only — tables (stage 2), images
-// (stage 3), numbering and per-language fonts are not modeled; their text
-// still comes through as plain paragraphs.
+// building id→format maps from Contents/header.xml and Contents/content.hpf,
+// prefetching BinData/* bytes, then walking the sorted section files.
+// ponytail: charPr/paraPr/style/table/image resolution only — numbering and
+// per-language fonts are not modeled; their text still comes through as
+// plain paragraphs.
 func parseHwpx(data []byte) (*DocModel, error) {
 	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil {
@@ -314,17 +314,31 @@ func parseHwpx(data []byte) (*DocModel, error) {
 	charStyles := map[string]Run{}
 	paraAligns := map[string]Align{}
 	styleHeading := map[string]int{}
+	binItems := map[string]string{} // opf:item id -> href, from content.hpf
+	binData := map[string][]byte{}  // full zip entry name (BinData/...) -> bytes
 	var sections []*zip.File
 	for _, f := range zr.File {
-		if f.Name == "Contents/header.xml" {
+		switch {
+		case f.Name == "Contents/header.xml":
 			hb, err := readOfficeEntry(f, "hwpx")
 			if err != nil {
 				return nil, err
 			}
 			parseHwpxHeader(hb, charStyles, paraAligns, styleHeading)
-		}
-		if strings.HasPrefix(f.Name, "Contents/section") && strings.HasSuffix(f.Name, ".xml") {
+		case f.Name == "Contents/content.hpf":
+			cb, err := readOfficeEntry(f, "hwpx")
+			if err != nil {
+				return nil, err
+			}
+			parseHwpxManifestItems(cb, binItems)
+		case strings.HasPrefix(f.Name, "Contents/section") && strings.HasSuffix(f.Name, ".xml"):
 			sections = append(sections, f)
+		case strings.HasPrefix(f.Name, "BinData/"):
+			bb, err := readOfficeEntry(f, "hwpx")
+			if err != nil {
+				return nil, err
+			}
+			binData[f.Name] = bb
 		}
 	}
 	if len(sections) == 0 {
@@ -336,17 +350,32 @@ func parseHwpx(data []byte) (*DocModel, error) {
 
 	doc := &DocModel{}
 	textBytes := 0
-	blocks, runs := 0, 0
+	blocks, runs, images := 0, 0, 0
 	for _, f := range sections {
 		sb, err := readOfficeEntry(f, "hwpx")
 		if err != nil {
 			return nil, err
 		}
-		if err := parseHwpxSection(sb, charStyles, paraAligns, styleHeading, doc, &textBytes, &blocks, &runs); err != nil {
+		if err := parseHwpxSection(sb, charStyles, paraAligns, styleHeading, binItems, binData, doc, &textBytes, &blocks, &runs, &images); err != nil {
 			return nil, err
 		}
 	}
 	return doc, nil
+}
+
+// parseHwpxManifestItems fills id -> href from Contents/content.hpf's
+// opf:item entries (mirrors parseDocxRels).
+func parseHwpxManifestItems(data []byte, out map[string]string) {
+	dec := xml.NewDecoder(bytes.NewReader(data))
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return
+		}
+		if t, ok := tok.(xml.StartElement); ok && t.Name.Local == "item" {
+			out[xmlAttr(t, "id")] = xmlAttr(t, "href")
+		}
+	}
 }
 
 // parseHwpxHeader fills the id→format maps from header.xml.
@@ -453,11 +482,19 @@ type hwpxTbl struct {
 }
 
 // parseHwpxSection appends paragraphs from one section XML to doc.
-func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[string]Align, styleHeading map[string]int, doc *DocModel, textBytes, blocks, runs *int) error {
+func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[string]Align, styleHeading map[string]int, binItems map[string]string, binData map[string][]byte, doc *DocModel, textBytes, blocks, runs, images *int) error {
 	dec := xml.NewDecoder(bytes.NewReader(data))
 	var cur *Para
 	var curRun Run
 	var tstack []*hwpxTbl
+
+	// pic state: the one <hp:pic> currently being parsed, if any. hp:sz also
+	// appears under hp:tbl (the table's own display size), so its handler
+	// below is guarded with inPic to avoid misreading a table's size as an
+	// image size.
+	var inPic bool
+	var picRef string
+	var picW, picH float64
 
 	// appendBlock routes a finished block to the innermost open table cell,
 	// or to doc.Blocks when no table is open.
@@ -538,6 +575,25 @@ func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[str
 					flush()
 					cur = &Para{Align: al, Heading: hd}
 				}
+			case "pic":
+				inPic = true
+				picRef, picW, picH = "", 0, 0
+			case "sz":
+				// hp:sz also appears under hp:tbl (the table's own display
+				// size); the inPic guard keeps that from being misread as an
+				// image size.
+				if inPic {
+					if w, err := strconv.Atoi(xmlAttr(t, "width")); err == nil {
+						picW = float64(w) / 100
+					}
+					if h, err := strconv.Atoi(xmlAttr(t, "height")); err == nil {
+						picH = float64(h) / 100
+					}
+				}
+			case "img":
+				if inPic {
+					picRef = xmlAttr(t, "binaryItemIDRef")
+				}
 			case "tbl":
 				// ponytail: hp:tbl sits inside a run inside a paragraph.
 				// writeHwpx always anchors a table in its own paragraph with
@@ -591,6 +647,39 @@ func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[str
 			case "p":
 				curRun = Run{}
 				flush()
+			case "pic":
+				inPic = false
+				// Resolve picRef (an opf:item id) to its BinData bytes: try the
+				// content.hpf-declared href first, then fall back to the
+				// writer's own imageN.png/.jpeg naming in case content.hpf was
+				// missing or incomplete.
+				href := binItems[picRef]
+				data, ok := binData[href]
+				if !ok {
+					data, ok = binData["BinData/"+picRef+".png"]
+				}
+				if !ok {
+					data, ok = binData["BinData/"+picRef+".jpeg"]
+				}
+				if !ok {
+					break // ponytail: item/href/BinData entry missing — skip the picture silently
+				}
+				mime := sniffImageMIME(data)
+				if mime == "" {
+					break // ponytail: BinData entry isn't a supported image format — skip silently
+				}
+				// writeHwpx always anchors an image in its own paragraph with
+				// no runs, so discard that synthetic wrapper instead of
+				// flushing an empty block (mirrors parseDocx's drawing-end
+				// rule); real text before the image in the same paragraph is
+				// still flushed and kept.
+				if cur != nil && len(cur.Runs) == 0 {
+					cur = nil
+				} else {
+					flush()
+				}
+				appendBlock(&Image{MIME: mime, Data: data, WPt: picW, HPt: picH})
+				*images++
 			case "tc":
 				if n := len(tstack); n > 0 && tstack[n-1].nested == 0 {
 					top := tstack[n-1]
@@ -630,7 +719,7 @@ func parseHwpxSection(data []byte, charStyles map[string]Run, paraAligns map[str
 				}
 			}
 		}
-		if *blocks > maxModelBlocks || *runs > maxModelRuns {
+		if *blocks > maxModelBlocks || *runs > maxModelRuns || *images > maxModelImages {
 			return errors.New("hwpx: document too complex")
 		}
 	}
