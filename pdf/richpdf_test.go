@@ -165,3 +165,43 @@ func TestRenderDocPDFTableSplitsAcrossPages(t *testing.T) {
 		t.Errorf("80-row table should span 2+ pages, got %d page objects", n)
 	}
 }
+
+func TestRenderDocPDFImage(t *testing.T) {
+	img := &Image{Data: tinyPNG(t, 40, 20)}
+	doc := &DocModel{Blocks: []Block{
+		&Para{Runs: []Run{{Text: "그림 앞"}}},
+		img,
+		&Para{Runs: []Run{{Text: "그림 뒤"}}},
+	}}
+	pdfBytes, err := renderDocPDF(doc, testFont(t), TextPDFOpts{})
+	if err != nil {
+		t.Fatalf("renderDocPDF: %v", err)
+	}
+	if _, err := Parse(pdfBytes); err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	if !bytes.Contains(pdfBytes, []byte("/Im0 Do")) {
+		t.Error("image XObject not drawn")
+	}
+	if !bytes.Contains(pdfBytes, []byte("/XObject")) {
+		t.Error("page resources missing XObject dict")
+	}
+	text, err := ExtractText(pdfBytes)
+	if err != nil {
+		t.Fatalf("ExtractText: %v", err)
+	}
+	if !strings.Contains(text, "그림 앞") || !strings.Contains(text, "그림 뒤") {
+		t.Errorf("text around image lost: %q", text)
+	}
+}
+
+func TestRenderDocPDFImageClampedToContentWidth(t *testing.T) {
+	img := &Image{Data: tinyPNG(t, 2000, 100)} // 1500pt wide at 96dpi
+	pdfBytes, err := renderDocPDF(&DocModel{Blocks: []Block{img}}, testFont(t), TextPDFOpts{})
+	if err != nil {
+		t.Fatalf("renderDocPDF: %v", err)
+	}
+	if !bytes.Contains(pdfBytes, []byte("q 483.28 0 0")) {
+		t.Error("oversized image not clamped to textContentWidth")
+	}
+}

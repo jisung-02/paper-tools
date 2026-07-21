@@ -188,11 +188,21 @@ func drawRichLine(buf *bytes.Buffer, f *ttfFont, ln pdfRichLine, x0, width, y fl
 	}
 }
 
-// pdfRenderItem is one top-level renderable: a laid-out paragraph line, or a
-// laid-out table. Exactly one of the two fields is set.
+// pdfRenderItem is one top-level renderable: a laid-out paragraph line, a
+// laid-out table, or an image box. Exactly one of the three fields is set.
 type pdfRenderItem struct {
 	line  *pdfRichLine
 	table *pdfTableBox
+	img   *pdfImageBox
+}
+
+// pdfImageBox is a laid-out image: raw file bytes plus its display size
+// (already clamped to the content width and page height). res is the page
+// Resources XObject name ("ImN") filled in during the embedding pass.
+type pdfImageBox struct {
+	data     []byte
+	wPt, hPt float64
+	res      string
 }
 
 // pdfTableBox is a laid-out table: uniform column width, per-row height, and
@@ -217,6 +227,9 @@ const tblPad = 3.0
 // flattenCellParas returns the cell's paragraphs; nested tables are
 // flattened into their cells' paragraphs in order.
 // ponytail: depth-1 rendering — nested table structure is not drawn.
+// ponytail: images inside table cells are dropped in PDF output
+// (flattenCellParas collects paragraphs only); docx/hwpx writers do carry
+// them.
 func flattenCellParas(blocks []Block) []*Para {
 	var out []*Para
 	for _, blk := range blocks {
@@ -394,6 +407,24 @@ func renderDocPDF(doc *DocModel, fontTTF []byte, opts TextPDFOpts) ([]byte, erro
 			if tb := layoutTable(f, b, bodySize); tb != nil {
 				items = append(items, pdfRenderItem{table: tb})
 			}
+		case *Image:
+			if sniffImageMIME(b.Data) == "" {
+				continue // ponytail: unsupported/garbage image data is dropped
+			}
+			if bi > 0 {
+				addGap(bodySize * 0.5)
+			}
+			wPt, hPt := b.displaySizePt()
+			if wPt > textContentWidth {
+				hPt *= textContentWidth / wPt
+				wPt = textContentWidth
+			}
+			maxH := a4Height - 2*textMargin
+			if hPt > maxH {
+				wPt *= maxH / hPt
+				hPt = maxH
+			}
+			items = append(items, pdfRenderItem{img: &pdfImageBox{data: b.Data, wPt: wPt, hPt: hPt}})
 		}
 	}
 
@@ -433,6 +464,28 @@ func renderDocPDF(doc *DocModel, fontTTF []byte, opts TextPDFOpts) ([]byte, erro
 		return nil, err
 	}
 
+	// Embed each image once, storing its XObject resource name on the item.
+	// A failed embed (garbage image data that slipped past the earlier
+	// sniff, e.g. a hand-built model in a test) just drops the item —
+	// ponytail.
+	xobjs := Dict{}
+	n := 0
+	for i := range items {
+		im := items[i].img
+		if im == nil {
+			continue
+		}
+		ref, _, _, _, err := embedImage(b, im.data, n)
+		if err != nil {
+			items[i].img = nil
+			continue
+		}
+		name := fmt.Sprintf("Im%d", n)
+		im.res = name
+		xobjs[Name(name)] = ref
+		n++
+	}
+
 	startY := a4Height - textMargin - bodySize
 	var kids Array
 	var buf bytes.Buffer
@@ -441,12 +494,16 @@ func renderDocPDF(doc *DocModel, fontTTF []byte, opts TextPDFOpts) ([]byte, erro
 		data := append([]byte(nil), buf.Bytes()...)
 		contentRef := b.alloc()
 		b.objs[contentRef.Num-1] = &Stream{Dict: Dict{"Length": len(data)}, Data: data}
+		resources := Dict{"Font": Dict{"F1": type0Ref}}
+		if len(xobjs) > 0 {
+			resources["XObject"] = xobjs
+		}
 		pageRef := b.alloc()
 		b.objs[pageRef.Num-1] = Dict{
 			"Type":      Name("Page"),
 			"Parent":    pagesRef,
 			"MediaBox":  Array{0, 0, a4Width, a4Height},
-			"Resources": Dict{"Font": Dict{"F1": type0Ref}},
+			"Resources": resources,
 			"Contents":  contentRef,
 		}
 		kids = append(kids, pageRef)
@@ -461,6 +518,22 @@ func renderDocPDF(doc *DocModel, fontTTF []byte, opts TextPDFOpts) ([]byte, erro
 			drawRichLine(&buf, f, *it.line, textMargin, textContentWidth, y)
 			y -= it.line.leading
 			continue
+		}
+		if it.img != nil {
+			im := it.img
+			top := y + bodySize
+			if top-im.hPt < textMargin && y < startY {
+				flushPage()
+				buf.Reset()
+				y = startY
+				top = y + bodySize
+			}
+			fmt.Fprintf(&buf, "q %.2f 0 0 %.2f %.2f %.2f cm /%s Do Q\n", im.wPt, im.hPt, textMargin, top-im.hPt, im.res)
+			y = top - im.hPt - bodySize*1.2
+			continue
+		}
+		if it.table == nil {
+			continue // image whose embed failed (item's img was cleared above)
 		}
 		// table: draw row-atomically, splitting across pages
 		tb := it.table
