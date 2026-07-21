@@ -116,7 +116,13 @@ jobs:
       - run: cp tools/operation-catalog.json web/operation-catalog.json
       - run: node tools/gen-i18n.mjs
       - run: node tools/check-wasm-size.mjs web
-      - run: node --test
+      - name: Run node --test
+        run: |
+          node --version
+          if ! node --test 2>&1 | tee /tmp/node-test-out.txt; then
+            echo "::error::node $(node --version) failing tests: $(grep -E '^✖|^not ok' /tmp/node-test-out.txt | head -8 | tr '\n' ' § ')"
+            exit 1
+          fi
       - run: node tools/verify-vendor.mjs
       - run: node tools/stage-assets.mjs --hash web /tmp/yaho-staging/web
       - run: git diff --check
