@@ -119,10 +119,11 @@ func writeHwpx(doc *DocModel) []byte {
 	type styleEnt struct{ level, paraPr, charPr int }
 	var styleList []styleEnt
 	tblID := 0
+	reg := &hwpxImageReg{ids: map[*Image]int{}}
 
 	// First pass: build the section body while filling the tables.
 	var sec bytes.Buffer
-	sec.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section" xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">`)
+	sec.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section" xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core">`)
 
 	writePara := func(p *Para) {
 		pid := paraOf(p.Align)
@@ -193,6 +194,18 @@ func writeHwpx(doc *DocModel) []byte {
 		sec.WriteString(`</hp:tbl></hp:run></hp:p>`)
 	}
 
+	// writeImage emits one image anchored in its own paragraph. Sizes are
+	// HWPUNIT (1pt = 100 HWPUNIT).
+	writeImage := func(im *Image) {
+		if sniffImageMIME(im.Data) == "" {
+			return // ponytail: unsupported image data dropped on write
+		}
+		n := reg.id(im)
+		wPt, hPt := im.displaySizePt()
+		fmt.Fprintf(&sec, `<hp:p paraPrIDRef="0" styleIDRef="0"><hp:run charPrIDRef="0"><hp:pic reverse="0"><hp:sz width="%d" height="%d" protect="0"/><hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/><hp:outMargin left="0" right="0" top="0" bottom="0"/><hc:img binaryItemIDRef="image%d" bright="0" contrast="0" effect="REAL_PIC" alpha="0"/></hp:pic></hp:run></hp:p>`,
+			int(wPt*100+0.5), int(hPt*100+0.5), n)
+	}
+
 	writeBlocks = func(blocks []Block) {
 		for _, blk := range blocks {
 			switch b := blk.(type) {
@@ -200,6 +213,8 @@ func writeHwpx(doc *DocModel) []byte {
 				writePara(b)
 			case *Table:
 				writeTable(b)
+			case *Image:
+				writeImage(b)
 			}
 		}
 	}
@@ -230,6 +245,18 @@ func writeHwpx(doc *DocModel) []byte {
 	}
 	head.WriteString(`</hh:styles></hh:refList></hh:head>`)
 
+	// Manifest and content.hpf gain one file-entry/item per registered image;
+	// reg is fully populated by now since the section body was built above.
+	var manifestInserts, hpfInserts strings.Builder
+	for n, im := range reg.list {
+		ext := imageExt(sniffImageMIME(im.Data))
+		mime := sniffImageMIME(im.Data)
+		fmt.Fprintf(&manifestInserts, `<odf:file-entry odf:full-path="BinData/image%d.%s" odf:media-type="%s"/>`, n, ext, mime)
+		fmt.Fprintf(&hpfInserts, `<opf:item id="image%d" href="BinData/image%d.%s" media-type="%s" isEmbeded="1"/>`, n, n, ext, mime)
+	}
+	manifest := strings.Replace(hwpxManifestXML, "</odf:manifest>", manifestInserts.String()+"</odf:manifest>", 1)
+	contentHpf := strings.Replace(hwpxContentHpf, "</opf:manifest>", hpfInserts.String()+"</opf:manifest>", 1)
+
 	buf := new(bytes.Buffer)
 	w := zip.NewWriter(buf)
 	// mimetype MUST be the first entry, stored uncompressed.
@@ -238,13 +265,35 @@ func writeHwpx(doc *DocModel) []byte {
 	}
 	writeZipEntry(w, "version.xml", hwpxVersionXML)
 	writeZipEntry(w, "META-INF/container.xml", hwpxContainerXML)
-	writeZipEntry(w, "META-INF/manifest.xml", hwpxManifestXML)
-	writeZipEntry(w, "Contents/content.hpf", hwpxContentHpf)
+	writeZipEntry(w, "META-INF/manifest.xml", manifest)
+	writeZipEntry(w, "Contents/content.hpf", contentHpf)
 	writeZipEntry(w, "Contents/header.xml", head.String())
 	writeZipEntry(w, "Contents/section0.xml", sec.String())
+	for n, im := range reg.list {
+		name := fmt.Sprintf("BinData/image%d.%s", n, imageExt(sniffImageMIME(im.Data)))
+		writeZipEntryBytes(w, name, im.Data)
+	}
 	// ponytail: ignore Close() error; bytes.Buffer-backed zip.Writer never fails on Close.
 	w.Close()
 	return buf.Bytes()
+}
+
+// hwpxImageReg assigns each distinct *Image a 0-based id in first-encounter
+// order, mirroring docxImageReg; shared between the section body writer (for
+// binaryItemIDRef references) and the manifest/content.hpf/BinData writers.
+type hwpxImageReg struct {
+	ids  map[*Image]int
+	list []*Image
+}
+
+func (r *hwpxImageReg) id(im *Image) int {
+	if n, ok := r.ids[im]; ok {
+		return n
+	}
+	n := len(r.list)
+	r.ids[im] = n
+	r.list = append(r.list, im)
+	return n
 }
 
 // parseHwpx reads an HWPX package into the shared DocModel by first

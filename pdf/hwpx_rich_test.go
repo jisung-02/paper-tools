@@ -117,6 +117,30 @@ func TestWriteHwpxCharPrCap(t *testing.T) {
 	}
 }
 
+func TestWriteHwpxImage(t *testing.T) {
+	img := &Image{Data: tinyPNG(t, 10, 10)}
+	doc := &DocModel{Blocks: []Block{&Para{Runs: []Run{{Text: "앞"}}}, img}}
+	b := writeHwpx(doc)
+	section := hwpxEntry(t, b, "Contents/section0.xml")
+	for _, want := range []string{`<hp:pic reverse="0">`, `binaryItemIDRef="image0"`, `width="750" height="750"`} {
+		if !strings.Contains(section, want) {
+			t.Errorf("section missing %s", want)
+		}
+	}
+	bin := hwpxEntry(t, b, "BinData/image0.png")
+	if !strings.HasPrefix(bin, "\x89PNG") {
+		t.Errorf("BinData entry not the PNG bytes")
+	}
+	manifest := hwpxEntry(t, b, "META-INF/manifest.xml")
+	if !strings.Contains(manifest, `BinData/image0.png`) {
+		t.Errorf("manifest missing BinData entry")
+	}
+	hpf := hwpxEntry(t, b, "Contents/content.hpf")
+	if !strings.Contains(hpf, `id="image0"`) {
+		t.Errorf("content.hpf missing item")
+	}
+}
+
 func TestWriteHwpxTable(t *testing.T) {
 	doc := &DocModel{Blocks: []Block{
 		&Table{Rows: [][]Cell{
