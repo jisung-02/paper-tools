@@ -16,7 +16,7 @@ jobs:
   go:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
@@ -49,7 +49,7 @@ jobs:
       matrix:
         shard: [0, 1, 2, 3, 4, 5, 6, 7]
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
@@ -103,7 +103,7 @@ jobs:
     needs: build-wasm
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 22
@@ -116,7 +116,13 @@ jobs:
       - run: cp tools/operation-catalog.json web/operation-catalog.json
       - run: node tools/gen-i18n.mjs
       - run: node tools/check-wasm-size.mjs web
-      - run: node --test
+      - name: Run node --test
+        run: |
+          node --version
+          if ! node --test 2>&1 | tee /tmp/node-test-out.txt; then
+            echo "::error::node $(node --version) failing tests: $(grep -E '^✖|^not ok' /tmp/node-test-out.txt | head -8 | tr '\n' ' § ')"
+            exit 1
+          fi
       - run: node tools/verify-vendor.mjs
       - run: node tools/stage-assets.mjs --hash web /tmp/yaho-staging/web
       - run: git diff --check
@@ -152,7 +158,7 @@ jobs:
             projects: --project=mobile-webkit
     name: e2e (${{ matrix.name }})
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 22

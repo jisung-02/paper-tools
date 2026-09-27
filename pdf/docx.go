@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// ponytail: text + paragraph breaks only; inline bold/size/color/images/columns/tables-layout are dropped (best-effort reflow, not a faithful renderer).
+// ponytail: character/paragraph formatting (bold/italic/underline/strike/size/color/alignment/headings) is preserved via the DocModel; tables/images/columns remain later stages (best-effort reflow, not a faithful renderer). The plain-text extraction below stays text-only for pdftext consumers.
 
 // DocxText extracts plain text from a .docx file.
 func DocxText(data []byte) (string, error) {
@@ -99,11 +99,12 @@ func DocxText(data []byte) (string, error) {
 	return text, nil
 }
 
-// DocxToPDF converts a .docx file to PDF.
+// DocxToPDF converts a .docx file to PDF, preserving character and
+// paragraph formatting via the shared document model.
 func DocxToPDF(data []byte, fontTTF []byte, opts TextPDFOpts) ([]byte, error) {
-	txt, err := DocxText(data)
+	d, err := parseDocx(data)
 	if err != nil {
 		return nil, err
 	}
-	return TextToPDF(txt, fontTTF, opts)
+	return renderDocPDF(d, fontTTF, opts)
 }
