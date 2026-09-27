@@ -275,12 +275,22 @@ func parseSharedStrings(files map[string]*zip.File) ([]string, error) {
 
 // colLetterToIndex converts an Excel column reference (e.g. "A", "Z", "AA")
 // to its 1-based column index using bijective base-26 numbering.
-func colLetterToIndex(letters string) int {
+func colLetterToIndex(letters string) (int, error) {
 	idx := 0
 	for _, c := range letters {
-		idx = idx*26 + int(c-'A') + 1
+		if c < 'A' || c > 'Z' {
+			return 0, fmt.Errorf("잘못된 열 참조입니다: %s", letters)
+		}
+		digit := int(c-'A') + 1
+		if idx > (parseLimits.maxColumns-digit)/26 {
+			return 0, fmt.Errorf("xlsx column limit exceeded: %d", parseLimits.maxColumns)
+		}
+		idx = idx*26 + digit
 	}
-	return idx
+	if idx == 0 {
+		return 0, fmt.Errorf("잘못된 열 참조입니다: %s", letters)
+	}
+	return idx, nil
 }
 
 // splitCellRef splits a cell reference like "AB12" into its column letters
@@ -345,7 +355,9 @@ func cellValue(c cellXML, sharedStrings []string) string {
 // worksheetToCSV converts a parsed worksheet into CSV bytes, preserving
 // blank rows/columns implied by gaps in row/column numbering.
 func worksheetToCSV(ws worksheetXML, sharedStrings []string) ([]byte, error) {
-	var records [][]string
+	var buf bytes.Buffer
+	w := csv.NewWriter(&limitedBuffer{buf: &buf, remaining: parseLimits.maxCSVBytes})
+	writeEmptyRow := func() error { return w.Write([]string{}) }
 	prevRowNum := 0
 
 	for _, row := range ws.SheetData.Rows {
@@ -358,7 +370,9 @@ func worksheetToCSV(ws worksheetXML, sharedStrings []string) ([]byte, error) {
 		}
 
 		for prevRowNum+1 < rowNum {
-			records = append(records, []string{})
+			if err := writeEmptyRow(); err != nil {
+				return nil, err
+			}
 			prevRowNum++
 		}
 
@@ -373,9 +387,9 @@ func worksheetToCSV(ws worksheetXML, sharedStrings []string) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
-			colIdx := colLetterToIndex(col)
-			if colIdx > parseLimits.maxColumns {
-				return nil, fmt.Errorf("xlsx column limit exceeded: %d", parseLimits.maxColumns)
+			colIdx, err := colLetterToIndex(col)
+			if err != nil {
+				return nil, err
 			}
 			if colIdx > maxCol {
 				maxCol = colIdx
@@ -387,16 +401,10 @@ func worksheetToCSV(ws worksheetXML, sharedStrings []string) ([]byte, error) {
 		for _, rc := range cells {
 			record[rc.col-1] = rc.val
 		}
-		records = append(records, record)
-		prevRowNum = rowNum
-	}
-
-	var buf bytes.Buffer
-	w := csv.NewWriter(&limitedBuffer{buf: &buf, remaining: parseLimits.maxCSVBytes})
-	for _, rec := range records {
-		if err := w.Write(rec); err != nil {
+		if err := w.Write(record); err != nil {
 			return nil, err
 		}
+		prevRowNum = rowNum
 	}
 	w.Flush()
 	if err := w.Error(); err != nil {
