@@ -282,7 +282,7 @@ func colLetterToIndex(letters string) (int, error) {
 			return 0, fmt.Errorf("잘못된 열 참조입니다: %s", letters)
 		}
 		digit := int(c-'A') + 1
-		if idx > (parseLimits.maxColumns-digit)/26 {
+		if digit > parseLimits.maxColumns || idx > (parseLimits.maxColumns-digit)/26 {
 			return 0, fmt.Errorf("xlsx column limit exceeded: %d", parseLimits.maxColumns)
 		}
 		idx = idx*26 + digit
