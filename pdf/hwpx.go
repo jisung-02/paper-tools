@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-// ponytail: text + paragraph breaks only (t/p/tab elements); formatting/layout/images/line-break details are dropped (best-effort reflow, not a faithful renderer).
+// ponytail: character/paragraph formatting is preserved via the DocModel for PDF output; tables/images remain later stages (best-effort reflow, not a faithful renderer). The plain-text extraction below (t/p/tab elements) stays text-only for pdftext consumers.
 
 // HwpxText extracts plain text from a .hwpx file (ZIP archive containing HWPML XML sections).
 // Returns text from all section*.xml entries in sorted order, with newlines for paragraph breaks
@@ -119,11 +119,12 @@ func extractSectionText(r io.Reader) (string, error) {
 	return text.String(), nil
 }
 
-// HwpxToPDF converts a .hwpx file to a PDF by extracting text and rendering it.
+// HwpxToPDF converts a .hwpx file to PDF, preserving character and
+// paragraph formatting via the shared document model.
 func HwpxToPDF(data []byte, fontTTF []byte, opts TextPDFOpts) ([]byte, error) {
-	txt, err := HwpxText(data)
+	d, err := parseHwpx(data)
 	if err != nil {
 		return nil, err
 	}
-	return TextToPDF(txt, fontTTF, opts)
+	return renderDocPDF(d, fontTTF, opts)
 }
