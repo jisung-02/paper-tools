@@ -5,7 +5,9 @@ import { cp, lstat, mkdir, readdir, link, rm, stat, readFile, writeFile } from "
 import { createHash } from "node:crypto";
 import { join, relative, resolve } from "node:path";
 
-const immutable = /\.(?:js|mjs|css|wasm|woff2?|ttf|otf|png|jpe?g|gif|svg|ico)$/i;
+// WASM URLs stay stable because the site serves them with must-revalidate;
+// content-hashing them leaves Google and old clients with dead URLs on deploy.
+const immutable = /\.(?:js|mjs|css|woff2?|ttf|otf|png|jpe?g|gif|svg|ico)$/i;
 // These are requested at canonical URLs (manifest icons, iOS touch icon,
 // og:image) and must keep stable names across deploys.
 const fixed = new Set(["app.js", "sw.js", "wasm_exec.js", "favicon.svg", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "og.png"]);

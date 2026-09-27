@@ -224,12 +224,12 @@
     "de": {"title": "Altes Hangul HWP in PDF umwandeln — kostenlos & privat | Paper Tools", "description": "Altes Hangul-HWP-Format online in PDF umwandeln — kostenlos & privat. .hwp-Text direkt im Browser in ein PDF umwandeln (textfokussiert); kein Upload, keine Anmeldung."}
   },
   "docx2hwpx": {
-    "ko": {"title": "Word를 Hangul로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 Word를 Hangul HWPX로 변환하세요 — 무료이고 비공개입니다. 브라우저에서 바로 .docx의 텍스트와 문단을 .hwpx로 만들 수 있으며, 업로드나 회원가입이 필요 없습니다."},
-    "ja": {"title": "WordをHangulに変換 — 無料・非公開 | Paper Tools", "description": "オンラインでWordをHangul HWPXに変換 — 無料・非公開。ブラウザ内で.docxのテキストと段落を.hwpxに変換でき、アップロードも登録も不要です。"},
-    "zh": {"title": "Word 转 Hangul — 免费且私密 | Paper Tools", "description": "在线将 Word 转换为 Hangul HWPX——免费且私密。在浏览器中直接将 .docx 的文本和段落转为 .hwpx;无需上传,无需注册。"},
-    "es": {"title": "Convertidor de Word a Hangul — gratis y privado | Paper Tools", "description": "Convierte Word a Hangul HWPX en línea — gratis y privado. Transforma el texto y los párrafos de un .docx en .hwpx directamente en tu navegador; sin subidas, sin registro."},
-    "fr": {"title": "Convertisseur Word vers Hangul — gratuit et privé | Paper Tools", "description": "Convertissez Word en Hangul HWPX en ligne — gratuit et privé. Transformez le texte et les paragraphes d'un .docx en .hwpx directement dans votre navigateur ; sans envoi, sans inscription."},
-    "de": {"title": "Word-zu-Hangul-Konverter — kostenlos & privat | Paper Tools", "description": "Word online in Hangul HWPX umwandeln — kostenlos & privat. Text und Absätze aus .docx direkt im Browser in .hwpx umwandeln; kein Upload, keine Anmeldung."}
+    "ko": {"title": "DOCX를 한글 HWPX로 변환 — 무료·비공개 | Paper Tools", "description": "Word(.docx) 파일을 한글 HWPX(.hwpx)로 브라우저에서 변환하세요. 텍스트와 문단만 옮겨지며, 서식·이미지·표는 보존되지 않습니다."},
+    "ja": {"title": "Word DOCXをHangul HWPXに変換 | Paper Tools", "description": "Word（.docx）をHangul HWPX（.hwpx）にブラウザーで変換。テキストと段落のみ対応し、レイアウト・画像・表は保持されません。無料、アップロード不要。"},
+    "zh": {"title": "Word DOCX 转 Hangul HWPX | Paper Tools", "description": "在浏览器中将 Word（.docx）转换为 Hangul HWPX（.hwpx）。仅保留文本和段落，不保留版式、图片或表格。免费且无需上传。"},
+    "es": {"title": "Convertir DOCX a HWPX (Word a Hangul) | Paper Tools", "description": "Convierte un archivo Word (.docx) a Hangul HWPX (.hwpx) en el navegador. Solo conserva texto y párrafos; no mantiene diseño, imágenes ni tablas. Gratis y sin subir archivos."},
+    "fr": {"title": "Convertisseur DOCX en HWPX (Word vers Hangul) | Paper Tools", "description": "Convertissez un fichier Word (.docx) en HWPX (.hwpx) dans votre navigateur. Texte et paragraphes uniquement ; sans mise en page, images ni tableaux. Gratuit, sans envoi."},
+    "de": {"title": "DOCX in HWPX umwandeln (Word zu Hangul) | Paper Tools", "description": "Word-Dateien (.docx) direkt im Browser in Hangul HWPX (.hwpx) umwandeln. Nur Text und Absätze; Layout, Bilder und Tabellen bleiben nicht erhalten. Kostenlos, ohne Upload."}
   },
   "hwpx2docx": {
     "ko": {"title": "Hangul을 Word로 변환 — 무료·비공개 | Paper Tools", "description": "온라인에서 Hangul HWPX를 Word로 변환하세요 — 무료이고 비공개입니다. 브라우저에서 바로 .hwpx의 텍스트와 문단을 .docx로 만들 수 있으며, 업로드나 회원가입이 필요 없습니다."},
