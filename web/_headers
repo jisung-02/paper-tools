@@ -7,6 +7,7 @@
 
 /*.wasm
   Cache-Control: public, max-age=0, must-revalidate
+  X-Robots-Tag: noindex
 /NanumGothic-Regular.ttf
   Cache-Control: public, max-age=0, must-revalidate
 /*.html

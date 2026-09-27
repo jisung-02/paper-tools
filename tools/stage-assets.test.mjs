@@ -34,12 +34,13 @@ test("--hash rewrites immutable references and keeps bootstrap URLs fixed", asyn
   assert.equal(await readFile(join(dst, "sw.js"), "utf8"), "importScripts('chunk.js');");
 });
 
-test("--hash applies to nested immutable assets", async () => {
+test("--hash keeps nested WASM URLs stable", async () => {
   const root = await mkdtemp(join(tmpdir(), "stage-nested-"));
   const src = join(root, "src"), dst = join(root, "dst");
   await mkdir(join(src, "tool"), { recursive: true });
   await writeFile(join(src, "tool", "tool.wasm"), "wasm");
   await run(process.execPath, ["tools/stage-assets.mjs", "--hash", src, dst]);
   const names = await (await import("node:fs/promises")).readdir(join(dst, "tool"));
-  assert.ok(names.some((n) => /^tool-[0-9a-f]{12}\.wasm$/.test(n)));
+  assert.ok(names.includes("tool.wasm"));
+  assert.ok(!names.some((n) => /^tool-[0-9a-f]{12}\.wasm$/.test(n)));
 });
