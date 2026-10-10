@@ -80,7 +80,7 @@ jobs:
           ./build.sh $(node tools/shards.mjs "$SHARD" 8)
       - name: Upload wasm shard (with wasm_exec.js)
         if: matrix.shard == 0
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: wasm-shard-${{ matrix.shard }}
           path: |
@@ -91,7 +91,7 @@ jobs:
           compression-level: 0
       - name: Upload wasm shard
         if: matrix.shard != 0
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: wasm-shard-${{ matrix.shard }}
           path: web/*/*.wasm
@@ -127,7 +127,7 @@ jobs:
       - run: node tools/stage-assets.mjs --hash web /tmp/yaho-staging/web
       - run: git diff --check
       - name: Upload deployment WebAssembly
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: deployment-wasm
           path: |
